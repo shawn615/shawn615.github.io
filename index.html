@@ -130,7 +130,46 @@
     </p>
   </td>
 </tr> -->
+		
+<tr onmouseout="drmm_stop()" onmouseover="drmm_start()">
+   <td style="padding:20px;width:25%;vertical-align:middle">
+     <div class="one">
+       <div class="two" id='drmm_image'>
+	 <img src='images/drmm_after.jpg' width="160"></div>
+       <img src='images/drmm_before.jpg' width="160">
+     </div>
+     <script type="text/javascript">
+       function drmm_start() {
+	 document.getElementById('drmm_image').style.opacity = "1";
+       }
 
+       function drmm_stop() {
+	 document.getElementById('drmm_image').style.opacity = "0";
+       }
+       drmm_stop()
+     </script>
+   </td>
+   <td style="padding:20px;width:75%;vertical-align:middle">
+     <a href="https://arxiv.org/abs/2205.08714">
+       <papertitle>End-to-End Multi-Object Detection with a Regularized Mixture Model</papertitle>
+     </a>
+     <br>
+     <a href="https://scholar.google.com/citations?user=xQ2kWlYAAAAJ&hl=en&oi=ao">Jaeyoung Yoo*</a>,
+     <a href="https://scholar.google.com/citations?user=1BOehSUAAAAJ&hl=en&oi=ao">Hojun Lee*</a>,
+     <strong>Seunghyeon Seo</strong>,
+     <a href="https://scholar.google.com/citations?user=6bFY9FgAAAAJ&hl=en&oi=ao">Inseop Chung</a>,
+     <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+     <br>
+     <em>ICML 2023</em>
+     <br>
+     <a href="https://arxiv.org/abs/2205.08714">arXiv</a>
+     <p></p>
+     <p>
+       We propose the end-to-end multi-object Detection with a Regularized Mixture Model (D-RMM), which is trained by minimizing the NLL with the proposed regularization term, maximum component maximization (MCM) loss, preventing duplicate predictions.
+     </p>
+   </td>
+ </tr>
+		
 <tr onmouseout="mixnerf_stop()" onmouseover="mixnerf_start()">
   <td style="padding:20px;width:25%;vertical-align:middle">
     <div class="one">
@@ -207,45 +246,6 @@
      <p></p>
      <p>
        We model the high-dimensional joint distribution of human keypoints with a mixture density model by Random Keypoint Grouping strategy and achieve competitive performance working in real-time by eliminating additional instance identification process.
-     </p>
-   </td>
- </tr>
-
-<tr onmouseout="drmm_stop()" onmouseover="drmm_start()">
-   <td style="padding:20px;width:25%;vertical-align:middle">
-     <div class="one">
-       <div class="two" id='drmm_image'>
-	 <img src='images/drmm_after.jpg' width="160"></div>
-       <img src='images/drmm_before.jpg' width="160">
-     </div>
-     <script type="text/javascript">
-       function drmm_start() {
-	 document.getElementById('drmm_image').style.opacity = "1";
-       }
-
-       function drmm_stop() {
-	 document.getElementById('drmm_image').style.opacity = "0";
-       }
-       drmm_stop()
-     </script>
-   </td>
-   <td style="padding:20px;width:75%;vertical-align:middle">
-     <a href="https://arxiv.org/abs/2205.08714">
-       <papertitle>End-to-End Multi-Object Detection with a Regularized Mixture Model</papertitle>
-     </a>
-     <br>
-     <a href="https://scholar.google.com/citations?user=xQ2kWlYAAAAJ&hl=en&oi=ao">Jaeyoung Yoo*</a>,
-     <a href="https://scholar.google.com/citations?user=1BOehSUAAAAJ&hl=en&oi=ao">Hojun Lee*</a>,
-     <strong>Seunghyeon Seo</strong>,
-     <a href="https://scholar.google.com/citations?user=6bFY9FgAAAAJ&hl=en&oi=ao">Inseop Chung</a>,
-     <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
-     <br>
-     <em>Under Review</em>
-     <br>
-     <a href="https://arxiv.org/abs/2205.08714">arXiv</a>
-     <p></p>
-     <p>
-       We propose the end-to-end multi-object Detection with a Regularized Mixture Model (D-RMM), which is trained by minimizing the NLL with the proposed regularization term, maximum component maximization (MCM) loss, preventing duplicate predictions.
      </p>
    </td>
  </tr>
