@@ -130,6 +130,46 @@
     </p>
   </td>
 </tr> -->
+
+<tr onmouseout="mdpose_stop()" onmouseover="mdpose_start()">
+   <td style="padding:20px;width:25%;vertical-align:middle">
+     <div class="one">
+       <div class="two" id='mdpose_image'>
+	 <img src='images/mdpose_after.png' width="160"></div>
+       <img src='images/mdpose_before.png' width="160">
+     </div>
+     <script type="text/javascript">
+       function mdpose_start() {
+	 document.getElementById('mdpose_image').style.opacity = "1";
+       }
+
+       function mdpose_stop() {
+	 document.getElementById('mdpose_image').style.opacity = "0";
+       }
+       mdpose_stop()
+     </script>
+   </td>
+   <td style="padding:20px;width:75%;vertical-align:middle">
+     <a href="https://arxiv.org/abs/2302.08751">
+       <papertitle>MDPose: Real-Time Multi-Person Pose Estimation via Mixture Density Model</papertitle>
+     </a>
+     <br>
+     <strong>Seunghyeon Seo</strong>,
+     <a href="https://scholar.google.com/citations?user=xQ2kWlYAAAAJ&hl=en&oi=ao">Jaeyoung Yoo</a>,
+     <a href="https://scholar.google.com/citations?hl=en&user=NpivtnsAAAAJ">Jihye Hwang</a>,
+     <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+     <br>
+     <em>UAI</em>, 2023
+     <br>
+     <a href="https://arxiv.org/abs/2302.08751">project page (coming soon)</a>
+     /
+     <a href="https://arxiv.org/abs/2302.08751">arXiv</a>
+     <p></p>
+     <p>
+       We model the high-dimensional joint distribution of human keypoints with a mixture density model by Random Keypoint Grouping strategy and achieve competitive performance working in real-time by eliminating additional instance identification process.
+     </p>
+   </td>
+ </tr>		
 		
 <tr onmouseout="drmm_stop()" onmouseover="drmm_start()">
    <td style="padding:20px;width:25%;vertical-align:middle">
@@ -209,46 +249,6 @@
     </p>
   </td>
 </tr>
-
-<tr onmouseout="mdpose_stop()" onmouseover="mdpose_start()">
-   <td style="padding:20px;width:25%;vertical-align:middle">
-     <div class="one">
-       <div class="two" id='mdpose_image'>
-	 <img src='images/mdpose_after.png' width="160"></div>
-       <img src='images/mdpose_before.png' width="160">
-     </div>
-     <script type="text/javascript">
-       function mdpose_start() {
-	 document.getElementById('mdpose_image').style.opacity = "1";
-       }
-
-       function mdpose_stop() {
-	 document.getElementById('mdpose_image').style.opacity = "0";
-       }
-       mdpose_stop()
-     </script>
-   </td>
-   <td style="padding:20px;width:75%;vertical-align:middle">
-     <a href="https://arxiv.org/abs/2302.08751">
-       <papertitle>MDPose: Real-Time Multi-Person Pose Estimation via Mixture Density Model</papertitle>
-     </a>
-     <br>
-     <strong>Seunghyeon Seo</strong>,
-     <a href="https://scholar.google.com/citations?user=xQ2kWlYAAAAJ&hl=en&oi=ao">Jaeyoung Yoo</a>,
-     <a href="https://scholar.google.com/citations?hl=en&user=NpivtnsAAAAJ">Jihye Hwang</a>,
-     <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
-     <br>
-     <em>Under Review</em>
-     <br>
-     <a href="https://arxiv.org/abs/2302.08751">project page (coming soon)</a>
-     /
-     <a href="https://arxiv.org/abs/2302.08751">arXiv</a>
-     <p></p>
-     <p>
-       We model the high-dimensional joint distribution of human keypoints with a mixture density model by Random Keypoint Grouping strategy and achieve competitive performance working in real-time by eliminating additional instance identification process.
-     </p>
-   </td>
- </tr>
 
 <tr onmouseout="mum_stop()" onmouseover="mum_start()">
    <td style="padding:20px;width:25%;vertical-align:middle">
