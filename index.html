@@ -98,39 +98,43 @@
 <!--  </td>-->
 <!--</tr>-->
 
-<tr onmouseout="flipnerf_stop()" onmouseover="flipnerf_start()">
-  <td style="padding:20px;width:25%;vertical-align:middle">
-    <div class="one">
-      <div class="two" id='flipnerf_image'>
-        <img src='images/flipnerf_after.jpg' width="160"></div>
-      <img src='images/flipnerf_before.jpg' width="160">
-    </div>
-    <script type="text/javascript">
-      function flipnerf_start() {
-        document.getElementById('flipnerf_image').style.opacity = "1";
-      }
+<tr onmouseout="concatplexer_stop()" onmouseover="concatplexer_start()">
+   <td style="padding:20px;width:25%;vertical-align:middle">
+     <div class="one">
+       <div class="two" id='concatplexer_image'>
+	 <img src='images/concatplexer_after.png' width="160"></div>
+       <img src='images/concatplexer_before.png' width="160">
+     </div>
+     <script type="text/javascript">
+       function concatplexer_start() {
+	 document.getElementById('concatplexer_image').style.opacity = "1";
+       }
 
-      function flipnerf_stop() {
-        document.getElementById('flipnerf_image').style.opacity = "0";
-      }
-      flipnerf_stop()
-    </script>
-  </td>
-  <td style="padding:20px;width:75%;vertical-align:middle">
-      <papertitle>FlipNeRF: Flipped Reflection Rays for Few-shot Novel View Synthesis</papertitle>
-    <br>
-    <strong>Seunghyeon Seo</strong>,
-    <a href="https://yeonjin-chang.github.io/">Yeonjin Chang</a>,
-    <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
-    <br>
-    <em>Under Review</em>
-    <p></p>
-    <p>
-      We utilize the flipped reflection rays as additional training resources for the few-shot novel view synthesis, leading to more accurate surface normal estimation.
-    </p>
-  </td>
-</tr>
-
+       function concatplexer_stop() {
+	 document.getElementById('concatplexer_image').style.opacity = "0";
+       }
+       concatplexer_stop()
+     </script>
+   </td>
+   <td style="padding:20px;width:75%;vertical-align:middle">
+       <papertitle>ConcatPlexer: Additional Dim1 Batching for Faster ViTs</papertitle>
+     </a>
+     <br>
+     <a href="https://scholar.google.com/citations?hl=en&user=BKlC7TQAAAAJ">Donghoon Han</a>,
+     <strong>Seunghyeon Seo</strong>,
+     <a href="https://scholar.google.com/citations?user=2kW3474AAAAJ&hl=en&oi=ao">DongHyeon Jeon</a>,
+     <a href="https://scholar.google.com/citations?hl=en&user=-EtUt1wAAAAJ">Jiho Jang</a>,
+     <a href="https://scholar.google.com/citations?user=TownIFQAAAAJ&hl=en&oi=ao">Chaerin Kong</a>,
+     <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+     <br>
+     <em>Under Review</em>
+     <p></p>
+     <p>
+       We expedite ViT inference by concatenating abstract visual tokens from multiple images along dim=1 and processing them collectively.
+     </p>
+   </td>
+ </tr>			
+		
 <tr onmouseout="mdpose_stop()" onmouseover="mdpose_start()">
    <td style="padding:20px;width:25%;vertical-align:middle">
      <div class="one">
@@ -211,6 +215,39 @@
      </p>
    </td>
  </tr>
+
+<tr onmouseout="flipnerf_stop()" onmouseover="flipnerf_start()">
+  <td style="padding:20px;width:25%;vertical-align:middle">
+    <div class="one">
+      <div class="two" id='flipnerf_image'>
+        <img src='images/flipnerf_after.jpg' width="160"></div>
+      <img src='images/flipnerf_before.jpg' width="160">
+    </div>
+    <script type="text/javascript">
+      function flipnerf_start() {
+        document.getElementById('flipnerf_image').style.opacity = "1";
+      }
+
+      function flipnerf_stop() {
+        document.getElementById('flipnerf_image').style.opacity = "0";
+      }
+      flipnerf_stop()
+    </script>
+  </td>
+  <td style="padding:20px;width:75%;vertical-align:middle">
+      <papertitle>FlipNeRF: Flipped Reflection Rays for Few-shot Novel View Synthesis</papertitle>
+    <br>
+    <strong>Seunghyeon Seo</strong>,
+    <a href="https://yeonjin-chang.github.io/">Yeonjin Chang</a>,
+    <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+    <br>
+    <em>Under Review</em>
+    <p></p>
+    <p>
+      We utilize the flipped reflection rays as additional training resources for the few-shot novel view synthesis, leading to more accurate surface normal estimation.
+    </p>
+  </td>
+</tr>
 		
 <tr onmouseout="mixnerf_stop()" onmouseover="mixnerf_start()">
   <td style="padding:20px;width:25%;vertical-align:middle">
