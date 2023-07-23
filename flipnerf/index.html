@@ -145,7 +145,7 @@ Neural Radiance Field (NeRF) has been a mainstream in novel view synthesis with 
                     Flipped Reflection Ray
                 </h3>
                 <div class="text-justify">
-                    We exploit a batch of flipped reflection rays r′ ∈ R′ as extra training resources, which are derived from the original input ray directions d and estimated surface normals ˆn.
+                    We exploit a batch of <i>flipped reflection rays</i> r′ ∈ R′ as extra training resources, which are derived from the original input ray directions and estimated surface normals.
                 </div>
                 <br>
                 <div class="text-center">
@@ -153,7 +153,7 @@ Neural Radiance Field (NeRF) has been a mainstream in novel view synthesis with 
                 </div>
                 <br>
                 <div class="text-justify">
-                    First, we derive a flipped reflection direction d′ from d and ˆn:
+                    First, we derive a flipped reflection direction from the original one and the estimated surface normal:
                 </div>
                 <br>
                 <div class="text-center">
@@ -161,9 +161,8 @@ Neural Radiance Field (NeRF) has been a mainstream in novel view synthesis with 
                 </div>
                 <br>
                 <div class="text-justify">
-                    To generate the additional training rays based on d′, we need a set of imaginary ray origins o′ located in a suitable space considering the hitting point and the original input ray origins o.
-                    Since the vanilla NeRF models, which are trained with a dense set of images, tend to have the blending weight distribution whose peak is located on the point around the object surface ps = o + tsd, i.e., the s-th sample whose blending weight is the highest along a ray.
-                    Therefore, we place o′ so that the s-th sample of r′ is ps:
+                    To generate the additional training rays based on the flipped reflection direction, we need a set of imaginary ray origins located in a suitable space considering the hitting point and the original input ray origins.
+                    Since the vanilla NeRF models, which are trained with a dense set of images, tend to have the blending weight distribution whose peak is located on the point around the object surface p<sub>s</sub> = o + t<sub>s</sub>d, <i>i.e.,</i> the s-th sample whose blending weight is the highest along a ray, we place o′ so that the s-th sample of r′ is p<sub>s</sub>:
                 </div>
                 <br>
                 <div class="text-center">
@@ -175,8 +174,8 @@ Neural Radiance Field (NeRF) has been a mainstream in novel view synthesis with 
                 </div>
                 <br>
                 <div class="text-justify">
-                    However, since ˆn, which are used to derive d′, are not the ground truth but the estimation, there exists a concern that even miscreated r′, which do not satisfy photo-consistency, can be used for training.
-                    To address this problem, we mask the ineffective r′ by considering the angle θ between ˆn and −ˆd as follows:
+                    However, since the estimated surface normals, which are used to derive the flipped reflection directions, are not the ground truth but the estimation, there exists a concern that even miscreated r′, which do not satisfy photo-consistency, can be used for training.
+                    To address this problem, we mask the ineffective r′ by considering the angle θ between the estimated surface normals and reflection directions as follows:
                 </div>
                 <br>
                 <div class="text-center">
@@ -184,7 +183,7 @@ Neural Radiance Field (NeRF) has been a mainstream in novel view synthesis with 
                 </div>
                 <br>
                 <div class="text-justify">
-                    where −(ˆd · ˆn) amounts to cos θ of original input rays and normal vectors, and τ indicates the threshold for filtering the invalid rays, which we set as 90◦ unless specified.
+                    where −(d&#770 · n&#770) amounts to cosθ of original input rays and normal vectors, and τ indicates the threshold for filtering the invalid rays, which we set as 90<sup>◦</sup> unless specified.
                     Through this masking process, only r′ which are cast toward the photo-consistent point can be remained as we intend.
                 </div>
 <!--                <div class="text-center">-->
@@ -202,7 +201,7 @@ Neural Radiance Field (NeRF) has been a mainstream in novel view synthesis with 
                 </h3>
                 <div class="text-justify">
                     The naive application of existing regularization techniques with limited training views might not be consistently helpful across the different scenes due to the scene-by-scene different structure, resulting in overall performance degradation.
-                    To address this problem, we propose Uncertainty-aware Emptiness Loss (UE Loss) developed upon the Emptiness Loss, which reduces the floating artifacts consistently over the different scenes by considering the output uncertainty:
+                    To address this problem, we propose <i>Uncertainty-aware Emptiness Loss (UE Loss)</i>, which reduces the floating artifacts consistently over the different scenes by considering the output uncertainty:
                 </div>
                 <br>
                 <div class="text-center">
@@ -284,7 +283,7 @@ Neural Radiance Field (NeRF) has been a mainstream in novel view synthesis with 
                     Bottleneck Feature Consistency
                 </h3>
                 <div class="text-justify">
-                    We encourage the consistency of bottleneck feature distributions between r and r′, which are intermediate feature vectors, i.e., outputs of the spatial MLP of NeRF, by Jensen-Shannon Divergence (JSD):
+                    We encourage the consistency of bottleneck feature distributions between r and r′, which are intermediate feature vectors, <i>i.e.,</i> outputs of the spatial MLP of NeRF, by Jensen-Shannon Divergence (JSD):
                 </div>
                 <br>
                 <div class="text-center">
