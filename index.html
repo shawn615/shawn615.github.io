@@ -105,6 +105,51 @@
 <!--  </td>-->
 <!--</tr>-->
 
+<tr onmouseout="srtensorf_stop()" onmouseover="srtensorf_start()">
+  <td style="padding:20px;width:25%;vertical-align:middle">
+    <div class="one">
+      <div class="two" id='srtensorf_image'>
+        <img src='images/srtensorf_after.jpg' width="160"></div>
+      <img src='images/srtensorf_before.jpg' width="160">
+    </div>
+    <script type="text/javascript">
+      function srtensorf_start() {
+        document.getElementById('srtensorf_image').style.opacity = "1";
+      }
+
+      function srtensorf_stop() {
+        document.getElementById('srtensorf_image').style.opacity = "0";
+      }
+      srtensorf_stop()
+    </script>
+  </td>
+  <td style="padding:20px;width:75%;vertical-align:middle">
+<!--     <a href="https://shawn615.github.io/flipnerf"> -->
+      <papertitle>Fast Sun-aligned Outdoor Scene Relighting based on TensoRF</papertitle>
+<!--     </a> -->
+    <br>
+    <a href="https://yeonjin-chang.github.io/">Yeonjin Chang</a>,
+    Yearim Kim,
+    <strong>Seunghyeon Seo</strong>,
+    Jung Yi,
+    <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+    <br>
+    <em>WACV</em>, 2024
+    <br>
+<!--     <a href="https://shawn615.github.io/flipnerf">project page</a>
+     /
+    <a href="https://github.com/shawn615/FlipNeRF">code</a>
+     /
+    <a href="https://youtu.be/_XNsRxzaPjw">video</a>
+     /
+    <a href="https://arxiv.org/abs/2306.17723">arXiv</a> -->
+    <p></p>
+    <p>
+      We simplify outdoor scene relighting for NeRF by aligning with the sun, eliminating the need for environment maps and speeding up the process using a novel cubemap concept within the framework of TensoRF.
+    </p>
+  </td>
+</tr>
+		
 <tr onmouseout="flipnerf_stop()" onmouseover="flipnerf_start()">
   <td style="padding:20px;width:25%;vertical-align:middle">
     <div class="one">
