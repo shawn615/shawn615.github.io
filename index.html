@@ -108,6 +108,52 @@
 <!--  </td>-->
 <!--</tr>-->
 
+<tr onmouseout="hgnerf_stop()" onmouseover="hgnerf_start()">
+  <td style="padding:20px;width:25%;vertical-align:middle">
+    <div class="one">
+      <div class="two" id='hgnerf_image'>
+        <img src='images/hgnerf_after.png' width="160"></div>
+      <img src='images/hgnerf_before.png' width="160">
+    </div>
+    <script type="text/javascript">
+      function hgnerf_start() {
+        document.getElementById('hgnerf_image').style.opacity = "1";
+      }
+
+      function hgnerf_stop() {
+        document.getElementById('hgnerf_image').style.opacity = "0";
+      }
+      hgnerf_stop()
+    </script>
+  </td>
+  <td style="padding:20px;width:75%;vertical-align:middle">
+<!--     <a href="https://arxiv.org/abs/2311.03965"> -->
+      <papertitle>HG-NeRF: Casting an Hourglass as a Bundle of Rays for Few-shot Neural Rendering</papertitle>
+<!--     </a> -->
+    <br>
+    <strong>Seunghyeon Seo</strong>,
+    <a href="https://yeonjin-chang.github.io/">Yeonjin Chang</a>,
+    <a href="https://scholar.google.com/citations?user=JAeV59wAAAAJ&hl=en&oi=ao">Jayeon Yoo</a>,
+    <a href="https://lifrary.github.io/">Seungwoo Lee</a>,
+    <a href="https://scholar.google.com/citations?user=1BOehSUAAAAJ&hl=en&oi=ao">Hojun Lee</a>,
+    <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+    <br>
+    Under Review
+    <br>
+<!--     <a href="https://shawn615.github.io/flipnerf">project page</a> -->
+<!--      / -->
+<!--     <a href="https://github.com/shawn615/FlipNeRF">code</a> -->
+<!--      / -->
+<!--     <a href="https://youtu.be/_XNsRxzaPjw">video</a> -->
+<!--      / -->
+<!--     <a href="https://arxiv.org/abs/2311.03965">arXiv</a> -->
+    <p></p>
+    <p>
+      We cast an hourglass as an additional training ray, which adaptively regularizes the high-frequency components of the samples, and enhance the integrity of training framework by conceptualizing the hourglass as a bundle of flipped diffuse reflection rays, aligning with the Lambertian assumption.
+    </p>
+  </td>
+</tr>
+
 <tr onmouseout="srtensorf_stop()" onmouseover="srtensorf_start()">
   <td style="padding:20px;width:25%;vertical-align:middle">
     <div class="one">
