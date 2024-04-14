@@ -35,12 +35,12 @@
 		Previously, I got my bachelor's degree from <a href="https://cals.snu.ac.kr/en">College of Agriculture and Life Sciences in SNU</a>, where I majored in Agricultural Economics.
               </p>
               <p>
-                I'm interested in computer vision, machine learning, neural rendering, and human pose estimation.
-		Much of my interest is currently focused on the efficient training framework of NeRF.
+                I'm interested in computer vision, machine learning, and neural rendering.
+		Much of my interest is currently focused on the efficient training framework of NeRF and 3D-GS.
               </p>
-	      <p>
-                <strong>Currently on the hunt for an internship! If you're interested, please don't hesitate to reach out. Thanks! 🌟</strong>
-              </p>
+<!-- 	      <p> -->
+<!--                 <strong>Currently on the hunt for an internship! If you're interested, please don't hesitate to reach out. Thanks! 🌟</strong> -->
+<!--               </p> -->
               <p style="text-align:center">
                 <a href="mailto:zzzlssh@snu.ac.kr">Email</a> &nbsp/&nbsp
                 <a href="data/SeunghyeonSeo_CV.pdf">CV</a> &nbsp/&nbsp
@@ -108,6 +108,51 @@
 <!--  </td>-->
 <!--</tr>-->
 
+<tr onmouseout="hlclip_stop()" onmouseover="hlclip_start()">
+  <td style="padding:20px;width:25%;vertical-align:middle">
+    <div class="one">
+      <div class="two" id='hlclip_image'>
+        <img src='images/hlclip.png' width="160"></div>
+      <img src='images/hlclip.png' width="160">
+    </div>
+    <script type="text/javascript">
+      function hlclip_start() {
+        document.getElementById('hlclip_image').style.opacity = "1";
+      }
+
+      function hlclip_stop() {
+        document.getElementById('hlclip_image').style.opacity = "0";
+      }
+      hlclip_stop()
+    </script>
+  </td>
+  <td style="padding:20px;width:75%;vertical-align:middle">
+    <a href="https://arxiv.org/abs/2404.01745">
+      <papertitle>Unleash the Potential of CLIP for Video Highlight Detection</papertitle>
+<!--     </a> -->
+    <br>
+    <a href="https://scholar.google.com/citations?hl=en&user=BKlC7TQAAAAJ">Donghoon Han*</a>,
+    <strong>Seunghyeon Seo*</strong>,
+    Eunhwan Park,
+    SeongUk Nam,
+    <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+    <br>
+    <em>CVPR</em> 2024 Workshop on Efficient Large Vision Models
+    <br>
+<!--     <a href="https://shawn615.github.io/flipnerf">project page</a> -->
+<!--      / -->
+<!--     <a href="https://github.com/shawn615/FlipNeRF">code</a> -->
+<!--      / -->
+<!--     <a href="https://youtu.be/_XNsRxzaPjw">video</a> -->
+<!--      / -->
+<!--     <a href="https://arxiv.org/abs/2311.03965">arXiv</a> -->
+    <p></p>
+    <p>
+      We leverage the pre-trained multimodal model CLIP to achieve state-of-the-art performance in video highlight detection by fine-tuning the encoder and integrating a novel saliency pooling technique.
+    </p>
+  </td>
+</tr>
+		
 <tr onmouseout="hgnerf_stop()" onmouseover="hgnerf_start()">
   <td style="padding:20px;width:25%;vertical-align:middle">
     <div class="one">
@@ -127,13 +172,13 @@
     </script>
   </td>
   <td style="padding:20px;width:75%;vertical-align:middle">
-<!--     <a href="https://arxiv.org/abs/2311.03965"> -->
-      <papertitle>HG-NeRF: Casting an Hourglass as a Bundle of Rays for Few-shot Neural Rendering</papertitle>
+    <a href="https://arxiv.org/abs/2403.10906">
+      <papertitle>HourglassNeRF: Casting an Hourglass as a Bundle of Rays for Few-shot Neural Rendering</papertitle>
 <!--     </a> -->
     <br>
     <strong>Seunghyeon Seo</strong>,
     <a href="https://yeonjin-chang.github.io/">Yeonjin Chang</a>,
-    <a href="https://scholar.google.com/citations?user=JAeV59wAAAAJ&hl=en&oi=ao">Jayeon Yoo</a>,
+    <a href="https://natureyoo.github.io/">Jayeon Yoo</a>,
     <a href="https://lifrary.github.io/">Seungwoo Lee</a>,
     <a href="https://scholar.google.com/citations?user=1BOehSUAAAAJ&hl=en&oi=ao">Hojun Lee</a>,
     <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
@@ -146,7 +191,7 @@
 <!--      / -->
 <!--     <a href="https://youtu.be/_XNsRxzaPjw">video</a> -->
 <!--      / -->
-<!--     <a href="https://arxiv.org/abs/2311.03965">arXiv</a> -->
+    <a href="https://arxiv.org/abs/2403.10906">arXiv</a>
     <p></p>
     <p>
       We cast an hourglass as an additional training ray, which adaptively regularizes the high-frequency components of the samples, and enhance the integrity of training framework by conceptualizing the hourglass as a bundle of flipped diffuse reflection rays, aligning with the Lambertian assumption.
