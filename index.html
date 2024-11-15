@@ -129,6 +129,94 @@
 <!--    </p>-->
 <!--  </td>-->
 <!--</tr>-->
+<tr onmouseout="divconnerf_stop()" onmouseover="divconnerf_start()">
+  <td style="padding:20px;width:25%;vertical-align:middle">
+    <div class="one">
+      <div class="two" id='divconnerf_image'>
+        <img src='images/divconnerf_after.png' width="160"></div>
+      <img src='images/divconnerf_before.png' width="160">
+    </div>
+    <script type="text/javascript">
+      function divconnerf_start() {
+        document.getElementById('divconnerf_image').style.opacity = "1";
+      }
+
+      function divconnerf_stop() {
+        document.getElementById('divconnerf_image').style.opacity = "0";
+      }
+      divconnerf_stop()
+    </script>
+  </td>
+  <td style="padding:20px;width:75%;vertical-align:middle">
+      <papertitle>DivCon-NeRF: Generating Augmented Rays with Diversity and Consistency for Few-shot View Synthesis</papertitle>
+    </a>
+    <br>
+    Ingyun Lee,
+    Jae Won Jang,
+    <strong>Seunghyeon Seo</strong>,
+    <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
+    <br>
+    Under Review
+    <br>
+<!--     <a href="https://shawn615.github.io/flipnerf">project page</a> -->
+<!--      / -->
+<!--     <a href="https://github.com/shawn615/FlipNeRF">code</a> -->
+<!--      / -->
+<!--     <a href="https://youtu.be/_XNsRxzaPjw">video</a> -->
+<!--      / -->
+<!--     <a href="https://arxiv.org/abs/2403.10906">arXiv</a> -->
+    <p></p>
+    <p>
+      We introduce surface-sphere and inner-sphere augmentations to balance diversity and consistency in ray augmentation, addressing floaters and appearance distortion in few-shot novel view synthesis.
+    </p>
+  </td>
+</tr>
+		
+<tr onmouseout="arc-nerf_stop()" onmouseover="arc-nerf_start()">
+  <td style="padding:20px;width:25%;vertical-align:middle">
+    <div class="one">
+      <div class="two" id='arc-nerf_image'>
+        <img src='images/arc-nerf_after.png' width="160"></div>
+      <img src='images/arc-nerf_before.png' width="160">
+    </div>
+    <script type="text/javascript">
+      function arc-nerf_start() {
+        document.getElementById('arc-nerf_image').style.opacity = "1";
+      }
+
+      function arc-nerf_stop() {
+        document.getElementById('arc-nerf_image').style.opacity = "0";
+      }
+      arc-nerf_stop()
+    </script>
+  </td>
+  <td style="padding:20px;width:75%;vertical-align:middle">
+      <papertitle>ARC-NeRF: ARC-NeRF: Area Ray Casting for Broader Unseen View Coverage in Few-shot Object Rendering</papertitle>
+    </a>
+    <br>
+    <strong>Seunghyeon Seo</strong>,
+    <a href="https://yeonjin-chang.github.io/">Yeonjin Chang</a>,
+    <a href="https://natureyoo.github.io/">Jayeon Yoo</a>,
+    <a href="https://lifrary.github.io/">Seungwoo Lee</a>,
+    <a href="https://scholar.google.com/citations?user=1BOehSUAAAAJ&hl=en&oi=ao">Hojun Lee</a>,
+    <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
+    <br>
+    Under Review
+    <br>
+<!--     <a href="https://shawn615.github.io/flipnerf">project page</a> -->
+<!--      / -->
+<!--     <a href="https://github.com/shawn615/FlipNeRF">code</a> -->
+<!--      / -->
+<!--     <a href="https://youtu.be/_XNsRxzaPjw">video</a> -->
+<!--      / -->
+<!--     <a href="https://arxiv.org/abs/2403.10906">arXiv</a> -->
+    <p></p>
+    <p>
+      We present ARC-NeRF, leveraging Area Ray casting to cover broader unseen views with a single ray and adaptive high-frequency regularization. Additionally, luminance consistency regularization uses relative luminance as 'free lunch' data to improve texture accuracy.
+    </p>
+  </td>
+</tr>
+		
 <tr onmouseout="hlclip_stop()" onmouseover="hlclip_start()">
   <td style="padding:20px;width:25%;vertical-align:middle">
     <div class="one">
@@ -156,7 +244,7 @@
     <strong>Seunghyeon Seo*</strong>,
     Eunhwan Park,
     SeongUk Nam,
-    <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+    <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
     <br>
     <em>CVPR</em> 2024 Workshop on Efficient Large Vision Models
     <br>
@@ -174,52 +262,6 @@
   </td>
 </tr>
 		
-<tr onmouseout="hgnerf_stop()" onmouseover="hgnerf_start()">
-  <td style="padding:20px;width:25%;vertical-align:middle">
-    <div class="one">
-      <div class="two" id='hgnerf_image'>
-        <img src='images/hgnerf_after.png' width="160"></div>
-      <img src='images/hgnerf_before.png' width="160">
-    </div>
-    <script type="text/javascript">
-      function hgnerf_start() {
-        document.getElementById('hgnerf_image').style.opacity = "1";
-      }
-
-      function hgnerf_stop() {
-        document.getElementById('hgnerf_image').style.opacity = "0";
-      }
-      hgnerf_stop()
-    </script>
-  </td>
-  <td style="padding:20px;width:75%;vertical-align:middle">
-    <a href="https://arxiv.org/abs/2403.10906">
-      <papertitle>HourglassNeRF: Casting an Hourglass as a Bundle of Rays for Few-shot Neural Rendering</papertitle>
-    </a>
-    <br>
-    <strong>Seunghyeon Seo</strong>,
-    <a href="https://yeonjin-chang.github.io/">Yeonjin Chang</a>,
-    <a href="https://natureyoo.github.io/">Jayeon Yoo</a>,
-    <a href="https://lifrary.github.io/">Seungwoo Lee</a>,
-    <a href="https://scholar.google.com/citations?user=1BOehSUAAAAJ&hl=en&oi=ao">Hojun Lee</a>,
-    <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
-    <br>
-    Under Review
-    <br>
-<!--     <a href="https://shawn615.github.io/flipnerf">project page</a> -->
-<!--      / -->
-<!--     <a href="https://github.com/shawn615/FlipNeRF">code</a> -->
-<!--      / -->
-<!--     <a href="https://youtu.be/_XNsRxzaPjw">video</a> -->
-<!--      / -->
-    <a href="https://arxiv.org/abs/2403.10906">arXiv</a>
-    <p></p>
-    <p>
-      We cast an hourglass as an additional training ray, which adaptively regularizes the high-frequency components of the samples, and enhance the integrity of training framework by conceptualizing the hourglass as a bundle of flipped diffuse reflection rays, aligning with the Lambertian assumption.
-    </p>
-  </td>
-</tr>
-
 <tr onmouseout="srtensorf_stop()" onmouseover="srtensorf_start()">
   <td style="padding:20px;width:25%;vertical-align:middle">
     <div class="one">
@@ -247,7 +289,7 @@
     Yearim Kim,
     <strong>Seunghyeon Seo</strong>,
     Jung Yi,
-    <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+    <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
     <br>
     <em>WACV</em> 2024
     <br>
@@ -293,7 +335,7 @@
      <a href="https://scholar.google.com/citations?user=2kW3474AAAAJ&hl=en&oi=ao">DongHyeon Jeon</a>,
      <a href="https://scholar.google.com/citations?hl=en&user=-EtUt1wAAAAJ">Jiho Jang</a>,
      <a href="https://scholar.google.com/citations?user=TownIFQAAAAJ&hl=en&oi=ao">Chaerin Kong</a>,
-     <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+     <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
      <br>
      <em>NeurIPS</em> 2023 Workshop on Advancing Neural Network Training &nbsp <font color="red"><strong>(Oral)</strong></font>
      <br>
@@ -330,7 +372,7 @@
     <br>
     <strong>Seunghyeon Seo</strong>,
     <a href="https://yeonjin-chang.github.io/">Yeonjin Chang</a>,
-    <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+    <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
     <br>
     <em>ICCV</em> 2023
     <br>
@@ -374,7 +416,7 @@
      <strong>Seunghyeon Seo</strong>,
      <a href="https://scholar.google.com/citations?user=xQ2kWlYAAAAJ&hl=en&oi=ao">Jaeyoung Yoo</a>,
      <a href="https://scholar.google.com/citations?hl=en&user=NpivtnsAAAAJ">Jihye Hwang</a>,
-     <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+     <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
      <br>
      <em>UAI</em> 2023
      <br>
@@ -413,7 +455,7 @@
      <a href="https://scholar.google.com/citations?user=1BOehSUAAAAJ&hl=en&oi=ao">Hojun Lee*</a>,
      <strong>Seunghyeon Seo</strong>,
      <a href="https://scholar.google.com/citations?user=6bFY9FgAAAAJ&hl=en&oi=ao">Inseop Chung</a>,
-     <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+     <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
      <br>
      <em>ICML</em> 2023
      <br>
@@ -453,7 +495,7 @@
     <strong>Seunghyeon Seo</strong>,
     <a href="https://scholar.google.com/citations?hl=en&user=BKlC7TQAAAAJ">Donghoon Han*</a>,
     <a href="https://yeonjin-chang.github.io/">Yeonjin Chang*</a>,
-    <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+    <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
     <br>
     <em>CVPR</em> 2023 &nbsp <font color="red"><strong>(Qualcomm Innovation Fellowship Korea 2023 Winner)</strong></font>
     <br>
@@ -499,7 +541,7 @@
      <strong>Seunghyeon Seo</strong>,
      <a href="https://sites.google.com/view/soo89/">Jisoo Jeong</a>,
      Jongkeun Na,
-     <a href="http://mipal.snu.ac.kr/index.php/Nojun_Kwak">Nojun Kwak</a>
+     <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
      <br>
      <em>CVPR</em> 2022
      <br>
