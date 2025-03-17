@@ -206,6 +206,49 @@
   </td>
 </tr>
 		
+<tr onmouseout="divcon_stop()" onmouseover="divcon_start()">
+  <td style="padding:20px;width:25%;vertical-align:middle">
+    <div class="one">
+      <div class="two" id='divcon_image'>
+        <img src='images/divcon.png' width=100%></div>
+      <img src='images/divcon.png' width=100%>
+    </div>
+    <script type="text/javascript">
+      function divcon_start() {
+        document.getElementById('divcon_image').style.opacity = "1";
+      }
+
+      function divcon_stop() {
+        document.getElementById('divcon_image').style.opacity = "0";
+      }
+      divcon_stop()
+    </script>
+  </td>
+  <td style="padding:20px;width:75%;vertical-align:middle">
+      <papertitle>DivCon-NeRF: Generating Augmented Rays with Diversity and Consistency for Few-shot View Synthesis</papertitle>
+    </a>
+    <br>
+    <a href="https://scholar.google.com/citations?user=ChN2UUkAAAAJ&hl=en">Ingyun Lee</a>,
+    Jae Won Jang,
+    <strong>Seunghyeon Seo</strong>,
+    <a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>
+    <br>
+    Under Review
+    <br>
+<!--     <a href="https://shawn615.github.io/flipnerf">project page</a> -->
+<!--      / -->
+<!--     <a href="https://github.com/shawn615/FlipNeRF">code</a> -->
+<!--      / -->
+<!--     <a href="https://youtu.be/_XNsRxzaPjw">video</a> -->
+<!--      / -->
+<!--     <a href="https://arxiv.org/abs/2403.10906">arXiv</a> -->
+    <p></p>
+    <p>
+      We propose surface-sphere augmentation to preserve camera-to-surface distances for consistent ray filtering and inner-sphere augmentation to randomize viewpoints, improving both diversity and consistency.
+    </p>
+  </td>
+</tr>
+		
 <tr onmouseout="arcnerf_stop()" onmouseover="arcnerf_start()">
   <td style="padding:20px;width:25%;vertical-align:middle">
     <div class="one">
