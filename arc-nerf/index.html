@@ -150,9 +150,9 @@
 
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
-                <h3>
+                <h2>
                     Abstract
-                </h3>
+                </h2>
                 <image src="img/teaser.png" class="img-responsive" alt="overview"><br>
                 <p class="text-justify">
 Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabilities for novel view synthesis, yet its reliance on dense multi-view training images poses a practical challenge, often leading to artifacts and a lack of fine object details. Addressing this, we propose ARC-NeRF, an effective regularization-based approach with a novel Area Ray Casting strategy. While the previous ray augmentation methods are limited to covering only a single unseen view per extra ray, our proposed Area Ray covers a broader range of unseen views with just a single ray and enables an adaptive high-frequency regularization based on target pixel photo-consistency. Moreover, we propose luminance consistency regularization, which enhances the consistency of relative luminance between the original and Area Ray, leading to more accurate object textures. The relative luminance, as a free lunch extra data easily derived from RGB images, can be effectively utilized in few-shot scenarios where available training data is limited. Our ARC-NeRF outperforms its baseline and achieves competitive results on multiple benchmarks with sharply rendered fine details.            </div>
@@ -279,6 +279,7 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
                     <video id="dtu1" width="75%" playsinline autoplay loop muted>
                         <source src="video/dtu_3view_freenerf-ours_video.mp4" type="video/mp4" />
                     </video>
+                    <br>
                     3-view; Notable improvement in the detail of the tail.
                 </div>
                 <br>
@@ -286,6 +287,7 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
                     <video id="dtu2" width="75%" playsinline autoplay loop muted>
                         <source src="video/dtu_6view_freenerf-ours_video.mp4" type="video/mp4" />
                     </video>
+                    <br>
                     6-view; Apple surface textures are more stably reconstructed across changing views.
                 </div>
                 <br>
@@ -293,6 +295,7 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
                     <video id="dtu3" width="75%" playsinline autoplay loop muted>
                         <source src="video/dtu_9view_freenerf-ours_video.mp4" type="video/mp4" />
                     </video>
+                    <br>
                     9-view; Brick textures are also more consistently reproduced.
                 </div>
             </div>
