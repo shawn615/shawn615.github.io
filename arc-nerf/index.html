@@ -199,21 +199,21 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
                 <h3>
                     Luminance Consistency Regularization
                 </h3>
+                <div class="text-center">
+                    <img src="./img/luminance.png" width="100%">
+                </div>
                 <div class="text-justify">
-                    We propose the luminance map as an effective additional training resource for few-shot scenarios with limited data, providing 'free lunch' information easily derived from RGB images, and introduce \textit{luminance consistency regularization}.
+                    We propose the luminance map as an effective additional training resource for few-shot scenarios with limited data, providing 'free lunch' information easily derived from RGB images, and introduce luminance consistency regularization.
+                    <br>
                     For simplicity, we use a relative luminance value, which is normalized as \( [0, 1] \), and derive the GT relative luminance \( y_\text{GT} \) of a target pixel as follows:
                     $$y_\text{GT} = \sum_{\bar{c}}^{\{\bar{r}, \bar{g}, \bar{b}\}} \lambda_{\bar{c}} \bar{c},$$
                     where \( \bar{c} = c_\text{GT}^{2.2} \) indicates a linear rgb component converted from the gamma-compressed one by applying a simple power curve.
                 </div>
                 <br>
-                <div class="text-center">
-                    <img src="./img/ueloss_1.png" width="50%">
-                </div>
-                <br>
                 <div class="text-justify">
-                    ρ amounts to the average of the summation of estimated scale parameters of RGB color distributions from all samples along a ray, which we use as the uncertainty of a ray.
-                    By our proposed UE Loss, we are able to regularize the blending weights adaptively, i.e., the more uncertain a ray is, the more penalized the blending weights along the ray are.
-                    It is able to reduce floating artifacts consistently across the scenes with different structures and enables to synthesize more reliable outputs by considering uncertainty.
+                    In addition to the existing outputs, our ARC-NeRF estimates the luminance \( y \) as additional outputs per sample along a ray and renders the final luminance \( \hat{y} \) by volume rendering as follows:
+                    $$\hat{y}(\mathbf{r}) = \sum_{i=1}^{N}w_i y_i,$$
+                    where \( y_i \in [0, 1] \) is the estimated relative luminance of the \( i \)-th sample along a ray \( \mathbf{r} \).
                 </div>
                 <br>
                 <h2>
