@@ -23,7 +23,7 @@
 
 
     <!-- mirror: F0%9F%AA%9E&lt -->
-    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🪞&lt;/text&gt;&lt;/svg&gt;">
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;⌛️&lt;/text&gt;&lt;/svg&gt;">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/font-awesome.min.css">
     <link rel="stylesheet" href="css/codemirror.min.css">
@@ -160,9 +160,9 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
 
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
-                <h3>
+                <h2>
                     Area Ray Casting
-                </h3>
+                </h2>
                 <div class="text-justify">
                     Compared to the existing ray augmentation schemes where a resulting augmented ray corresponds to an unseen view, our proposed Area Ray covers the area of continuous unseen views by Integrated Positional Encoding (IPE), providng more efficient extra training resources.
                 </div>
@@ -196,12 +196,13 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
 
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
-                <h3>
+                <h2>
                     Luminance Consistency Regularization
-                </h3>
+                </h2>
                 <div class="text-center">
                     <img src="./img/luminance.png" width="100%">
                 </div>
+                <br>
                 <div class="text-justify">
                     We propose the luminance map as an effective additional training resource for few-shot scenarios with limited data, providing 'free lunch' information easily derived from RGB images, and introduce luminance consistency regularization.
                     <br>
@@ -215,146 +216,85 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
                     $$\hat{y}(\mathbf{r}) = \sum_{i=1}^{N}w_i y_i,$$
                     where \( y_i \in [0, 1] \) is the estimated relative luminance of the \( i \)-th sample along a ray \( \mathbf{r} \).
                 </div>
-                <br>
-                <h2>
-                    MixNeRF
-                </h2>
-                <table width="100%">
-                    <tr>
-                        <td align="left" valign="top" width="25%">
-                            <video id="ue_mix1" width="100%" playsinline autoplay loop muted>
-                                <source src="video/mixnerf_scan34_3view_rgb.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="ue_mix2" width="100%" playsinline autoplay loop muted>
-                                <source src="video/mixnerf_scan34_3view_rgbstd.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="ue_mix3" width="100%" playsinline autoplay loop muted>
-                                <source src="video/mixnerf_scan34_3view_depth.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="ue_mix4" width="100%" playsinline autoplay loop muted>
-                                <source src="video/mixnerf_scan34_3view_depthstd.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                    </tr>
-                </table>
-                <h2>
-                    FlipNeRF
-                </h2>
-                <table width="100%">
-                    <tr>
-                        <td align="left" valign="top" width="25%">
-                            <video id="ue_flip1" width="100%" playsinline autoplay loop muted>
-                                <source src="video/flipnerf_scan34_3view_rgb.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="ue_flip2" width="100%" playsinline autoplay loop muted>
-                                <source src="video/flipnerf_scan34_3view_rgbstd.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="ue_flip3" width="100%" playsinline autoplay loop muted>
-                                <source src="video/flipnerf_scan34_3view_depth.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="ue_flip4" width="100%" playsinline autoplay loop muted>
-                                <source src="video/flipnerf_scan34_3view_depthstd.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                    </tr>
-                </table>
-                <div class="text-justify">
-                    With our proposed UE Loss, ours improves both of the rendering quality and the reliability of the model outputs by a large margin compared to MixNeRF.
-                    (From the left to the right: RGB, RGB_Std, Depth, Depth_Std)
-                </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
+                <h2>
+                    Experiments
+                </h2>
                 <h3>
-                    Bottleneck Feature Consistency
+                    Frequency regularization effect of Area Ray
+                </h3>
+                <div class="text-center">
+                    <img src="./img/freq_reg.png" width="75%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    Compared to FreeNeRF which forcibly masks the high-frequency spectrum in the early training phase, ours adaptively regularizes the high-frequency components of additional ray samples based on the target pixel photo-consistency (i.e., the angle between the original ray and Area Ray) during the whole training process.
+                    As a result, our ARC-NeRF already achieves sharper fine details at 25K iteration than the fully trained FreeNeRF.
+                </div>
+                <br>
+                <h3>
+                    Effectiveness of Area Ray as a bundle of rays
+                </h3>
+                <div class="text-center">
+                    <img src="./img/multicasting.png" width="75%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    Our ARC-NeRF outperforms FlipNeRF in all scenarios by a large margin.
+                    The training time per scene is measured using the same GPU, iterations, and batch size.
+                    The size of circles is proportional to \( \kappa \), i.e., the number of augmented rays per original ray.
+                </div>
+                <br>
+                <h3>
+                    Comparison with Other Baselines
                 </h3>
                 <div class="text-justify">
-                    We encourage the consistency of bottleneck feature distributions between r and r′, which are intermediate feature vectors, i.e., outputs of the spatial MLP of NeRF, by Jensen-Shannon Divergence (JSD):
+                    Our ARC-NeRF achieves competitive rendering quality with better capturing fine details.
                 </div>
                 <br>
                 <div class="text-center">
-                    <img src="./img/bfcloss_1.png" width="50%">
+                    <video id="blender1" width="100%" playsinline autoplay loop muted>
+                        <source src="video/realistic-synthetic_4view_comparison_video.mp4" type="video/mp4" />
+                    </video>
+                    4-view
+                </div>
+                <br>
+                <div class="text-center">
+                    <video id="blender2" width="100%" playsinline autoplay loop muted>
+                        <source src="video/realistic-synthetic_8view_comparison_video.mp4" type="video/mp4" />
+                    </video>
+                    8-view
                 </div>
                 <br>
                 <div class="text-justify">
-                    where ψ(·), b and b′ denote the softmax function, the bottleneck features of r and r′, respectively.
-                    We regulate the pair of features effectively by enhancing consistency between bottleneck features without depending on additional feature extractors.
+                    FreeNeRF is trained with the black and white prior assuming the estimated black and white color as the background and table, respectively, which is a highly strong assumption specific to the dataset, and achieves degenerate results without the prior.
+                    However, our ARC-NeRF achieves competitive performance without any heuristic prior by using Area Ray, which enables adaptive regularization of high-frequency.
                 </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-8 col-md-offset-2">
-                <h3>
-                    Comparison with Baselines
-                </h3>
-                <div class="text-justify">
-                    Our FlipNeRF estimates more accurate surface normals than other baselines, leading to the performance gain with better reconstructed fine details from limited input views.
-                    (From the left to the right: mip-NeRF, Ref-NeRF, MixNeRF, FlipNeRF (Ours))
-                </div>
-                <table width="100%">
-                    <tr>
-                        <td align="left" valign="top" width="25%">
-                            <video id="rgb1" width="100%" playsinline autoplay loop muted>
-                                <source src="video/mipnerf_hotdog_4view_rgb.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="rgb2" width="100%" playsinline autoplay loop muted>
-                                <source src="video/refnerf_hotdog_4view_rgb.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="rgb3" width="100%" playsinline autoplay loop muted>
-                                <source src="video/mixnerf_hotdog_4view_rgb.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="rgb4" width="100%" playsinline autoplay loop muted>
-                                <source src="video/flipnerf_hotdog_4view_rgb.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                    </tr>
-                </table>
                 <br>
-                <table width="100%">
-                    <tr>
-                        <td align="left" valign="top" width="25%">
-                            <video id="normals1" width="100%" playsinline autoplay loop muted>
-                                <source src="video/mipnerf_hotdog_4view_normals.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="normals2" width="100%" playsinline autoplay loop muted>
-                                <source src="video/refnerf_hotdog_4view_normals.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="normals3" width="100%" playsinline autoplay loop muted>
-                                <source src="video/mixnerf_hotdog_4view_normals.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                        <td align="left" valign="top" width="25%">
-                            <video id="normals4" width="100%" playsinline autoplay loop muted>
-                                <source src="video/flipnerf_hotdog_4view_normals.mp4" type="video/mp4" />
-                            </video>
-                        </td>
-                    </tr>
-                </table>
+                <div class="text-center">
+                    <video id="dtu1" width="75%" playsinline autoplay loop muted>
+                        <source src="video/dtu_3view_freenerf-ours_video.mp4" type="video/mp4" />
+                    </video>
+                    3-view; Notable improvement in the detail of the tail.
+                </div>
+                <br>
+                <div class="text-center">
+                    <video id="dtu2" width="75%" playsinline autoplay loop muted>
+                        <source src="video/dtu_6view_freenerf-ours_video.mp4" type="video/mp4" />
+                    </video>
+                    6-view; Apple surface textures are more stably reconstructed across changing views.
+                </div>
+                <br>
+                <div class="text-center">
+                    <video id="dtu3" width="75%" playsinline autoplay loop muted>
+                        <source src="video/dtu_9view_freenerf-ours_video.mp4" type="video/mp4" />
+                    </video>
+                    9-view; Brick textures are also more consistently reproduced.
+                </div>
             </div>
         </div>
 
@@ -365,11 +305,12 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
                 </h3>
                 <div class="form-group col-md-10 col-md-offset-1">
                     <textarea id="bibtex" class="form-control" readonly>
-                        @article{seo2023flipnerf,
-                        title={FlipNeRF: Flipped Reflection Rays for Few-shot Novel View Synthesis},
-                        author={Seo, Seunghyeon and Chang, Yeonjin and Kwak, Nojun},
-                        journal={arXiv preprint arXiv:2306.17723},
-                        year={2023}}
+@article{seo2024hourglassnerf,
+  title={HourglassNeRF: Casting an Hourglass as a Bundle of Rays for Few-shot Neural Rendering},
+  author={Seo, Seunghyeon and Chang, Yeonjin and Yoo, Jayeon and Lee, Seungwoo and Lee, Hojun and Kwak, Nojun},
+  journal={arXiv preprint arXiv:2403.10906},
+  year={2024}
+}
                     </textarea>
                 </div>
             </div>
