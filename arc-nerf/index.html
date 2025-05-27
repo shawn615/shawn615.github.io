@@ -197,11 +197,13 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
                 <h3>
-                    Uncertainty-aware Regularization
+                    Luminance Consistency Regularization
                 </h3>
                 <div class="text-justify">
-                    The naive application of existing regularization techniques with limited training views might not be consistently helpful across the different scenes due to the scene-by-scene different structure, resulting in overall performance degradation.
-                    To address this problem, we propose Uncertainty-aware Emptiness Loss (UE Loss) developed upon the Emptiness Loss, which reduces the floating artifacts consistently over the different scenes by considering the output uncertainty:
+                    We propose the luminance map as an effective additional training resource for few-shot scenarios with limited data, providing 'free lunch' information easily derived from RGB images, and introduce \textit{luminance consistency regularization}.
+                    For simplicity, we use a relative luminance value, which is normalized as \( [0, 1] \), and derive the GT relative luminance \( y_\text{GT} \) of a target pixel as follows:
+                    $$y_\text{GT} = \sum_{\bar{c}}^{\{\bar{r}, \bar{g}, \bar{b}\}} \lambda_{\bar{c}} \bar{c},$$
+                    where \( \bar{c} = c_\text{GT}^{2.2} \) indicates a linear rgb component converted from the gamma-compressed one by applying a simple power curve.
                 </div>
                 <br>
                 <div class="text-center">
