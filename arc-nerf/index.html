@@ -35,15 +35,19 @@
     <script src="js/clipboard.min.js"></script>
     <script src="js/video_comparison.js"></script>
     <script src="js/app.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
 </head>
 
 <body>
     <div class="container" id="header" style="text-align: center; margin: auto;">
         <div class="row" id="title-row" style="max-width: 100%; margin: 0 auto; display: inline-block">
             <h2 class="col-md-12 text-center" id="title">
-                <b>ARC-NeRF</b>: Area Ray Casting for Broader Unseen View Coverage in Few-shot Object Rendering<br>
+                <b>ARC-NeRF</b>: Area Ray Casting for Broader Unseen View Coverage<br>in Few-shot Object Rendering<br>
                 <small>
-                    CVPRW 2025: 4th edition of Computer Vision for Metaverse Workshop <font color="red"><strong>(Oral)</strong></font>
+                    CVPRW 2025: 4th edition of Computer Vision for Metaverse Workshop <font color="red">(Oral)</font>
                 </small>
             </h2>
         </div>
@@ -157,18 +161,18 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
                 <h3>
-                    Flipped Reflection Ray
+                    Area Ray Casting
                 </h3>
                 <div class="text-justify">
-                    We exploit a batch of flipped reflection rays r′ ∈ R′ as extra training resources, which are derived from the original input ray directions d and estimated surface normals ˆn.
+                    Compared to the existing ray augmentation schemes where a resulting augmented ray corresponds to an unseen view, our proposed Area Ray covers the area of continuous unseen views by Integrated Positional Encoding (IPE), providng more efficient extra training resources.
                 </div>
                 <br>
                 <div class="text-center">
-                    <img src="./img/frray_generation.png" width="75%">
+                    <img src="./img/arearay_generation.png" width="75%">
                 </div>
                 <br>
                 <div class="text-justify">
-                    First, we derive a flipped reflection direction d′ from d and ˆn:
+                    First, we reparameterize the metric distance $t \in [t_{near}, t_{far}]$ as $\tilde{t}$ to derive the variance $\tilde{\sigma}^{2}_{\rho}$, which is perpendicular to the Area Ray (a).
                 </div>
                 <br>
                 <div class="text-center">
