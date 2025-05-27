@@ -173,44 +173,24 @@ Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabi
                 <br>
                 <div class="text-justify">
                     First, we reparameterize the metric distance \( t \in [t_{near}, t_{far}] \) as \( \tilde{t} \) to derive the variance \( \tilde{\sigma}^{2}_{\rho} \), which is perpendicular to the Area Ray (a).
-                </div>
-                <br>
-                <div class="text-center">
-                    <img src="./img/frray_1.png" width="50%">
-                </div>
-                <br>
-                <div class="text-justify">
-                    To generate the additional training rays based on d′, we need a set of imaginary ray origins o′ located in a suitable space considering the hitting point and the original input ray origins o.
-                    Since the vanilla NeRF models, which are trained with a dense set of images, tend to have the blending weight distribution whose peak is located on the point around the object surface ps = o + tsd, i.e., the s-th sample whose blending weight is the highest along a ray.
-                    Therefore, we place o′ so that the s-th sample of r′ is ps:
-                </div>
-                <br>
-                <div class="text-center">
-                    <img src="./img/frray_2.png" width="50%">
+                    Next, as shown in (b), we derive a base radius of the Area Ray \( \tilde{\rho} \) from the angle \( \tilde{\theta} \) between \( r \) and \( \hat{n} \) using the trigonometric function as follows:
+                    $$\tilde{\rho} = \tilde{\delta}\tan\tilde{\theta},$$
+                    where \( \tilde{\delta} = 1 - \tilde{t}_{s} \) so that \( \tilde{\rho} \) is obtained from the sample located on \( \tilde{t} = 1 \).
+                    However, directly employing the obtained \( \tilde{\rho} \) in IPE results in significantly large \( \tilde{\sigma}^2_\rho \), leading to over-regularization of high-frequency components for the samples along an Area Ray.
+                    Thus, we adjust the scale of \( \tilde{\rho} \) to \( [0, 1] \) to contract \( \tilde{\rho} \) with the large \( \tilde{\theta} \) value into a proper range, while leaving the one with small \( \tilde{\theta} \) affected little as follows:
+                    $$\tilde{\rho} = \exp{(-1 / (\tilde{\delta}\tan{\tilde{\theta}}))}.$$
                 </div>
                 <br>
                 <div class="text-justify">
-                    resulting in our proposed flipped reflection ray, r′(t) = o′ + td′.
+                    And then, \( \tilde{\sigma}^2_\rho \) is derived from \( \tilde{t} \) and \( \tilde{\rho} \) to featurize the conical frustums of Area Ray as multivariate Gaussian by simply replacing the original metric distance \( t \), which is used in mip-NeRF, with \( \tilde{t} \) as follows:
+                    $$\tilde{\sigma}^2_\rho = \tilde{\rho}^2\left( \frac{\tilde{t}^2_\mu}{4} + \frac{5\tilde{t}^2_\delta}{12} - \frac{4\tilde{t}^4_\delta}{15(3\tilde{t}^2_\mu + \tilde{t}^2_\delta)} \right),$$
+                    where \( \tilde{t}_\delta \) and \( \tilde{t}_\mu \) denote a half-width and mid-point of adjacent \( \tilde{t} \) values.
+                    Note that we use the same \( \mu_t \) and \( \sigma^2_t \) for the mean and variance along the Area Ray as mip-NeRF.
                 </div>
                 <br>
                 <div class="text-justify">
-                    However, since ˆn, which are used to derive d′, are not the ground truth but the estimation, there exists a concern that even miscreated r′, which do not satisfy photo-consistency, can be used for training.
-                    To address this problem, we mask the ineffective r′ by considering the angle θ between ˆn and −ˆd as follows:
+                    Finally, we generate an Area Ray \( \mathbf{\tilde{r}}(t) = \mathbf{\tilde{o}} + t\mathbf{\tilde{d}} \), where \( \mathbf{\tilde{d}} = -\mathbf{\hat{n}} \) and \( \mathbf{\tilde{o}} = \mathbf{p}_s - t_s\mathbf{\tilde{d}} \), so that the Area Ray is cast from the newly set camera origin \( \mathbf{\tilde{o}} \), which has the same distance from \( \mathbf{p}_s \) as the original ray, covering the unseen view area between the original ray and the corresponding reflection ray around the axis of \( \mathbf{\hat{n}} \).
                 </div>
-                <br>
-                <div class="text-center">
-                    <img src="./img/frray_3.png" width="50%">
-                </div>
-                <br>
-                <div class="text-justify">
-                    where −(ˆd · ˆn) amounts to cos θ of original input rays and normal vectors, and τ indicates the threshold for filtering the invalid rays, which we set as 90◦ unless specified.
-                    Through this masking process, only r′ which are cast toward the photo-consistent point can be remained as we intend.
-                </div>
-<!--                <div class="text-center">-->
-<!--                    <video id="refdir" width="40%" playsinline autoplay loop muted>-->
-<!--                        <source src="video/reflection_animation.mp4" type="video/mp4" />-->
-<!--                    </video>-->
-<!--                </div>-->
             </div>
         </div>
 
