@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html><head lang="en"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>ARC-NeRF</title>
+
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta property="og:image" content="https://shawn615.github.io/arcnerf/img/arcnerf_titlecard.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1783">
+    <meta property="og:image:height" content="1619">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://shawn615.github.io/arcnerf">
+    <meta property="og:title" content="ARC-NeRF: Area Ray Casting for Broader Unseen View Coverage in Few-shot Object Rendering">
+    <meta property="og:description" content="Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabilities for novel view synthesis, yet its reliance on dense multi-view training images poses a practical challenge, often leading to artifacts and a lack of fine object details. Addressing this, we propose ARC-NeRF, an effective regularization-based approach with a novel Area Ray Casting strategy. While the previous ray augmentation methods are limited to covering only a single unseen view per extra ray, our proposed Area Ray covers a broader range of unseen views with just a single ray and enables an adaptive high-frequency regularization based on target pixel photo-consistency. Moreover, we propose luminance consistency regularization, which enhances the consistency of relative luminance between the original and Area Ray, leading to more accurate object textures. The relative luminance, as a free lunch extra data easily derived from RGB images, can be effectively utilized in few-shot scenarios where available training data is limited. Our ARC-NeRF outperforms its baseline and achieves competitive results on multiple benchmarks with sharply rendered fine details.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ARC-NeRF: Area Ray Casting for Broader Unseen View Coverage in Few-shot Object Rendering">
+    <meta name="twitter:description" content="Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabilities for novel view synthesis, yet its reliance on dense multi-view training images poses a practical challenge, often leading to artifacts and a lack of fine object details. Addressing this, we propose ARC-NeRF, an effective regularization-based approach with a novel Area Ray Casting strategy. While the previous ray augmentation methods are limited to covering only a single unseen view per extra ray, our proposed Area Ray covers a broader range of unseen views with just a single ray and enables an adaptive high-frequency regularization based on target pixel photo-consistency. Moreover, we propose luminance consistency regularization, which enhances the consistency of relative luminance between the original and Area Ray, leading to more accurate object textures. The relative luminance, as a free lunch extra data easily derived from RGB images, can be effectively utilized in few-shot scenarios where available training data is limited. Our ARC-NeRF outperforms its baseline and achieves competitive results on multiple benchmarks with sharply rendered fine details.">
+    <meta name="twitter:image" content="https://shawn615.github.io/arcnerf/img/arcnerf_titlecard.png">
+
+
+    <!-- mirror: F0%9F%AA%9E&lt -->
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🪞&lt;/text&gt;&lt;/svg&gt;">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/codemirror.min.css">
+    <link rel="stylesheet" href="css/app.css">
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/codemirror.min.js"></script>
+    <script src="js/clipboard.min.js"></script>
+    <script src="js/video_comparison.js"></script>
+    <script src="js/app.js"></script>
+</head>
+
+<body>
+    <div class="container" id="header" style="text-align: center; margin: auto;">
+        <div class="row" id="title-row" style="max-width: 100%; margin: 0 auto; display: inline-block">
+            <h2 class="col-md-12 text-center" id="title">
+                <b>ARC-NeRF</b>: Area Ray Casting for Broader Unseen View Coverage in Few-shot Object Rendering<br>
+                <small>
+                    CVPRW 2025: 4th edition of Computer Vision for Metaverse Workshop <font color="red"><strong>(Oral)</strong></font>
+                </small>
+            </h2>
+        </div>
+        <div class="row" id="author-row" style="margin:0 auto;">
+            <div class="col-md-12 text-center" style="display: table; margin:0 auto">
+                <table class="author-table" id="author-table">
+                    <tr>
+                        <td>
+                            <a style="text-decoration:none" href="https://shawn615.github.io/">
+                              Seunghyeon Seo<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none" href="https://yeonjin-chang.github.io/">
+                              Yeonjin Chang<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none" href="https://natureyoo.github.io/">
+                              Jayeon Yoo<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none" href="https://lifrary.github.io/">
+                              Seungwoo Lee<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none" href="https://hojunlee.info/">
+                              Hojun Lee<sup>1,2</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none" href="https://mipal.snu.ac.kr/members#h.qz2cc7ep0m80">
+                              Nojun Kwak<sup>1</sup>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+                <div style="margin-top: 8px; font-size: 14px;">
+                    <sup>1</sup>Seoul National University &nbsp;&nbsp;
+                    <sup>2</sup>Xperty Corp.
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('author-row').style.maxWidth = document.getElementById("title-row").clientWidth + 'px';
+    </script>
+    <div class="container" id="main">
+        <div class="row">
+                <div class="col-sm-6 col-sm-offset-3 text-center">
+                    <ul class="nav nav-pills nav-justified">
+                        <li>
+                            <a href="https://arxiv.org/abs/2403.10906">
+                            <img src="./img/paper_image.png" height="60px">
+                                <h4><strong>Paper</strong></h4>
+                            </a>
+                        </li>
+<!--                        <li>-->
+<!--                            <a href="https://youtu.be/qrdRH9irAlk">-->
+<!--                            <img src="./img/youtube_icon.png" height="60px">-->
+<!--                                <h4><strong>Video</strong></h4>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li>-->
+<!--                            <a href="https://storage.googleapis.com/gresearch/refraw360/ref.zip" target="_blank">-->
+<!--                            <image src="img/database_icon.png" height="60px">-->
+<!--                                <h4><strong>Shiny Dataset</strong></h4>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li>-->
+<!--                            <a href="https://storage.googleapis.com/gresearch/refraw360/ref_real.zip" target="_blank">-->
+<!--                            <image src="img/real_database_icon.png" height="60px">-->
+<!--                                <h4><strong>Real Dataset</strong></h4>-->
+<!--                            </a>-->
+<!--                        </li>                            -->
+                        <!-- <li>
+                            <a href="https://shawn615.github.io/flipnerf" target="_blank">
+                            <image src="img/github.png" height="60px">
+                                <h4><strong>Code [Coming soon]</strong></h4>
+                            </a>
+                        </li> -->
+                    </ul>
+                </div>
+        </div>
+
+
+
+<!--        <div class="row">-->
+<!--            <div class="col-md-8 col-md-offset-2">-->
+<!--                <div class="video-compare-container" id="materialsDiv">-->
+<!--                    <video class="video" id="materials" loop playsinline autoPlay muted src="video/materials_circle_mipnerf_ours.mp4" onplay="resizeAndPlay(this)"></video>-->
+<!--                    -->
+<!--                    <canvas height=0 class="videoMerge" id="materialsMerge"></canvas>-->
+<!--                </div>-->
+<!--			</div>-->
+<!--        </div>-->
+
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Abstract
+                </h3>
+                <image src="img/teaser.png" class="img-responsive" alt="overview"><br>
+                <p class="text-justify">
+Recent advancements in the Neural Radiance Field (NeRF) have enhanced its capabilities for novel view synthesis, yet its reliance on dense multi-view training images poses a practical challenge, often leading to artifacts and a lack of fine object details. Addressing this, we propose ARC-NeRF, an effective regularization-based approach with a novel Area Ray Casting strategy. While the previous ray augmentation methods are limited to covering only a single unseen view per extra ray, our proposed Area Ray covers a broader range of unseen views with just a single ray and enables an adaptive high-frequency regularization based on target pixel photo-consistency. Moreover, we propose luminance consistency regularization, which enhances the consistency of relative luminance between the original and Area Ray, leading to more accurate object textures. The relative luminance, as a free lunch extra data easily derived from RGB images, can be effectively utilized in few-shot scenarios where available training data is limited. Our ARC-NeRF outperforms its baseline and achieves competitive results on multiple benchmarks with sharply rendered fine details.            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Flipped Reflection Ray
+                </h3>
+                <div class="text-justify">
+                    We exploit a batch of flipped reflection rays r′ ∈ R′ as extra training resources, which are derived from the original input ray directions d and estimated surface normals ˆn.
+                </div>
+                <br>
+                <div class="text-center">
+                    <img src="./img/frray_generation.png" width="75%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    First, we derive a flipped reflection direction d′ from d and ˆn:
+                </div>
+                <br>
+                <div class="text-center">
+                    <img src="./img/frray_1.png" width="50%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    To generate the additional training rays based on d′, we need a set of imaginary ray origins o′ located in a suitable space considering the hitting point and the original input ray origins o.
+                    Since the vanilla NeRF models, which are trained with a dense set of images, tend to have the blending weight distribution whose peak is located on the point around the object surface ps = o + tsd, i.e., the s-th sample whose blending weight is the highest along a ray.
+                    Therefore, we place o′ so that the s-th sample of r′ is ps:
+                </div>
+                <br>
+                <div class="text-center">
+                    <img src="./img/frray_2.png" width="50%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    resulting in our proposed flipped reflection ray, r′(t) = o′ + td′.
+                </div>
+                <br>
+                <div class="text-justify">
+                    However, since ˆn, which are used to derive d′, are not the ground truth but the estimation, there exists a concern that even miscreated r′, which do not satisfy photo-consistency, can be used for training.
+                    To address this problem, we mask the ineffective r′ by considering the angle θ between ˆn and −ˆd as follows:
+                </div>
+                <br>
+                <div class="text-center">
+                    <img src="./img/frray_3.png" width="50%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    where −(ˆd · ˆn) amounts to cos θ of original input rays and normal vectors, and τ indicates the threshold for filtering the invalid rays, which we set as 90◦ unless specified.
+                    Through this masking process, only r′ which are cast toward the photo-consistent point can be remained as we intend.
+                </div>
+<!--                <div class="text-center">-->
+<!--                    <video id="refdir" width="40%" playsinline autoplay loop muted>-->
+<!--                        <source src="video/reflection_animation.mp4" type="video/mp4" />-->
+<!--                    </video>-->
+<!--                </div>-->
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Uncertainty-aware Regularization
+                </h3>
+                <div class="text-justify">
+                    The naive application of existing regularization techniques with limited training views might not be consistently helpful across the different scenes due to the scene-by-scene different structure, resulting in overall performance degradation.
+                    To address this problem, we propose Uncertainty-aware Emptiness Loss (UE Loss) developed upon the Emptiness Loss, which reduces the floating artifacts consistently over the different scenes by considering the output uncertainty:
+                </div>
+                <br>
+                <div class="text-center">
+                    <img src="./img/ueloss_1.png" width="50%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    ρ amounts to the average of the summation of estimated scale parameters of RGB color distributions from all samples along a ray, which we use as the uncertainty of a ray.
+                    By our proposed UE Loss, we are able to regularize the blending weights adaptively, i.e., the more uncertain a ray is, the more penalized the blending weights along the ray are.
+                    It is able to reduce floating artifacts consistently across the scenes with different structures and enables to synthesize more reliable outputs by considering uncertainty.
+                </div>
+                <br>
+                <h2>
+                    MixNeRF
+                </h2>
+                <table width="100%">
+                    <tr>
+                        <td align="left" valign="top" width="25%">
+                            <video id="ue_mix1" width="100%" playsinline autoplay loop muted>
+                                <source src="video/mixnerf_scan34_3view_rgb.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="ue_mix2" width="100%" playsinline autoplay loop muted>
+                                <source src="video/mixnerf_scan34_3view_rgbstd.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="ue_mix3" width="100%" playsinline autoplay loop muted>
+                                <source src="video/mixnerf_scan34_3view_depth.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="ue_mix4" width="100%" playsinline autoplay loop muted>
+                                <source src="video/mixnerf_scan34_3view_depthstd.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                    </tr>
+                </table>
+                <h2>
+                    FlipNeRF
+                </h2>
+                <table width="100%">
+                    <tr>
+                        <td align="left" valign="top" width="25%">
+                            <video id="ue_flip1" width="100%" playsinline autoplay loop muted>
+                                <source src="video/flipnerf_scan34_3view_rgb.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="ue_flip2" width="100%" playsinline autoplay loop muted>
+                                <source src="video/flipnerf_scan34_3view_rgbstd.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="ue_flip3" width="100%" playsinline autoplay loop muted>
+                                <source src="video/flipnerf_scan34_3view_depth.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="ue_flip4" width="100%" playsinline autoplay loop muted>
+                                <source src="video/flipnerf_scan34_3view_depthstd.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                    </tr>
+                </table>
+                <div class="text-justify">
+                    With our proposed UE Loss, ours improves both of the rendering quality and the reliability of the model outputs by a large margin compared to MixNeRF.
+                    (From the left to the right: RGB, RGB_Std, Depth, Depth_Std)
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Bottleneck Feature Consistency
+                </h3>
+                <div class="text-justify">
+                    We encourage the consistency of bottleneck feature distributions between r and r′, which are intermediate feature vectors, i.e., outputs of the spatial MLP of NeRF, by Jensen-Shannon Divergence (JSD):
+                </div>
+                <br>
+                <div class="text-center">
+                    <img src="./img/bfcloss_1.png" width="50%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    where ψ(·), b and b′ denote the softmax function, the bottleneck features of r and r′, respectively.
+                    We regulate the pair of features effectively by enhancing consistency between bottleneck features without depending on additional feature extractors.
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Comparison with Baselines
+                </h3>
+                <div class="text-justify">
+                    Our FlipNeRF estimates more accurate surface normals than other baselines, leading to the performance gain with better reconstructed fine details from limited input views.
+                    (From the left to the right: mip-NeRF, Ref-NeRF, MixNeRF, FlipNeRF (Ours))
+                </div>
+                <table width="100%">
+                    <tr>
+                        <td align="left" valign="top" width="25%">
+                            <video id="rgb1" width="100%" playsinline autoplay loop muted>
+                                <source src="video/mipnerf_hotdog_4view_rgb.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="rgb2" width="100%" playsinline autoplay loop muted>
+                                <source src="video/refnerf_hotdog_4view_rgb.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="rgb3" width="100%" playsinline autoplay loop muted>
+                                <source src="video/mixnerf_hotdog_4view_rgb.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="rgb4" width="100%" playsinline autoplay loop muted>
+                                <source src="video/flipnerf_hotdog_4view_rgb.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                    </tr>
+                </table>
+                <br>
+                <table width="100%">
+                    <tr>
+                        <td align="left" valign="top" width="25%">
+                            <video id="normals1" width="100%" playsinline autoplay loop muted>
+                                <source src="video/mipnerf_hotdog_4view_normals.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="normals2" width="100%" playsinline autoplay loop muted>
+                                <source src="video/refnerf_hotdog_4view_normals.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="normals3" width="100%" playsinline autoplay loop muted>
+                                <source src="video/mixnerf_hotdog_4view_normals.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                        <td align="left" valign="top" width="25%">
+                            <video id="normals4" width="100%" playsinline autoplay loop muted>
+                                <source src="video/flipnerf_hotdog_4view_normals.mp4" type="video/mp4" />
+                            </video>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Citation
+                </h3>
+                <div class="form-group col-md-10 col-md-offset-1">
+                    <textarea id="bibtex" class="form-control" readonly>
+                        @article{seo2023flipnerf,
+                        title={FlipNeRF: Flipped Reflection Rays for Few-shot Novel View Synthesis},
+                        author={Seo, Seunghyeon and Chang, Yeonjin and Kwak, Nojun},
+                        journal={arXiv preprint arXiv:2306.17723},
+                        year={2023}}
+                    </textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Acknowledgements
+                </h3>
+                <p class="text-justify">
+                This work was supported by NRF grant (2021R1A2C3006659) and IITP grant (RS-2021-II211343), both funded by MSIT of the Korean Government. The work was also supported by Samsung Electronics (IO201223-08260-01).
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+</body></html>
