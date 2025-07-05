@@ -212,7 +212,7 @@
 	<!--     <a href="https://arxiv.org/abs/2503.10256">arXiv</a> -->
 	<p></p>
 	<p>
-	We propose GenHMC, a generative diffusion framework that synthesizes realistic HMC images from avatar expressions, enabling scalable training of facial encoders without requiring paired HMC-dome captures.
+	We present GenHMC, a generative diffusion framework that synthesizes photorealistic head-mounted camera (HMC) images from avatar renderings. By enabling high-quality unpaired training data generation, GenHMC facilitates scalable training of facial encoders for Codec Avatars and generalizes well across diverse identities and expressions.
 	</p>
   </td>
 </tr>
@@ -389,7 +389,7 @@
     <a href="https://arxiv.org/abs/2404.01745">arXiv</a>
     <p></p>
     <p>
-      We leverage the pre-trained multimodal model CLIP to achieve state-of-the-art performance in video highlight detection by fine-tuning the encoder and integrating a novel saliency pooling technique.
+      We introduce HL-CLIP, a CLIP-based video highlight detection framework that leverages the strong semantic alignment of pre-trained vision-language models. By fine-tuning the visual encoder and applying a saliency-based temporal pooling technique, our method achieves state-of-the-art performance with minimal domain-specific supervision.
     </p>
   </td>
 </tr>
@@ -436,7 +436,7 @@
     <a href="https://arxiv.org/abs/2311.03965">arXiv</a>
     <p></p>
     <p>
-      We simplify outdoor scene relighting for NeRF by aligning with the sun, eliminating the need for environment maps and speeding up the process using a novel cubemap concept within the framework of TensoRF.
+      We present SR-TensoRF, a sun-aligned relighting approach for NeRF-style outdoor scenes that does not rely on environment maps. By aligning lighting with solar movement and using a cubemap-based TensoRF backbone, our method enables realistic and fast relighting for dynamic outdoor scenes with consistent directional light simulation.
     </p>
   </td>
 </tr>
@@ -478,7 +478,7 @@
      <a href="https://arxiv.org/abs/2308.11199">arXiv</a>
      <p></p>
      <p>
-       We expedite ViT inference by concatenating abstract visual tokens from multiple images along dim=1 and processing them collectively.
+       We propose ConcatPlexer, a simple yet effective batching strategy that accelerates Vision Transformer (ViT) inference by concatenating visual tokens along an additional dimension. This approach preserves model accuracy while improving inference throughput, requiring no architectural changes and offering easy integration into existing ViT pipelines.
      </p>
    </td>
  </tr>
@@ -563,7 +563,7 @@
      <a href="https://arxiv.org/abs/2302.08751">arXiv</a>
      <p></p>
      <p>
-       We model the high-dimensional joint distribution of human keypoints with a mixture density model by Random Keypoint Grouping strategy and achieve competitive performance working in real-time by eliminating additional instance identification process.
+       We introduce MDPose, a real-time multi-person pose estimation method based on mixture density modeling. By randomly grouping keypoints and modeling their joint distribution without relying on person-specific instance IDs, MDPose achieves high accuracy and real-time performance even in crowded scenes with complex pose variations.
      </p>
    </td>
  </tr>		
@@ -606,7 +606,7 @@
      <a href="https://arxiv.org/abs/2205.08714">arXiv</a>
      <p></p>
      <p>
-       We propose the end-to-end multi-object Detection with a Regularized Mixture Model (D-RMM), which is trained by minimizing the NLL with the proposed regularization term, maximum component maximization (MCM) loss, preventing duplicate predictions.
+       We present D-RMM, an end-to-end multi-object detection framework that models object locations using a regularized mixture density model. The training objective includes a novel Maximum Component Maximization (MCM) loss that prevents duplicate detections, resulting in improved accuracy and stability in both dense and sparse detection scenarios.
      </p>
    </td>
  </tr>
@@ -652,7 +652,7 @@
     <a href="https://arxiv.org/abs/2302.08788">arXiv</a>
     <p></p>
     <p>
-      We model a ray with mixture density model, leading to efficient learning of density distribution with sparse inputs, and propose an effective auxiliary task of ray depth estimation for few-shot novel view synthesis.
+      We propose MixNeRF, which models each camera ray as a mixture of Laplacian densities to better capture multi-modal RGB distribution in sparsely sampled scenes. Our framework includes a depth prediction auxiliary task and mixture regularization loss, allowing for more accurate novel view synthesis in few-shot NeRF settings.
     </p>
   </td>
 </tr>
@@ -696,7 +696,7 @@
      <a href="https://arxiv.org/abs/2111.10958">arXiv</a>
      <p></p>
      <p>
-       We introduce a simple yet effective data augmentation method, Mix/UnMix (MUM), which unmixes feature tiles for the mixed image tiles for the SSOD framework.
+       We introduce MUM, a semi-supervised object detection framework that applies strong spatial data augmentation by mixing image tiles and unmixing their corresponding features. This strategy allows the model to benefit from mixed inputs without corrupting label supervision, leading to improved performance in low-label regimes on COCO and VOC benchmarks.
      </p>
    </td>
  </tr>
