@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html><head lang="en"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+
+    <title>ARC-NeRF</title>
+
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta property="og:image" content="https://shawn615.github.io/genhmc/img/genhmc_titlecard.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1783">
+    <meta property="og:image:height" content="1619">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://shawn615.github.io/genhmc">
+    <meta property="og:title" content="Generative Head-Mounted Camera Captures for Photorealistic Avatars">
+    <meta property="og:description" content="Enabling photorealistic avatar animations in virtual and augmented reality (VR/AR) has been challenging because of the difficulty of obtaining ground truth state of faces. It is physically impossible to obtain synchronized images from head-mounted cameras (HMC) sensing input, which has partial observations in infrared (IR), and an array of outside-in dome cameras, which have full observations that match avatars' appearance. Prior works relying on analysis-by-synthesis methods could generate accurate ground truth, but suffer from imperfect disentanglement between expression and style in their personalized training. The reliance of extensive paired captures (HMC and dome) for the same subject makes it operationally expensive to collect large-scale datasets, which cannot be reused for different HMC viewpoints and lighting. In this work, we propose a novel generative approach, Generative HMC (GenHMC), that leverages large unpaired HMC captures, which are much easier to collect, to directly generate high-quality synthetic HMC images given any conditioning avatar state from dome captures. We show that our method is able to properly disentangle the input conditioning signal that specifies facial expression and viewpoint, from facial appearance, leading to more accurate ground truth. Furthermore, our method can generalize to unseen identities, removing the reliance on the paired captures. We demonstrate these breakthroughs by both evaluating synthetic HMC images and universal face encoders trained from these new HMC-avatar correspondences, which achieve better data efficiency and state-of-the-art accuracy.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Generative Head-Mounted Camera Captures for Photorealistic Avatars">
+    <meta name="twitter:description" content="Enabling photorealistic avatar animations in virtual and augmented reality (VR/AR) has been challenging because of the difficulty of obtaining ground truth state of faces. It is physically impossible to obtain synchronized images from head-mounted cameras (HMC) sensing input, which has partial observations in infrared (IR), and an array of outside-in dome cameras, which have full observations that match avatars' appearance. Prior works relying on analysis-by-synthesis methods could generate accurate ground truth, but suffer from imperfect disentanglement between expression and style in their personalized training. The reliance of extensive paired captures (HMC and dome) for the same subject makes it operationally expensive to collect large-scale datasets, which cannot be reused for different HMC viewpoints and lighting. In this work, we propose a novel generative approach, Generative HMC (GenHMC), that leverages large unpaired HMC captures, which are much easier to collect, to directly generate high-quality synthetic HMC images given any conditioning avatar state from dome captures. We show that our method is able to properly disentangle the input conditioning signal that specifies facial expression and viewpoint, from facial appearance, leading to more accurate ground truth. Furthermore, our method can generalize to unseen identities, removing the reliance on the paired captures. We demonstrate these breakthroughs by both evaluating synthetic HMC images and universal face encoders trained from these new HMC-avatar correspondences, which achieve better data efficiency and state-of-the-art accuracy.">
+    <meta name="twitter:image" content="https://shawn615.github.io/genhmc/img/genhmc_titlecard.png">
+
+
+    <!-- mirror: F0%9F%AA%9E&lt -->
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🥽&lt;/text&gt;&lt;/svg&gt;">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/codemirror.min.css">
+    <link rel="stylesheet" href="css/app.css">
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/codemirror.min.js"></script>
+    <script src="js/clipboard.min.js"></script>
+    <script src="js/video_comparison.js"></script>
+    <script src="js/app.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+
+<a href="https://shaojieb.github.io/">Shaojie Bai*</a>,
+	<strong>Seunghyeon Seo*</strong>,
+	<a href="https://www.linkedin.com/in/yidaw/">Yida Wang</a>,
+	<a href="https://scholar.google.com/citations?user=9I6TYB8AAAAJ&hl=en">Chenghui Li</a>,
+	<a href="https://www.linkedin.com/in/ojwang/">Owen Wang</a>,
+	<a href="https://www.linkedin.com/in/teliwang/">Te-Li Wang</a>,
+	<a href="https://scholar.google.com/citations?user=dEhdKCAAAAAJ&hl=en">Tianyang Ma</a>,
+	<a href="https://scholar.google.com/citations?user=ss-IvjMAAAAJ&hl=en">Jason Saragih</a>,
+	<a href="https://scholar.google.com/citations?hl=en&user=sFQD3k4AAAAJ">Shih-En Wei</a>,
+	<a href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">Nojun Kwak</a>,
+	<a href="https://www.linkedin.com/in/john-k-4301067a/">Hyung Jun Kim</a>
+
+<body>
+    <div class="container" id="header" style="text-align: center; margin: auto;">
+        <div class="row" id="title-row" style="max-width: 100%; margin: 0 auto; display: inline-block">
+            <h2 class="col-md-12 text-center" id="title">
+                Generative Head-Mounted Camera Captures for Photorealistic Avatars<br>
+                <!-- <small>
+                    Under Review
+                </small> -->
+            </h2>
+        </div>
+        <div class="row" id="author-row" style="margin:0 auto;">
+            <div class="col-md-12 text-center" style="display: table; margin:0 auto">
+                <table class="author-table" id="author-table">
+                    <tr>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://shaojieb.github.io/">
+                              Shaojie Bai<sup>1*</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://shawn615.github.io/">
+                              Seunghyeon Seo<sup>1,2*</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://www.linkedin.com/in/yidaw/">
+                              Yida Wang<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://scholar.google.com/citations?user=9I6TYB8AAAAJ&hl=en">
+                              Chenghui Li<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://www.linkedin.com/in/ojwang/">
+                              Owen Wang<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://www.linkedin.com/in/teliwang/">
+                              Te-Li Wang<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://scholar.google.com/citations?user=dEhdKCAAAAAJ&hl=en">
+                              Tianyang Ma<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://scholar.google.com/citations?user=ss-IvjMAAAAJ&hl=en">
+                              Jason Saragih<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://scholar.google.com/citations?hl=en&user=sFQD3k4AAAAJ">
+                              Shih-En Wei<sup>1</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://scholar.google.com/citations?user=h_8-1M0AAAAJ&hl=en">
+                              Nojun Kwak<sup>2</sup>
+                            </a>
+                        </td>
+                        <td>
+                            <a style="text-decoration:none; font-size: 18px;" href="https://www.linkedin.com/in/john-k-4301067a/">
+                              Hyung Jun Kim<sup>1</sup>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+                <div style="margin-top: 8px; font-size: 18px;">
+                    <sup>1</sup>Meta Reality Labs &nbsp;&nbsp;
+                    <sup>2</sup>Seoul National University
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('author-row').style.maxWidth = document.getElementById("title-row").clientWidth + 'px';
+    </script>
+    <div class="container" id="main">
+        <div class="row">
+                <div class="col-sm-6 col-sm-offset-3 text-center">
+                    <ul class="nav nav-pills nav-justified">
+                        <li>
+                            <!-- <a href="https://arxiv.org/abs/2403.10906"> -->
+                            <img src="./img/paper_image.png" height="60px">
+                                <h4><strong>Paper</strong></h4>
+                            <!-- </a> -->
+                        </li>
+<!--                        <li>-->
+<!--                            <a href="https://youtu.be/qrdRH9irAlk">-->
+<!--                            <img src="./img/youtube_icon.png" height="60px">-->
+<!--                                <h4><strong>Video</strong></h4>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li>-->
+<!--                            <a href="https://storage.googleapis.com/gresearch/refraw360/ref.zip" target="_blank">-->
+<!--                            <image src="img/database_icon.png" height="60px">-->
+<!--                                <h4><strong>Shiny Dataset</strong></h4>-->
+<!--                            </a>-->
+<!--                        </li>-->
+<!--                        <li>-->
+<!--                            <a href="https://storage.googleapis.com/gresearch/refraw360/ref_real.zip" target="_blank">-->
+<!--                            <image src="img/real_database_icon.png" height="60px">-->
+<!--                                <h4><strong>Real Dataset</strong></h4>-->
+<!--                            </a>-->
+<!--                        </li>                            -->
+                        <!-- <li>
+                            <a href="https://shawn615.github.io/flipnerf" target="_blank">
+                            <image src="img/github.png" height="60px">
+                                <h4><strong>Code [Coming soon]</strong></h4>
+                            </a>
+                        </li> -->
+                    </ul>
+                </div>
+        </div>
+
+
+
+<!--        <div class="row">-->
+<!--            <div class="col-md-8 col-md-offset-2">-->
+<!--                <div class="video-compare-container" id="materialsDiv">-->
+<!--                    <video class="video" id="materials" loop playsinline autoPlay muted src="video/materials_circle_mipnerf_ours.mp4" onplay="resizeAndPlay(this)"></video>-->
+<!--                    -->
+<!--                    <canvas height=0 class="videoMerge" id="materialsMerge"></canvas>-->
+<!--                </div>-->
+<!--			</div>-->
+<!--        </div>-->
+
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h2>
+                    Abstract
+                </h2>
+                <video id="teaser" width="100%" playsinline autoplay loop muted>
+                    <source src="video/teaser.mp4" type="video/m04" />
+                </video><br>
+                <p class="text-justify">
+                    Enabling photorealistic avatar animations in virtual and augmented reality (VR/AR) has been challenging because of the difficulty of obtaining ground truth state of faces. It is physically impossible to obtain synchronized images from head-mounted cameras (HMC) sensing input, which has partial observations in infrared (IR), and an array of outside-in dome cameras, which have full observations that match avatars' appearance. Prior works relying on analysis-by-synthesis methods could generate accurate ground truth, but suffer from imperfect disentanglement between expression and style in their personalized training. The reliance of extensive paired captures (HMC and dome) for the same subject makes it operationally expensive to collect large-scale datasets, which cannot be reused for different HMC viewpoints and lighting. In this work, we propose a novel generative approach, Generative HMC (GenHMC), that leverages large unpaired HMC captures, which are much easier to collect, to directly generate high-quality synthetic HMC images given any conditioning avatar state from dome captures. We show that our method is able to properly disentangle the input conditioning signal that specifies facial expression and viewpoint, from facial appearance, leading to more accurate ground truth. Furthermore, our method can generalize to unseen identities, removing the reliance on the paired captures. We demonstrate these breakthroughs by both evaluating synthetic HMC images and universal face encoders trained from these new HMC-avatar correspondences, which achieve better data efficiency and state-of-the-art accuracy.        </div>
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h2>
+                    GenHMC
+                </h2>
+                <div class="text-center">
+                    <img src="./img/genhmc_overview.png" width="100%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    GenHMC facilitates the straightforward establishment of correspondences between HMC and avatars using dome capture images. Moreover, it enables the generation of synthetic images with diverse natural augmentations for a single expression, enhancing both flexibility and usability.
+                </div>
+                <br>
+                <div class="text-justify">
+                    During training, we load a real, monochrome HMC image \( \mathbf{x} \in \mathrm{R}^{256 \times 256} \), and apply it through a pre-trained face keypoint detection model \( \phi_\text{kpt} \) and a face segmentation model \( \phi_\text{seg} \).
+                    We then overlay the detected results of the two models on the same image, which we then use as the conditional signal for the generative model.
+                </div>
+                <br>
+                <div class="text-justify">
+                    At inference time, no real HMC image is available (after all, we are to generate them). We instead take the avatar renderings from simulated HMCviewpoints, detect/project the keypoint and segmentation maps on them, and use the outcome as conditional \( \mathbf{c} \).
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h2>
+                    Encoder Training
+                </h2>
+                <div class="text-center">
+                    <img src="./img/ue_training.png" width="75%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    We present a novel encoder training system that minimizes the need for real HMC captures.
+                </div>
+                <br>
+                <div class="text-justify">
+                    The training system comprises two major components: GenHMC inference and the encoder training with therefore synchronized dome assets.
+                    For the first time, dome assets, such as ground truth expression codes, or even dome images can be directly utilized to train face encoders for VR headsets.
+                    This approach offers several key benefits: (1) more accurate ground truth supervision from multi-view dome captures, comparing against pseudo correspondences established by [Wei et al. 2019], (2) reduced need for paired HMC and dome captures, and (3) increased diversity in HMC inputs resulted from GenHMC.
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h2>
+                    Experiments
+                </h2>
+                <h3>
+                    Scalability of GenHMC
+                </h3>
+                <div class="text-center">
+                    <img src="./img/genhmc_scalability.png" width="100%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    We observe that reducing the number of training subjects leads to a decrease in the quality and diversity of the generated images
+                    Specifically, the inference results become increasingly degenerate, and the pixel-wise alignment between the generated outcome and the keypoint/segmentation maps degrades.
+                    In the extreme case where we train with only one subject, the model tends to generate images that closely resemble the attributes of that specific subject, indicating a significant loss of diversity.
+                </div>
+                <br>
+                <h3>
+                    Universal Facial Encoders with GenHMC Data
+                </h3>
+                <h4>
+                    Scaling Law of Number of GenHMC Subjects
+                </h4>
+                <div class="text-center">
+                    <video id="genhmc_scalability" width="100%" playsinline autoplay loop muted>
+                        <source src="video/ue_genhmc_scalability.mov" type="video/mov" />
+                    </video>
+                </div>
+                <br>
+                <div class="text-justify">
+                    Increasing the number of GenHMC training subjects generally leads to decreased photometric \( L_1 \) error in the UE training.
+                    While performance improves with more diverse GenHMC training subjects when training solely on synthetic data, combining real and GenHMC images yields robust UE performance even with GenHMC models trained on as few as 60 subjects.
+                </div>
+                <br>
+                <h4>
+                    Scaling Law of Number of Subjects with UE
+                </h4>
+                <div class="text-center">
+                    <img src="./img/ue_scalability.png" width="75%">
+                </div>
+                <br>
+                <div class="text-justify">
+                    Incorporating synthetic data generated by GenHMC consistently improves UE performance, even with a limited number of real training subjects. This highlights the ability of GenHMC to augment limited real datasets, enhancing the performance and robustness of downstream UE training.
+                </div>
+                <br>
+                <h3>
+                    Comparisons with Different Training Configurations
+                </h3>
+                <div class="text-center">
+                    <video id="comparison" width="100%" playsinline autoplay loop muted>
+                        <source src="video/qualitative_comparison.mov" type="video/mov" />
+                    </video>
+                </div>
+                <br>
+                <h3>
+                    Additional Qualitative Results
+                </h3>
+                <div class="text-center">
+                    <video id="qual_1" width="100%" playsinline autoplay loop muted>
+                        <source src="video/qual_1.mov" type="video/mov" />
+                    </video>
+                </div>
+                <br>
+                <div class="text-center">
+                    <video id="qual_2" width="100%" playsinline autoplay loop muted>
+                        <source src="video/qual_2.mov" type="video/mov" />
+                    </video>
+                </div>
+                <br>
+                <div class="text-center">
+                    <video id="qual_3" width="100%" playsinline autoplay loop muted>
+                        <source src="video/qual_3.mov" type="video/mov" />
+                    </video>
+                </div>
+                <br>
+                <div class="text-center">
+                    <video id="qual_4" width="100%" playsinline autoplay loop muted>
+                        <source src="video/qual_4.mov" type="video/mov" />
+                    </video>
+                </div>
+            </div>
+        </div>
+
+        <!-- <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Citation
+                </h3>
+                <div class="form-group col-md-10 col-md-offset-1">
+                    <textarea id="bibtex" class="form-control" readonly>
+@inproceedings{seo2025arc,
+  title={ARC-NeRF: Area Ray Casting for Broader Unseen View Coverage in Few-shot Object Rendering},
+  author={Seo, Seunghyeon and Chang, Yeonjin and Yoo, Jayeon and Lee, Seungwoo and Lee, Hojun and Kwak, Nojun},
+  booktitle={Proceedings of the Computer Vision and Pattern Recognition Conference},
+  pages={273--283},
+  year={2025}
+}
+                    </textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <h3>
+                    Acknowledgements
+                </h3>
+                <p class="text-justify">
+                This work was supported by NRF grant (2021R1A2C3006659) and IITP grant (RS-2021-II211343), both funded by MSIT of the Korean Government. The work was also supported by Samsung Electronics (IO201223-08260-01).
+                </p>
+            </div>
+        </div> -->
+    </div>
+
+
+</body></html>
