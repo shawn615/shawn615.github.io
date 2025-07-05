@@ -254,7 +254,7 @@
     <a href="https://arxiv.org/abs/2503.10256">arXiv</a>
     <p></p>
     <p>
-      We introduce a 3D object extraction method for Gaussian Splatting that prunes irrelevant primitives using K-nearest neighbors analysis and compensates for occlusions with diffusion-based generative inpainting.
+      We propose ROODI, a method for extracting and reconstructing 3D objects in the presence of occlusions using Gaussian Splatting. It first removes irrelevant splats based on a KNN-based pruning strategy, then completes the occluded regions using a diffusion-based generative inpainting model, enabling high-quality geometry recovery even under heavy occlusion.
     </p>
   </td>
 </tr>
@@ -300,7 +300,7 @@
     <a href="https://arxiv.org/abs/2503.12947">arXiv</a>
     <p></p>
     <p>
-      We propose surface-sphere augmentation to preserve camera-to-surface distances for consistent ray filtering and inner-sphere augmentation to randomize viewpoints, improving both diversity and consistency.
+      We propose DivCon-NeRF, a novel ray augmentation method designed for few-shot novel view synthesis. By introducing surface-sphere and inner-sphere augmentation techniques, our method effectively balances ray diversity and geometric consistency, which helps suppress floaters and appearance artifacts often seen in sparse-input settings.
     </p>
   </td>
 </tr>
@@ -348,7 +348,7 @@
     <a href="https://arxiv.org/abs/2403.10906">arXiv</a>
     <p></p>
     <p>
-      We present ARC-NeRF, leveraging Area Ray casting to cover broader unseen views with a single ray and adaptive high-frequency regularization. Additionally, luminance consistency regularization uses relative luminance as 'free lunch' data to improve texture accuracy.
+      We introduce ARC-NeRF, a few-shot rendering method that casts area rays to cover a broader set of unseen viewpoints, improving spatial generalization with minimal input. Alongside, we propose adaptive frequency regularization and luminance consistency loss to further refine textures and high-frequency details in rendered outputs.
     </p>
   </td>
 </tr>
@@ -523,7 +523,7 @@
     <a href="https://arxiv.org/abs/2306.17723">arXiv</a>
     <p></p>
     <p>
-      We utilize the flipped reflection rays as additional training resources for the few-shot novel view synthesis, leading to more accurate surface normal estimation.
+      We present FlipNeRF, a framework that utilizes flipped reflection rays derived from input images to simulate novel training views. This approach enhances surface normal estimation and rendering fidelity, enabling better generalization in few-shot novel view synthesis without requiring additional images or supervision.
     </p>
   </td>
 </tr>			
