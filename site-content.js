@@ -38,11 +38,11 @@ window.siteContent = {
     },
     {
       label: 'Aug. 2025:',
-      segments: [{ text: 'Officially graduated from SNU with the Outstanding Dissertation Award. A very good day. 🎓' }]
+      segments: [{ text: 'Officially graduated from SNU with the Outstanding Dissertation Award. 🎓' }]
     },
     {
       label: 'May 2025:',
-      segments: [{ text: 'Successfully wrapped up my Ph.D. defense. Relief, coffee, and sleep followed in that order.' }]
+      segments: [{ text: 'Successfully wrapped up my Ph.D. defense.' }]
     },
     {
       label: 'Mar. 2025:',
@@ -58,7 +58,7 @@ window.siteContent = {
       segments: [
         { text: "I'll be heading back to " },
         { text: 'Meta Reality Labs', url: 'https://tech.facebook.com/reality-labs/' },
-        { text: ' this summer for another round as a research scientist intern. Gladly returning to the playground.' }
+        { text: ' this summer for another round as a research scientist intern.' }
       ]
     },
     {
@@ -66,7 +66,7 @@ window.siteContent = {
       segments: [
         { text: 'I have been acknowledged as an ' },
         { text: 'outstanding reviewer', url: 'https://eccv2024.ecva.net/program/outstanding-reviewers/' },
-        { text: ' for ECCV 2024. Always nice when careful reviewing gets noticed.' }
+        { text: ' for ECCV 2024.' }
       ]
     },
     {
@@ -74,7 +74,7 @@ window.siteContent = {
       segments: [
         { text: 'One paper was accepted to ' },
         { text: 'CVPR 2024 Workshop on Efficient Large Vision Models', url: 'https://sites.google.com/view/elvm-workshop-cvpr-2024/home' },
-        { text: '. Workshop papers count too, especially when they are fun.' }
+        { text: '.' }
       ]
     },
     {
@@ -82,7 +82,7 @@ window.siteContent = {
       segments: [
         { text: 'I will be joining ' },
         { text: 'Meta Reality Labs', url: 'https://tech.facebook.com/reality-labs/' },
-        { text: ' as a research scientist intern this summer. New problems, new badges, same curiosity.' }
+        { text: ' as a research scientist intern this summer.' }
       ]
     }
   ],
