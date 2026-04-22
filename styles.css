@@ -1,0 +1,454 @@
+:root {
+  --text: #1b1b1b;
+  --muted: #555;
+  --border: #d8d8d8;
+  --link: #1a5fb4;
+  --bg-soft: #fafafa;
+  --accent-red: #c53434;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background: #fff;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+.site-shell {
+  width: min(1020px, calc(100vw - 32px));
+  margin: 0 auto;
+}
+
+.topbar {
+  border-bottom: 1px solid var(--border);
+  padding: 18px 0 14px;
+  background: #fff;
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.site-name {
+  color: var(--text);
+  font-size: clamp(1.4rem, 2.3vw, 1.85rem);
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.site-nav a {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.site-nav a.active {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.site-main {
+  padding: 32px 0 64px;
+}
+
+.home-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 32px;
+  align-items: start;
+}
+
+.profile-copy h1 {
+  margin: 0 0 4px;
+  font-size: 2.6rem;
+  line-height: 1.05;
+}
+
+.profile-title {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.profile-intro {
+  display: grid;
+  gap: 14px;
+}
+
+.profile-intro p {
+  margin: 0;
+}
+
+.profile-links {
+  margin-top: 14px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.divider {
+  color: #999;
+}
+
+.profile-image img {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.content-section {
+  margin-top: 34px;
+}
+
+.content-section h2 {
+  margin: 0 0 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: 1.85rem;
+  line-height: 1.2;
+}
+
+.news-list {
+  margin: 0;
+  padding-left: 20px;
+  max-height: 12.6em;
+  overflow-y: auto;
+}
+
+.news-list li {
+  margin-bottom: 8px;
+  padding-right: 8px;
+}
+
+.news-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.news-list::-webkit-scrollbar-thumb {
+  background: #d5d5d5;
+  border-radius: 999px;
+}
+
+.news-date {
+  font-weight: 700;
+}
+
+.publication-list {
+  display: grid;
+  gap: 26px;
+}
+
+.publication-item {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.publication-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0;
+  min-height: 150px;
+}
+
+.publication-media-stack {
+  position: relative;
+  width: 100%;
+  min-height: 170px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.publication-media-element {
+  width: 100%;
+  height: 170px;
+  max-height: 180px;
+  object-fit: contain;
+}
+
+.publication-media-base {
+  transition: opacity 180ms ease;
+}
+
+.publication-media-hover {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  pointer-events: none;
+}
+
+.publication-title {
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+  line-height: 1.25;
+}
+
+.publication-authors,
+.publication-venue,
+.publication-links,
+.publication-summary {
+  margin: 0 0 7px;
+}
+
+.publication-authors,
+.publication-venue {
+  color: var(--muted);
+}
+
+.publication-authors a {
+  color: inherit;
+}
+
+.publication-authors strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.publication-links {
+  color: var(--muted);
+}
+
+.venue-highlight {
+  color: var(--accent-red);
+  font-weight: 700;
+}
+
+.contribution-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border: 1px solid #cfdff6;
+  border-radius: 999px;
+  color: var(--link);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.work-list {
+  display: grid;
+  gap: 20px;
+}
+
+.work-item {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.work-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+
+.work-identity {
+  display: flex;
+  align-items: flex-start;
+}
+
+.work-heading h3 {
+  margin: 0;
+  font-size: 1.22rem;
+}
+
+.work-role {
+  margin-top: 2px;
+}
+
+.work-role,
+.work-meta p {
+  color: var(--muted);
+}
+
+.work-meta p {
+  margin: 0;
+}
+
+.work-meta {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.work-bullets {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.blog-intro {
+  margin: 0 0 14px;
+}
+
+.blog-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.topic-chip {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-soft);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.blog-posts {
+  display: grid;
+  gap: 16px;
+}
+
+.blog-post {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.blog-post h3,
+.blog-date {
+  margin: 0 0 8px;
+}
+
+.blog-date {
+  color: var(--muted);
+}
+
+.empty-state {
+  padding: 18px;
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  border-radius: 6px;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+.empty-title {
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.95rem;
+  padding: 18px 0 28px;
+}
+
+@media (hover: hover) {
+  .has-hover-media:hover .publication-media-hover {
+    opacity: 1;
+  }
+
+  .has-hover-media:hover .publication-media-base {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 780px) {
+  .topbar-inner,
+  .work-heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .topbar-inner {
+    gap: 12px;
+  }
+
+  .site-nav {
+    gap: 12px 14px;
+  }
+
+  .home-intro,
+  .publication-item {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-image {
+    max-width: 240px;
+  }
+
+  .work-meta {
+    text-align: left;
+    white-space: normal;
+  }
+
+  .publication-media {
+    min-height: 0;
+  }
+
+  .publication-media-element {
+    max-height: 220px;
+    height: 220px;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-shell {
+    width: min(100vw - 22px, 1020px);
+  }
+
+  .site-main {
+    padding: 24px 0 48px;
+  }
+
+  .content-section {
+    margin-top: 28px;
+  }
+
+  .content-section h2 {
+    font-size: 1.55rem;
+  }
+
+  .profile-copy h1 {
+    font-size: 2.15rem;
+  }
+
+  .site-nav a {
+    font-size: 0.96rem;
+  }
+}
