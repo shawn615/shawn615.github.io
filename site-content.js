@@ -91,7 +91,7 @@ window.siteContent = {
       id: 'bm25',
       title: 'Visual Words Meet BM25: Sparse Auto-encoder Visual Word Scoring for Image Retrieval',
       authors: [
-        { name: 'Donghoon Han', url: 'https://scholar.google.com/citations?user=5z8nQfIAAAAJ&hl=en' },
+        { name: 'Donghoon Han', url: 'https://dhk1349.github.io/' },
         { name: 'Eunhwan Park', url: 'https://judepark96.github.io/' },
         { name: 'Seunghyeon Seo', isMe: true }
       ],
@@ -105,8 +105,8 @@ window.siteContent = {
         alt: 'Visual Words Meet BM25 preview'
       },
       links: [
-        { label: 'Project Page', url: 'https://dhk1349.github.io/' },
-        { label: 'arXiv', url: 'https://arxiv.org/abs/2503.18683' }
+        { label: 'Project Page', url: 'https://dhk1349.github.io/bm25v/' },
+        { label: 'arXiv', url: 'https://arxiv.org/abs/2603.05781' }
       ],
       selected: false
     },
@@ -115,10 +115,10 @@ window.siteContent = {
       title: 'LoGoColor: Local-Global 3D Colorization for 360 Scenes',
       authors: [
         { name: 'Yeonjin Chang', url: 'https://yeonjin-chang.github.io/' },
-        { name: 'Juhwan Cho', url: 'https://mipal.snu.ac.kr/index.php/member/?mod=document&uid=240' },
+        { name: 'Juhwan Cho', url: 'https://scholar.google.co.kr/citations?hl=en&user=SKAOLIMAAAAJ' },
         { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'Wonsik Shin', url: 'https://scholar.google.com/citations?user=E4Mt2t0AAAAJ&hl=en' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'Wonsik Shin', url: 'https://scholar.google.co.kr/citations?hl=en&user=xWBNuGkAAAAJ' },
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'Under Review',
       summary:
@@ -136,15 +136,15 @@ window.siteContent = {
       authors: [
         { name: 'Shaojie Bai*', url: 'https://shaojieb.github.io/' },
         { name: 'Seunghyeon Seo*', isMe: true },
-        { name: 'Yida Wang', url: 'https://www.linkedin.com/in/yida-wang-253737171/' },
-        { name: 'Chenghui Li', url: 'https://scholar.google.com/citations?user=0Po8U8MAAAAJ&hl=en' },
-        { name: 'Owen Wang', url: 'https://www.linkedin.com/in/owenwang9/' },
+        { name: 'Yida Wang', url: 'https://www.linkedin.com/in/yidaw/' },
+        { name: 'Chenghui Li', url: 'https://scholar.google.co.kr/citations?hl=en&user=9I6TYB8AAAAJ' },
+        { name: 'Owen Wang', url: 'https://www.linkedin.com/in/ojwang/' },
         { name: 'Te-Li Wang', url: 'https://www.linkedin.com/in/teliwang/' },
-        { name: 'Tianyang Ma', url: 'https://scholar.google.com/citations?user=BKuD7v8AAAAJ&hl=en' },
-        { name: 'Jason Saragih', url: 'https://scholar.google.com/citations?user=ybQStO4AAAAJ&hl=en' },
-        { name: 'Shih-En Wei', url: 'https://scholar.google.com/citations?user=9wu2AyQAAAAJ&hl=en' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' },
-        { name: 'Hyung Jun Kim', url: 'https://www.linkedin.com/in/hyung-jun-kim-65322559/' }
+        { name: 'Tianyang Ma', url: 'https://scholar.google.co.kr/citations?hl=en&user=dEhdKCAAAAAJ' },
+        { name: 'Jason Saragih', url: 'https://scholar.google.co.kr/citations?hl=en&user=ss-IvjMAAAAJ' },
+        { name: 'Shih-En Wei', url: 'https://scholar.google.co.kr/citations?hl=en&user=sFQD3k4AAAAJ' },
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' },
+        { name: 'Hyung Jun Kim', url: 'https://www.linkedin.com/in/john-k-4301067a/' }
       ],
       venue: 'SIGGRAPH Asia 2025 (Journal Track)',
       summary:
@@ -152,7 +152,7 @@ window.siteContent = {
       media: { type: 'video', src: 'images/genhmc.mp4', alt: 'GenHMC project preview' },
       links: [
         { label: 'Project Page', url: 'https://shawn615.github.io/genhmc/' },
-        { label: 'arXiv', url: 'http://arxiv.org/pdf/2507.05620' }
+        { label: 'arXiv', url: 'https://arxiv.org/abs/2507.05620' }
       ],
       selected: true,
       contribution: 'Co-first author'
@@ -162,9 +162,9 @@ window.siteContent = {
       title: 'ROODI: Reconstructing Occluded Objects with Denoising Inpainters',
       authors: [
         { name: 'Yeonjin Chang', url: 'https://yeonjin-chang.github.io/' },
-        { name: 'Erqun Dong', url: 'https://scholar.google.com/citations?user=1gQ0p8wAAAAJ&hl=en' },
+        { name: 'Erqun Dong', url: 'https://scholar.google.co.kr/citations?hl=en&user=SzxgfTIAAAAJ' },
         { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' },
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' },
         { name: 'Kwang Moo Yi', url: 'https://www.cs.ubc.ca/~kmyi/' }
       ],
       venue: 'Under Review',
@@ -173,7 +173,7 @@ window.siteContent = {
       media: { type: 'video', src: 'images/roodi.mp4', alt: 'ROODI project preview' },
       links: [
         { label: 'Project Page', url: 'https://yeonjin-chang.github.io/ROODI/' },
-        { label: 'arXiv', url: 'https://arxiv.org/pdf/2503.10256' }
+        { label: 'arXiv', url: 'https://arxiv.org/abs/2503.10256' }
       ],
       selected: false
     },
@@ -181,10 +181,10 @@ window.siteContent = {
       id: 'divcon',
       title: 'DivCon-NeRF: Generating Augmented Rays with Diversity and Consistency for Few-shot View Synthesis',
       authors: [
-        { name: 'Ingyun Lee', url: 'https://scholar.google.com/citations?user=Vn7fGgoAAAAJ&hl=en' },
-        { name: 'Jae Won Jang' },
+        { name: 'Ingyun Lee', url: 'https://scholar.google.co.kr/citations?hl=en&user=ChN2UUkAAAAJ' },
+        { name: 'Jae Won Jang', url: 'https://jaewon040.github.io/' },
         { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'Under Review',
       summary:
@@ -195,7 +195,7 @@ window.siteContent = {
         hoverSrc: 'images/divcon_after.png',
         alt: 'DivCon-NeRF project preview'
       },
-      links: [{ label: 'arXiv', url: 'https://arxiv.org/pdf/2503.12947' }],
+      links: [{ label: 'arXiv', url: 'https://arxiv.org/abs/2503.12947' }],
       selected: false
     },
     {
@@ -206,8 +206,8 @@ window.siteContent = {
         { name: 'Yeonjin Chang', url: 'https://yeonjin-chang.github.io/' },
         { name: 'Jayeon Yoo', url: 'https://natureyoo.github.io/' },
         { name: 'Seungwoo Lee', url: 'https://lifrary.github.io/' },
-        { name: 'Hojun Lee', url: 'https://scholar.google.com/citations?user=evmKkHgAAAAJ&hl=en' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'Hojun Lee', url: 'https://scholar.google.co.kr/citations?user=1BOehSUAAAAJ&hl=en' },
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'CVPR 2025 Workshop on Computer Vision for Metaverse (Oral)',
       summary:
@@ -220,7 +220,7 @@ window.siteContent = {
       },
       links: [
         { label: 'Project Page', url: 'https://shawn615.github.io/arc-nerf/' },
-        { label: 'arXiv', url: 'https://arxiv.org/pdf/2403.10906' }
+        { label: 'arXiv', url: 'https://arxiv.org/abs/2403.10906' }
       ],
       selected: true,
       contribution: 'First author'
@@ -229,17 +229,19 @@ window.siteContent = {
       id: 'hlclip',
       title: 'Unleash the Potential of CLIP for Video Highlight Detection',
       authors: [
-        { name: 'Donghoon Han*', url: 'https://scholar.google.com/citations?user=5z8nQfIAAAAJ&hl=en' },
+        { name: 'Donghoon Han*', url: 'https://dhk1349.github.io/' },
         { name: 'Seunghyeon Seo*', isMe: true },
         { name: 'Eunhwan Park', url: 'https://judepark96.github.io/' },
         { name: 'SeongUk Nam' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'CVPR 2024 Workshop on Efficient Large Vision Models',
       summary:
         'CLIP-based video highlight detection with lightweight adaptation and temporal aggregation for strong semantic understanding with limited task-specific supervision.',
       media: { type: 'image', src: 'images/hlclip.png', alt: 'HL-CLIP project preview' },
-      links: [{ label: 'arXiv', url: 'https://arxiv.org/abs/2404.01665' }],
+      links: [
+        { label: 'Code', url: 'https://github.com/dhk1349/HL-CLIP' },
+        { label: 'arXiv', url: 'https://arxiv.org/abs/2404.01745' }],
       selected: true,
       contribution: 'Co-first author'
     },
@@ -248,10 +250,10 @@ window.siteContent = {
       title: 'Fast Sun-aligned Outdoor Scene Relighting based on TensoRF',
       authors: [
         { name: 'Yeonjin Chang', url: 'https://yeonjin-chang.github.io/' },
-        { name: 'Yearim Kim', url: 'https://scholar.google.com/citations?user=1KtOw8IAAAAJ&hl=en' },
+        { name: 'Yearim Kim', url: 'https://scholar.google.co.kr/citations?user=nS8vgAQAAAAJ&hl=en' },
         { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'Jung Yi', url: 'https://scholar.google.com/citations?user=0vRyA4QAAAAJ&hl=en' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'Jung Yi', url: 'https://scholar.google.co.kr/citations?user=omgRWh8AAAAJ&hl=en' },
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'WACV 2024',
       summary:
@@ -265,7 +267,7 @@ window.siteContent = {
       links: [
         {
           label: 'arXiv',
-          url: 'https://openaccess.thecvf.com/content/WACV2024/papers/Chang_Fast_Sun-Aligned_Outdoor_Scene_Relighting_Based_on_TensoRF_WACV_2024_paper.pdf'
+          url: 'https://arxiv.org/abs/2311.03965'
         }
       ],
       selected: false
@@ -274,12 +276,12 @@ window.siteContent = {
       id: 'concatplexer',
       title: 'ConcatPlexer: Additional Dim1 Batching for Faster ViTs',
       authors: [
-        { name: 'Donghoon Han', url: 'https://scholar.google.com/citations?user=5z8nQfIAAAAJ&hl=en' },
+        { name: 'Donghoon Han', url: 'https://dhk1349.github.io/' },
         { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'DongHyeon Jeon', url: 'https://scholar.google.com/citations?user=6d2bpmsAAAAJ&hl=en' },
-        { name: 'Jiho Jang', url: 'https://scholar.google.com/citations?user=CFbGmEAAAAAJ&hl=en' },
-        { name: 'Chaerin Kong', url: 'https://scholar.google.com/citations?user=yh-UWvYAAAAJ&hl=en' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'DongHyeon Jeon', url: 'https://scholar.google.co.kr/citations?user=2kW3474AAAAJ&hl=en' },
+        { name: 'Jiho Jang', url: 'https://scholar.google.co.kr/citations?user=-EtUt1wAAAAJ&hl=en' },
+        { name: 'Chaerin Kong', url: 'https://scholar.google.co.kr/citations?user=TownIFQAAAAJ&hl=en' },
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'NeurIPS 2023 Workshop on Advancing Neural Network Training (Oral)',
       summary:
@@ -290,7 +292,7 @@ window.siteContent = {
         hoverSrc: 'images/concatplexer_after.png',
         alt: 'ConcatPlexer project preview'
       },
-      links: [{ label: 'arXiv', url: 'https://arxiv.org/pdf/2404.01745.pdf' }],
+      links: [{ label: 'arXiv', url: 'https://arxiv.org/abs/2308.11199' }],
       selected: false
     },
     {
@@ -299,7 +301,7 @@ window.siteContent = {
       authors: [
         { name: 'Seunghyeon Seo', isMe: true },
         { name: 'Yeonjin Chang', url: 'https://yeonjin-chang.github.io/' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'ICCV 2023',
       summary:
@@ -315,7 +317,7 @@ window.siteContent = {
         { label: 'Code', url: 'https://github.com/shawn615/FlipNeRF' },
         {
           label: 'arXiv',
-          url: 'https://openaccess.thecvf.com/content/ICCV2023/papers/Seo_FlipNeRF_Flipped_Reflection_Rays_for_Few-shot_Novel_View_Synthesis_ICCV_2023_paper.pdf'
+          url: 'https://arxiv.org/abs/2306.17723'
         }
       ],
       selected: true,
@@ -326,9 +328,9 @@ window.siteContent = {
       title: 'MDPose: Real-Time Multi-Person Pose Estimation via Mixture Density Model',
       authors: [
         { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'Jaeyoung Yoo', url: 'https://scholar.google.com/citations?user=ME6xV3QAAAAJ&hl=en' },
-        { name: 'Jihye Hwang', url: 'https://scholar.google.com/citations?user=Wv-3W6cAAAAJ&hl=en' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'Jaeyoung Yoo', url: 'https://scholar.google.co.kr/citations?user=xQ2kWlYAAAAJ&hl=en' },
+        { name: 'Jihye Hwang', url: 'https://scholar.google.co.kr/citations?hl=en&user=NpivtnsAAAAJ' },
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'UAI 2023',
       summary:
@@ -339,7 +341,7 @@ window.siteContent = {
         hoverSrc: 'images/mdpose_after.png',
         alt: 'MDPose project preview'
       },
-      links: [{ label: 'arXiv', url: 'https://proceedings.mlr.press/v216/seo23a/seo23a.pdf' }],
+      links: [{ label: 'arXiv', url: 'https://arxiv.org/abs/2302.08751' }],
       selected: true,
       contribution: 'First author'
     },
@@ -347,11 +349,11 @@ window.siteContent = {
       id: 'drmm',
       title: 'End-to-End Multi-Object Detection with a Regularized Mixture Model',
       authors: [
-        { name: 'Jaeyoung Yoo*', url: 'https://scholar.google.com/citations?user=ME6xV3QAAAAJ&hl=en' },
-        { name: 'Hojun Lee*', url: 'https://scholar.google.com/citations?user=evmKkHgAAAAJ&hl=en' },
+        { name: 'Jaeyoung Yoo*', url: 'https://scholar.google.co.kr/citations?user=xQ2kWlYAAAAJ&hl=en' },
+        { name: 'Hojun Lee*', url: 'https://scholar.google.co.kr/citations?user=1BOehSUAAAAJ&hl=en' },
         { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'Inseop Chung', url: 'https://scholar.google.com/citations?user=uW5SKPsAAAAJ&hl=en' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'Inseop Chung', url: 'https://scholar.google.co.kr/citations?hl=en&user=6bFY9FgAAAAJ' },
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'ICML 2023',
       summary:
@@ -364,7 +366,7 @@ window.siteContent = {
       },
       links: [
         { label: 'Code', url: 'https://github.com/lhj815/D-RMM' },
-        { label: 'arXiv', url: 'https://proceedings.mlr.press/v202/yoo23b/yoo23b.pdf' }
+        { label: 'arXiv', url: 'https://arxiv.org/abs/2205.08714' }
       ],
       selected: false
     },
@@ -373,9 +375,9 @@ window.siteContent = {
       title: 'MixNeRF: Modeling a Ray with Mixture Density for Novel View Synthesis from Sparse Inputs',
       authors: [
         { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'Donghoon Han*', url: 'https://scholar.google.com/citations?user=5z8nQfIAAAAJ&hl=en' },
+        { name: 'Donghoon Han*', url: 'https://dhk1349.github.io/' },
         { name: 'Yeonjin Chang*', url: 'https://yeonjin-chang.github.io/' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'CVPR 2023 (Qualcomm Innovation Fellowship Korea 2023 Winner)',
       summary:
@@ -391,7 +393,7 @@ window.siteContent = {
         { label: 'Code', url: 'https://github.com/shawn615/MixNeRF' },
         {
           label: 'arXiv',
-          url: 'https://openaccess.thecvf.com/content/CVPR2023/papers/Seo_MixNeRF_Modeling_a_Ray_With_Mixture_Density_for_Novel_View_CVPR_2023_paper.pdf'
+          url: 'https://arxiv.org/abs/2302.08788'
         }
       ],
       selected: true,
@@ -401,12 +403,12 @@ window.siteContent = {
       id: 'mum',
       title: 'MUM: Mix Image Tiles and UnMix Feature Tiles for Semi-Supervised Object Detection',
       authors: [
-        { name: 'JongMok Kim', url: 'https://scholar.google.com/citations?user=YVn_yLwAAAAJ&hl=en' },
-        { name: 'Jooyoung Jang', url: 'https://scholar.google.com/citations?user=Ri9i2mQAAAAJ&hl=en' },
+        { name: 'JongMok Kim', url: 'https://scholar.google.co.kr/citations?hl=en&user=mknAd9cAAAAJ' },
+        { name: 'Jooyoung Jang', url: 'https://scholar.google.co.kr/citations?hl=en&user=jl-IZPQAAAAJ' },
         { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'Jisoo Jeong', url: 'https://sites.google.com/view/jisoojeong' },
+        { name: 'Jisoo Jeong', url: 'https://sites.google.com/view/soo89/' },
         { name: 'Jongkeun Na' },
-        { name: 'Nojun Kwak', url: 'https://scholar.google.com/citations?user=pCf0yJQAAAAJ&hl=en' }
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
       ],
       venue: 'CVPR 2022',
       summary:
@@ -421,7 +423,7 @@ window.siteContent = {
         { label: 'Code', url: 'https://github.com/JongMokKim/mix-unmix' },
         {
           label: 'arXiv',
-          url: 'https://openaccess.thecvf.com/content/CVPR2022/papers/Kim_MUM_Mix_Image_Tiles_and_UnMix_Feature_Tiles_for_Semi-Supervised_CVPR_2022_paper.pdf'
+          url: 'https://arxiv.org/abs/2111.10958'
         }
       ],
       selected: false
