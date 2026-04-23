@@ -15,8 +15,8 @@ window.siteContent = {
     cv: 'data/SeunghyeonSeo_CV.pdf',
     intro: [
       'I recently received my Ph.D. in Artificial Intelligence from Seoul National University, where I worked with Prof. Nojun Kwak in the Machine Intelligence and Pattern Analysis Lab (MIPAL). My work focuses on computer vision, machine learning, neural rendering, and generative models, especially when the problem requires both new modeling ideas and careful research engineering.',
-      'In recent projects, I have studied sparse-view novel view synthesis, reflective-scene rendering, 3D scene understanding, synthetic data generation, and diffusion-based training pipelines. Fortunately, I also had the chance to intern twice at Meta Reality Labs, where I worked on synthetic data and avatar-related research problems in a more industry-facing setting.',
-      'I am most drawn to research scientist and research engineer work that connects strong ideas with strong execution: building models, running serious experiments, understanding failure cases, and turning research into code, datasets, and systems that other people can rely on.'
+      'In recent projects, I have worked on sparse-view novel view synthesis, reflective-scene rendering, 3D scene understanding, synthetic data generation, and diffusion-based training pipelines. Fortunately, I also had the chance to intern twice at Meta Reality Labs, where I worked on synthetic data and avatar-related research problems in a more industry-facing setting.',
+      'I am most interested in research roles that connect strong ideas with strong execution: building models, running serious experiments, understanding failure cases, and turning research into code, datasets, and systems that other people can rely on.'
     ],
     links: [
       { label: 'Email', url: 'mailto:zzzlssh@gmail.com' },
