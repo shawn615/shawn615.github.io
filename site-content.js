@@ -28,6 +28,22 @@ window.siteContent = {
   },
   news: [
     {
+      label: 'Feb. 2026:',
+      segments: [
+        { text: 'Started a new chapter at ' },
+        { text: 'Blizzard Entertainment', url: 'https://www.blizzard.com/en-us/' },
+        { text: ' as an Applied Research Scientist!' }
+      ]
+    },
+    {
+      label: 'Sep. 2025:',
+      segments: [
+        { text: 'Excited to join ' },
+        { text: 'Kakao Mobility', url: 'https://www.kakaomobility.com/' },
+        { text: ' as a Research Scientist!' }
+      ]
+    },
+    {
       label: 'Sep. 2025:',
       segments: [
         { text: 'One paper made it to ' },
@@ -38,7 +54,7 @@ window.siteContent = {
     },
     {
       label: 'Aug. 2025:',
-      segments: [{ text: 'Officially graduated from SNU with the Outstanding Dissertation Award. 🎓' }]
+      segments: [{ text: 'Officially graduated from SNU with the Best Doctoral Dissertation Award Honorable Mention. 🎓' }]
     },
     {
       label: 'May 2025:',
