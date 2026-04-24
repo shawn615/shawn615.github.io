@@ -514,7 +514,14 @@ window.siteContent = {
     topics: ['Paper reviews', 'Technical notes', 'Implementation logs', 'Work stories', 'Daily life', 'Hobbies'],
     intro:
       'Mostly paper reviews, technical rabbit holes, implementation notes, and field reports from work that looked easier on the whiteboard. But not everything here will be about models, benchmarks, or GPUs. Some posts will be about everyday life, hobbies, and whatever else earns a spot between experiments.',
-    posts: []
+    posts: [
+      {
+        title: '[Paper Review] ContextGS: Compact 3D Gaussian Splatting with Anchor Level Context Model',
+        date: 'Apr. 24, 2026',
+        summary: 'ContextGS brings autoregressive context models from image compression to 3D Gaussian Splatting. By predicting finer anchors from coarser ones across 3 hierarchical levels, it achieves 100× compression over vanilla 3DGS with no quality loss.',
+        url: 'blog/contextgs-review.html'
+      }
+    ]
   },
   analytics: {
     googleAnalyticsId: 'G-XV9FTV9E2Z',
