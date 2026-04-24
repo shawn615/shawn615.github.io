@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Paper Review] ContextGS: Compact 3DGS with Anchor Level Context Model | Seunghyeon's Homepage</title>
+    <meta name="description" content="Review of ContextGS: autoregressive context model at the anchor level for 3D Gaussian Splatting compression, achieving 100x reduction over vanilla 3DGS." />
+    <meta property="og:title" content="[Paper Review] ContextGS: Compact 3D Gaussian Splatting with Anchor Level Context Model" />
+    <meta property="og:description" content="Review of ContextGS: autoregressive context model at the anchor level for 3DGS compression." />
+    <meta property="og:type" content="article" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .blog-article {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        line-height: 1.8;
+        font-size: 1.05rem;
+      }
+      .blog-article h1 { font-size: 1.75rem; margin-bottom: 8px; line-height: 1.3; }
+      .blog-article .meta { color: var(--muted, #6b7280); margin-bottom: 36px; font-size: 0.95rem; }
+      .blog-article h2 { margin-top: 44px; margin-bottom: 14px; font-size: 1.3rem; border-bottom: 1px solid var(--border, #e5e7eb); padding-bottom: 6px; }
+      .blog-article h3 { margin-top: 28px; margin-bottom: 10px; font-size: 1.12rem; }
+      .blog-article p { margin-bottom: 16px; }
+      .blog-article img { max-width: 100%; border-radius: 6px; margin: 16px 0; }
+      .blog-article figure { margin: 24px 0; text-align: center; }
+      .blog-article figcaption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 8px; font-style: italic; }
+      .blog-article pre { background: var(--bg-soft, #f3f4f6); padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 0.88rem; margin-bottom: 18px; line-height: 1.55; }
+      .blog-article code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 0.9em; }
+      .blog-article p > code, .blog-article li > code { background: var(--bg-soft, #f3f4f6); padding: 2px 5px; border-radius: 3px; }
+      .blog-article blockquote { border-left: 3px solid var(--accent, #2563eb); padding: 12px 16px; color: var(--fg, #374151); background: var(--bg-soft, #f3f4f6); margin: 18px 0; border-radius: 0 6px 6px 0; }
+      .blog-article blockquote p { margin-bottom: 0; }
+      .blog-article ul, .blog-article ol { margin-bottom: 16px; padding-left: 24px; }
+      .blog-article li { margin-bottom: 6px; }
+      .blog-article a { color: var(--accent, #2563eb); }
+      .blog-article .back-link { display: inline-block; margin-bottom: 24px; font-size: 0.95rem; }
+      .blog-article table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.92rem; }
+      .blog-article th, .blog-article td { border: 1px solid var(--border, #e5e7eb); padding: 8px 12px; text-align: center; }
+      .blog-article th { background: var(--bg-soft, #f3f4f6); font-weight: 600; }
+      .blog-article td:first-child { text-align: left; }
+      .blog-article .callout { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+      .blog-article .callout p { margin-bottom: 0; }
+      .blog-article hr { border: none; border-top: 1px solid var(--border, #e5e7eb); margin: 36px 0; }
+      .blog-article .paper-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 0.95rem; margin-bottom: 24px; }
+      .blog-article .paper-info dt { font-weight: 600; color: var(--muted, #6b7280); }
+      .blog-article .paper-info dd { margin: 0; }
+      .blog-article .diagram { margin: 28px 0; text-align: center; overflow-x: auto; }
+      .blog-article .diagram svg { max-width: 100%; height: auto; }
+      .blog-article .diagram-caption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 10px; font-style: italic; }
+      .blog-article .paper-figure { margin: 28px 0; text-align: center; }
+      .blog-article .paper-figure img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .paper-figure .fig-label { display: inline-block; background: var(--accent, #2563eb); color: #fff; font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; letter-spacing: 0.5px; }
+      .blog-article .paper-figure figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 640px; margin-left: auto; margin-right: auto; }
+      .blog-article .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+      .blog-article .stat-card { background: var(--bg-soft, #f3f4f6); border-radius: 10px; padding: 18px 14px; text-align: center; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+      .blog-article .stat-card .stat-label { font-size: 0.82rem; color: var(--muted, #6b7280); margin-top: 4px; }
+      @media (max-width: 600px) { .blog-article .stat-grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="site-name" href="../index.html">Seunghyeon's Homepage</a>
+        <nav class="site-nav">
+          <a href="../index.html">Home</a>
+          <a href="../publications.html">Publications</a>
+          <a href="../experience.html">Experience</a>
+          <a href="../blog.html" class="active" aria-current="page">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="blog-article">
+      <a class="back-link" href="../blog.html">&larr; Back to Blog</a>
+
+      <h1>[Paper Review] ContextGS &mdash; Compact 3DGS with Anchor Level Context Model</h1>
+
+      <p class="meta">Apr. 24, 2026 &middot; Paper Review</p>
+
+      <dl class="paper-info">
+        <dt>Paper</dt>
+        <dd>ContextGS: Compact 3D Gaussian Splatting with Anchor Level Context Model</dd>
+        <dt>Authors</dt>
+        <dd>Yufei Wang, Zhihao Li, Lanqing Guo, Wenhan Yang, Alex C. Kot, Bihan Wen</dd>
+        <dt>Venue</dt>
+        <dd>arXiv 2024 (NTU Singapore)</dd>
+        <dt>Links</dt>
+        <dd><a href="https://arxiv.org/abs/2405.20721" target="_blank" rel="noreferrer">arXiv</a> &middot; <a href="https://github.com/wyf0912/ContextGS" target="_blank" rel="noreferrer">Code</a></dd>
+      </dl>
+
+      <!-- Headline stats -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color: #2563eb;">100&times;</div>
+          <div class="stat-label">smaller than vanilla 3DGS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #16a34a;">15&times;</div>
+          <div class="stat-label">smaller than Scaffold-GS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #9333ea;">+0.12 dB</div>
+          <div class="stat-label">PSNR over Scaffold-GS</div>
+        </div>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2>The Missed Opportunity in 3DGS Compression</h2>
+
+      <p>
+        Most 3DGS compression methods treat each Gaussian (or anchor) as an independent coding unit. Prune some, quantize the rest, entropy-code them in one shot&mdash;done. But if you look at the anchor features of a typical scene, neighboring anchors are <em>highly correlated</em>. The paper shows cosine similarities of 0.6&ndash;0.9 between adjacent anchors. That&rsquo;s a massive pool of spatial redundancy just sitting there, untouched.
+      </p>
+      <p>
+        Image compression figured this out decades ago: <strong>context models</strong> predict the distribution of the next pixel/latent from already-decoded neighbors, dramatically reducing entropy. ContextGS brings this idea to 3DGS for the first time, but at the <em>anchor</em> level rather than the pixel level. The result: an autoregressive coding scheme that squeezes out the spatial redundancy that previous methods leave on the table.
+      </p>
+
+      <!-- Diagram: The analogy — image compression context model vs. anchor-level context model -->
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 310" width="760" height="310" font-family="IBM Plex Sans, sans-serif">
+          <defs>
+            <marker id="arrowG" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0,0 6,2 0,4" fill="#4ade80"/></marker>
+            <marker id="arrowB" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0,0 6,2 0,4" fill="#60a5fa"/></marker>
+          </defs>
+
+          <!-- Title -->
+          <text x="380" y="22" text-anchor="middle" font-weight="700" font-size="14" fill="#374151">The Context Model Analogy</text>
+
+          <!-- ===== Left panel: Image Compression ===== -->
+          <rect x="15" y="40" width="355" height="260" rx="12" fill="#faf5ff" stroke="#c4b5fd" stroke-width="1.5"/>
+          <text x="192" y="66" text-anchor="middle" font-weight="700" font-size="13" fill="#5b21b6">Image Compression</text>
+          <text x="192" y="82" text-anchor="middle" font-size="10" fill="#9ca3af">(PixelCNN, Hyperprior, etc.)</text>
+
+          <!-- 5×3 pixel grid, centered at x=192 => grid starts at 102 -->
+          <g transform="translate(102, 96)">
+            <!-- Row 0: all decoded -->
+            <rect x="0"   y="0" width="30" height="30" rx="4" fill="#bbf7d0" stroke="#4ade80" stroke-width="1"/>
+            <rect x="34"  y="0" width="30" height="30" rx="4" fill="#bbf7d0" stroke="#4ade80" stroke-width="1"/>
+            <rect x="68"  y="0" width="30" height="30" rx="4" fill="#bbf7d0" stroke="#4ade80" stroke-width="1"/>
+            <rect x="102" y="0" width="30" height="30" rx="4" fill="#bbf7d0" stroke="#4ade80" stroke-width="1"/>
+            <rect x="136" y="0" width="30" height="30" rx="4" fill="#bbf7d0" stroke="#4ade80" stroke-width="1"/>
+            <!-- Row 1: first 3 decoded, 4th current, 5th future -->
+            <rect x="0"   y="34" width="30" height="30" rx="4" fill="#bbf7d0" stroke="#4ade80" stroke-width="1"/>
+            <rect x="34"  y="34" width="30" height="30" rx="4" fill="#bbf7d0" stroke="#4ade80" stroke-width="1"/>
+            <rect x="68"  y="34" width="30" height="30" rx="4" fill="#bbf7d0" stroke="#4ade80" stroke-width="1"/>
+            <rect x="102" y="34" width="30" height="30" rx="4" fill="#fed7aa" stroke="#f97316" stroke-width="2"/>
+            <text x="117" y="54" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">?</text>
+            <rect x="136" y="34" width="30" height="30" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+            <!-- Row 2: all future -->
+            <rect x="0"   y="68" width="30" height="30" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+            <rect x="34"  y="68" width="30" height="30" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+            <rect x="68"  y="68" width="30" height="30" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+            <rect x="102" y="68" width="30" height="30" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+            <rect x="136" y="68" width="30" height="30" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+            <!-- Arrows: left neighbor → current, top neighbor → current -->
+            <line x1="82" y1="49" x2="100" y2="49" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arrowG)"/>
+            <line x1="117" y1="28" x2="117" y2="32" stroke="#4ade80" stroke-width="1.5" marker-end="url(#arrowG)"/>
+          </g>
+
+          <!-- Description -->
+          <text x="192" y="214" text-anchor="middle" font-size="11" font-weight="600" fill="#5b21b6">Predict pixel from decoded neighbors</text>
+          <text x="192" y="230" text-anchor="middle" font-size="10" fill="#9ca3af">Raster-scan order &middot; 1D autoregressive</text>
+
+          <!-- Legend (centered under left panel) -->
+          <g transform="translate(82, 250)">
+            <rect x="0" y="0" width="14" height="14" rx="3" fill="#bbf7d0" stroke="#4ade80" stroke-width="1"/>
+            <text x="19" y="12" font-size="10" fill="#374151">Decoded</text>
+            <rect x="75" y="0" width="14" height="14" rx="3" fill="#fed7aa" stroke="#f97316" stroke-width="1.5"/>
+            <text x="94" y="12" font-size="10" fill="#374151">Current</text>
+            <rect x="150" y="0" width="14" height="14" rx="3" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+            <text x="169" y="12" font-size="10" fill="#374151">Future</text>
+          </g>
+
+          <!-- ===== Right panel: ContextGS ===== -->
+          <rect x="390" y="40" width="355" height="260" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+          <text x="568" y="66" text-anchor="middle" font-weight="700" font-size="13" fill="#1e40af">ContextGS (This Paper)</text>
+          <text x="568" y="82" text-anchor="middle" font-size="10" fill="#9ca3af">Anchor-level autoregressive</text>
+
+          <!-- Anchor scatter, centered at x=568 => group origin at 443 -->
+          <g transform="translate(443, 96)">
+            <!-- Level 2 (coarsest, decoded first) — large circles -->
+            <circle cx="25"  cy="55" r="14" fill="#bbf7d0" stroke="#4ade80" stroke-width="2"/>
+            <text x="25"  y="60" text-anchor="middle" font-size="9" font-weight="700" fill="#166534">L2</text>
+            <circle cx="125" cy="15" r="14" fill="#bbf7d0" stroke="#4ade80" stroke-width="2"/>
+            <text x="125" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#166534">L2</text>
+            <circle cx="220" cy="68" r="14" fill="#bbf7d0" stroke="#4ade80" stroke-width="2"/>
+            <text x="220" y="73" text-anchor="middle" font-size="9" font-weight="700" fill="#166534">L2</text>
+
+            <!-- Level 1 (medium) -->
+            <circle cx="75"  cy="30" r="10" fill="#bfdbfe" stroke="#60a5fa" stroke-width="1.5"/>
+            <text x="75"  y="34" text-anchor="middle" font-size="8" font-weight="600" fill="#1e40af">L1</text>
+            <circle cx="175" cy="42" r="10" fill="#bfdbfe" stroke="#60a5fa" stroke-width="1.5"/>
+            <text x="175" y="46" text-anchor="middle" font-size="8" font-weight="600" fill="#1e40af">L1</text>
+
+            <!-- Level 0 (finest, to predict) — small circles -->
+            <circle cx="50"  cy="78" r="8" fill="#fed7aa" stroke="#f97316" stroke-width="1.5"/>
+            <text x="50"  y="82" text-anchor="middle" font-size="8" font-weight="700" fill="#c2410c">?</text>
+            <circle cx="100" cy="62" r="8" fill="#fed7aa" stroke="#f97316" stroke-width="1.5"/>
+            <text x="100" y="66" text-anchor="middle" font-size="8" font-weight="700" fill="#c2410c">?</text>
+            <circle cx="150" cy="82" r="8" fill="#fed7aa" stroke="#f97316" stroke-width="1.5"/>
+            <text x="150" y="86" text-anchor="middle" font-size="8" font-weight="700" fill="#c2410c">?</text>
+            <circle cx="198" cy="30" r="8" fill="#fed7aa" stroke="#f97316" stroke-width="1.5"/>
+            <text x="198" y="34" text-anchor="middle" font-size="8" font-weight="700" fill="#c2410c">?</text>
+
+            <!-- Prediction arrows (dashed, coarser → finer) -->
+            <line x1="38"  y1="60" x2="45"  y2="70" stroke="#60a5fa" stroke-width="1.3" stroke-dasharray="4,2" marker-end="url(#arrowB)"/>
+            <line x1="85"  y1="34" x2="95"  y2="54" stroke="#60a5fa" stroke-width="1.3" stroke-dasharray="4,2" marker-end="url(#arrowB)"/>
+            <line x1="137" y1="20" x2="175" y2="34" stroke="#60a5fa" stroke-width="1.3" stroke-dasharray="4,2" marker-end="url(#arrowB)"/>
+            <line x1="183" y1="47" x2="155" y2="74" stroke="#60a5fa" stroke-width="1.3" stroke-dasharray="4,2" marker-end="url(#arrowB)"/>
+            <line x1="215" y1="56" x2="203" y2="38" stroke="#60a5fa" stroke-width="1.3" stroke-dasharray="4,2" marker-end="url(#arrowB)"/>
+          </g>
+
+          <!-- Description -->
+          <text x="568" y="214" text-anchor="middle" font-size="11" font-weight="600" fill="#1e40af">Predict finer anchors from coarser ones</text>
+          <text x="568" y="230" text-anchor="middle" font-size="10" fill="#9ca3af">Level-wise order &middot; 3 iterations only</text>
+
+          <!-- Legend (centered under right panel) -->
+          <g transform="translate(445, 250)">
+            <circle cx="7" cy="7" r="7" fill="#bbf7d0" stroke="#4ade80" stroke-width="1.5"/>
+            <text x="20" y="12" font-size="10" fill="#374151">Coarse (L2)</text>
+            <circle cx="102" cy="7" r="7" fill="#bfdbfe" stroke="#60a5fa" stroke-width="1.5"/>
+            <text x="115" y="12" font-size="10" fill="#374151">Mid (L1)</text>
+            <circle cx="180" cy="7" r="7" fill="#fed7aa" stroke="#f97316" stroke-width="1.5"/>
+            <text x="193" y="12" font-size="10" fill="#374151">Fine (L0)</text>
+          </g>
+        </svg>
+        <div class="diagram-caption">The context model analogy: image compression predicts pixels from decoded neighbors in raster order. ContextGS predicts anchor features from decoded coarser-level anchors in 3D space&mdash;but only needs 3 levels, not millions of steps.</div>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2>Background: Scaffold-GS Anchors</h2>
+
+      <p>
+        ContextGS builds on <strong>Scaffold-GS</strong>, so it&rsquo;s worth recapping the data structure. Instead of storing every Gaussian&rsquo;s attributes individually (the vanilla 3DGS way), Scaffold-GS introduces <em>anchor points</em>&mdash;voxel representatives that store a compact feature vector \(\mathbf{f} \in \mathbb{R}^{32}\), position \(\mathbf{x}\), scaling \(\mathbf{l}\), and offsets \(\mathbf{O}\). Small MLPs decode the full Gaussian attributes (color, rotation, scale, opacity) from each anchor at render time, conditioned on view direction.
+      </p>
+      <p>
+        This already reduces redundancy a lot&mdash;nearby Gaussians share an anchor feature. But Scaffold-GS still stores each anchor independently. If two neighboring anchors represent similar geometry (e.g., a flat wall), their features are correlated but nobody exploits that correlation. ContextGS does.
+      </p>
+
+      <!-- Paper figure: Figure 1 from the paper -->
+      <figure class="paper-figure">
+        <img src="https://arxiv.org/html/2405.20721v1/x1.png" alt="Figure 1 from ContextGS paper showing anchor spatial redundancy and cosine similarity" loading="lazy" />
+        <figcaption>Figure 1 from the paper: (b) Anchors divided into 3 levels. (c) High cosine similarity between anchor features across levels confirms spatial redundancy. (d) Bit savings from the proposed context model&mdash;up to 15&times; reduction over Scaffold-GS.</figcaption>
+      </figure>
+
+      <!-- ============================================================ -->
+      <h2>The Core Idea: Hierarchical Anchor Partitioning + Autoregressive Coding</h2>
+
+      <p>
+        The method has two main ingredients: (1) divide anchors into hierarchical levels, and (2) use already-decoded coarser levels to predict the distribution of finer levels for entropy coding.
+      </p>
+
+      <h3>1. Anchor Partitioning</h3>
+      <p>
+        Given all \(N\) anchors, partition them into \(K=3\) disjoint levels: \(\mathbf{V} = \mathbf{V}_0 \cup \mathbf{V}_1 \cup \mathbf{V}_2\). Level 2 is coarsest (fewest anchors), level 0 is finest (most anchors). The division uses a bottom-up voxelization: quantize anchor positions at increasing voxel sizes \(\epsilon_k = \kappa^k \cdot \epsilon\), and pick a representative anchor per voxel for each level.
+      </p>
+      <p>
+        The target ratio between adjacent levels is \(\tau = |\mathbf{V}_{k+1}| / |\mathbf{V}_k| \approx 0.2\), found via binary search on \(\kappa\). So roughly: Level 2 has 4% of anchors, Level 1 has 16%, Level 0 has 80%.
+      </p>
+
+      <!-- Diagram: Level partitioning — 3 rows as cards -->
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 210" width="660" height="210" font-family="IBM Plex Sans, sans-serif">
+          <!-- Row cards: each row is a self-contained card with step number, level info, and proportion bar -->
+
+          <!-- Step 3 (encoded last): L0 — finest -->
+          <rect x="0" y="0" width="660" height="58" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+          <!-- Step badge -->
+          <rect x="14" y="14" width="28" height="28" rx="14" fill="#166534"/>
+          <text x="28" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">3</text>
+          <!-- Level label -->
+          <text x="56" y="26" font-size="13" font-weight="700" fill="#166534">Level 0</text>
+          <text x="56" y="42" font-size="10" fill="#6b7280">finest &middot; voxel = &epsilon;</text>
+          <!-- Proportion bar -->
+          <rect x="170" y="14" width="400" height="28" rx="6" fill="#bbf7d0"/>
+          <text x="370" y="33" text-anchor="middle" font-size="12" font-weight="600" fill="#166534">~80% of all anchors</text>
+          <!-- Encoded last label -->
+          <text x="590" y="33" font-size="10" fill="#6b7280">encoded last</text>
+
+          <!-- Step 2: L1 — mid -->
+          <rect x="0" y="72" width="660" height="58" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+          <rect x="14" y="86" width="28" height="28" rx="14" fill="#1e40af"/>
+          <text x="28" y="106" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">2</text>
+          <text x="56" y="98" font-size="13" font-weight="700" fill="#1e40af">Level 1</text>
+          <text x="56" y="114" font-size="10" fill="#6b7280">mid &middot; voxel = &kappa;&epsilon;</text>
+          <rect x="170" y="86" width="80" height="28" rx="6" fill="#93c5fd"/>
+          <text x="210" y="105" text-anchor="middle" font-size="11" font-weight="600" fill="#1e3a5f">~16%</text>
+          <text x="590" y="105" font-size="10" fill="#6b7280">uses L2 context</text>
+
+          <!-- Step 1 (encoded first): L2 — coarsest -->
+          <rect x="0" y="144" width="660" height="58" rx="10" fill="#faf5ff" stroke="#c4b5fd" stroke-width="1.5"/>
+          <rect x="14" y="158" width="28" height="28" rx="14" fill="#7c3aed"/>
+          <text x="28" y="178" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">1</text>
+          <text x="56" y="170" font-size="13" font-weight="700" fill="#7c3aed">Level 2</text>
+          <text x="56" y="186" font-size="10" fill="#6b7280">coarsest &middot; voxel = &kappa;&sup2;&epsilon;</text>
+          <rect x="170" y="158" width="16" height="28" rx="6" fill="#c4b5fd"/>
+          <text x="196" y="177" font-size="11" font-weight="600" fill="#7c3aed">~4%</text>
+          <text x="590" y="177" font-size="10" fill="#6b7280">encoded first</text>
+
+          <!-- τ annotation between L1 and L2 -->
+          <text x="278" y="140" text-anchor="middle" font-size="10" fill="#9ca3af">&tau; = |L(k+1)| / |L(k)| &asymp; 0.2</text>
+        </svg>
+        <div class="diagram-caption">Anchor partitioning: Level 2 (coarsest, ~4%) is encoded first, then Level 1 using L2 as context, then Level 0. The target ratio &tau; &asymp; 0.2 between adjacent levels is found automatically via binary search on &kappa;.</div>
+      </div>
+
+      <h3>2. Autoregressive Coding</h3>
+      <p>
+        Encoding proceeds coarse-to-fine: Level 2 first, then Level 1 conditioned on decoded Level 2, then Level 0 conditioned on both. For each anchor \(\mathbf{v}_i^k\) in level \(k\), its distribution is modeled as:
+      </p>
+      <p>
+        \[
+          p(\mathbf{f}_i^k \mid \boldsymbol{\psi}_i^k) = \left(\mathcal{N}(\boldsymbol{\mu}_i^k, \boldsymbol{\sigma}_i^k) * \mathcal{U}\left(-\tfrac{\Delta}{2}, \tfrac{\Delta}{2}\right)\right)(\mathbf{f}_i^k)
+        \]
+      </p>
+      <p>
+        where \(\boldsymbol{\mu}, \boldsymbol{\sigma}, \Delta\) are predicted by a small MLP from the context \(\boldsymbol{\psi}_i^k\). The context includes:
+      </p>
+      <ul>
+        <li><strong>For the coarsest level (L2):</strong> just the anchor&rsquo;s position \(\mathbf{x}_i\) (no decoded neighbors yet)</li>
+        <li><strong>For finer levels (L1, L0):</strong> the already-decoded neighboring anchor&rsquo;s feature \(\mathbf{f}_j^{k+1}\), scaling \(\mathbf{l}_j^{k+1}\), and position \(\mathbf{x}_i^k\)</li>
+      </ul>
+      <p>
+        The key insight: this is <em>not</em> per-element autoregressive (which would be agonizingly slow). It&rsquo;s per-<em>level</em>&mdash;only 3 iterations of the loop, and within each level all anchors are coded in parallel. This is why the decoding overhead is negligible compared to pixel-level autoregressive models in image compression.
+      </p>
+
+      <h3>3. Anchor Forward</h3>
+      <p>
+        A subtle but important trick: anchors decoded at coarser levels are <strong>reused</strong> at the finest level for rendering. They&rsquo;re not just context&mdash;they&rsquo;re actual scene content. This avoids storing duplicate anchors across levels and slightly reduces the total anchor count.
+      </p>
+
+      <!-- Paper figure: Figure 3 (overall framework) -->
+      <figure class="paper-figure">
+        <img src="https://arxiv.org/html/2405.20721v1/x3.png" alt="ContextGS overall framework with 3 levels, hyperprior, and entropy coding" loading="lazy" />
+        <figcaption>The overall framework. Three levels of anchors are encoded coarse-to-fine. Hyperprior features provide additional per-anchor priors. At test time, rendering is identical to Scaffold-GS&mdash;no overhead.</figcaption>
+      </figure>
+
+      <!-- ============================================================ -->
+      <h2>Hyperprior: Giving L2 Something to Work With</h2>
+
+      <p>
+        The coarsest level (L2) has no decoded neighbors to condition on. Position alone isn&rsquo;t expressive enough to predict feature distributions accurately. The solution: attach a small <strong>hyperprior feature</strong> \(\mathbf{z}_i \in \mathbb{R}^{50/h_c}\) to each anchor (where \(h_c = 4\), so 12&ndash;13 dims). These are quantized to integers and entropy-coded using a fully factorized prior model &agrave; la Ball&eacute; et al.
+      </p>
+      <p>
+        The hyperprior is jointly optimized end-to-end: it learns to capture whatever information about the anchor feature distribution can&rsquo;t be predicted from position and spatial context alone. In practice, it adds a small storage overhead (~1 MB on BungeeNeRF) but enables much tighter entropy bounds.
+      </p>
+
+      <!-- Diagram: Where the bits go — horizontal stacked bar -->
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210" width="760" height="210" font-family="IBM Plex Sans, sans-serif">
+          <text x="380" y="22" text-anchor="middle" font-weight="700" font-size="14" fill="#374151">Where Do the Bits Go?</text>
+          <text x="380" y="40" text-anchor="middle" font-size="11" fill="#6b7280">rome scene, BungeeNeRF &mdash; Total: 14.06 MB (Scaffold-GS: 187 MB)</text>
+
+          <!-- Stacked horizontal bar -->
+          <g transform="translate(60, 60)">
+            <!-- Feature 41.3% = 264px of 640 -->
+            <rect x="0" y="0" width="264" height="40" rx="6" fill="#93c5fd"/>
+            <text x="132" y="24" text-anchor="middle" font-size="11" font-weight="600" fill="#1e3a5f">Feature 5.8 MB</text>
+            <!-- Position 18.1% = 116px -->
+            <rect x="264" y="0" width="116" height="40" fill="#86efac"/>
+            <text x="322" y="24" text-anchor="middle" font-size="10" font-weight="600" fill="#14532d">Pos 2.5</text>
+            <!-- Offset 18.2% = 117px -->
+            <rect x="380" y="0" width="117" height="40" fill="#fde68a"/>
+            <text x="438" y="24" text-anchor="middle" font-size="10" font-weight="600" fill="#713f12">Offset 2.6</text>
+            <!-- Scaling 11.3% = 72px -->
+            <rect x="497" y="0" width="72" height="40" fill="#fbcfe8"/>
+            <text x="533" y="24" text-anchor="middle" font-size="9" font-weight="600" fill="#831843">Scale 1.6</text>
+            <!-- Hyperprior 5.5% = 35px -->
+            <rect x="569" y="0" width="35" height="40" fill="#c4b5fd"/>
+            <!-- Mask 3.2% = 21px -->
+            <rect x="604" y="0" width="21" height="40" fill="#fdba74"/>
+            <!-- MLPs 2.2% = 15px -->
+            <rect x="625" y="0" width="15" height="40" rx="0" fill="#d1d5db"/>
+            <!-- Right rounded corner -->
+            <rect x="625" y="0" width="15" height="40" rx="6" fill="#d1d5db"/>
+            <!-- Left rounded corner -->
+            <rect x="0" y="0" width="10" height="40" rx="6" fill="#93c5fd"/>
+          </g>
+
+          <!-- Percentage labels below bar -->
+          <g transform="translate(60, 112)">
+            <text x="132" y="0" text-anchor="middle" font-size="10" fill="#6b7280">41%</text>
+            <text x="322" y="0" text-anchor="middle" font-size="10" fill="#6b7280">18%</text>
+            <text x="438" y="0" text-anchor="middle" font-size="10" fill="#6b7280">18%</text>
+            <text x="533" y="0" text-anchor="middle" font-size="10" fill="#6b7280">11%</text>
+          </g>
+
+          <!-- Legend for small segments -->
+          <g transform="translate(140, 140)">
+            <rect x="0" y="0" width="14" height="14" rx="3" fill="#c4b5fd"/>
+            <text x="20" y="12" font-size="11" fill="#374151">Hyperprior 0.8 MB (6%)</text>
+
+            <rect x="180" y="0" width="14" height="14" rx="3" fill="#fdba74"/>
+            <text x="200" y="12" font-size="11" fill="#374151">Mask 0.5 MB (3%)</text>
+
+            <rect x="340" y="0" width="14" height="14" rx="3" fill="#d1d5db"/>
+            <text x="360" y="12" font-size="11" fill="#374151">MLPs 0.3 MB (2%)</text>
+          </g>
+        </svg>
+        <div class="diagram-caption">Storage breakdown for a ContextGS model. Features dominate at 41%, but everything is entropy-coded. Hyperprior adds only 6% overhead for significant coding gains.</div>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2>Training Objective</h2>
+
+      <p>
+        The loss is a standard rate-distortion tradeoff, jointly optimizing rendering quality and bitrate:
+      </p>
+      <p>
+        \[
+          \mathcal{L} = \mathcal{L}_\text{scaffold} + \lambda_e \mathcal{L}_\text{entropy} + \lambda_m \mathcal{L}_\text{mask}
+        \]
+      </p>
+      <p>
+        where \(\mathcal{L}_\text{scaffold}\) is the standard Scaffold-GS reconstruction loss (L1 + SSIM), \(\mathcal{L}_\text{entropy}\) is the total bitrate estimate (hyperprior bits + anchor feature bits across all levels), and \(\mathcal{L}_\text{mask}\) regularizes the offset masks. Different \(\lambda_e\) values give different rate-distortion tradeoffs. The training uses the same 30K iterations and growing hyperparameters as Scaffold-GS.
+      </p>
+
+      <div class="callout">
+        <p><strong>At test time</strong>, rendering is <em>exactly</em> Scaffold-GS&mdash;no context model, no MLP overhead. The entropy model is only used for encoding/decoding the bitstream. Once decoded, the anchor features are identical to what Scaffold-GS would use.</p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2>Results</h2>
+
+      <p>
+        The comparison spans four datasets (Mip-NeRF 360, Tanks &amp; Temples, Deep Blending, BungeeNeRF) against 8 baselines including 3DGS, Scaffold-GS, HAC, Compact3DGS, and others.
+      </p>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>PSNR &uarr;</th><th>SSIM &uarr;</th><th>Size (MB) &darr;</th></tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4" style="text-align:center; font-weight:600; background:var(--bg-soft,#f3f4f6);">Mip-NeRF 360</td></tr>
+          <tr><td>3DGS</td><td>27.49</td><td>0.813</td><td>744.7</td></tr>
+          <tr><td>Scaffold-GS</td><td>27.50</td><td>0.806</td><td>253.9</td></tr>
+          <tr><td>HAC</td><td>27.53</td><td>0.807</td><td>15.26</td></tr>
+          <tr><td><strong>ContextGS (low)</strong></td><td><strong>27.62</strong></td><td>0.808</td><td><strong>12.68</strong></td></tr>
+          <tr><td><strong>ContextGS (high)</strong></td><td><strong>27.75</strong></td><td><strong>0.811</strong></td><td>18.41</td></tr>
+          <tr><td colspan="4" style="text-align:center; font-weight:600; background:var(--bg-soft,#f3f4f6);">Deep Blending</td></tr>
+          <tr><td>Scaffold-GS</td><td>30.21</td><td>0.906</td><td>66.00</td></tr>
+          <tr><td>HAC</td><td>29.98</td><td>0.902</td><td>4.35</td></tr>
+          <tr><td><strong>ContextGS (low)</strong></td><td><strong>30.11</strong></td><td><strong>0.907</strong></td><td><strong>3.45</strong></td></tr>
+          <tr><td colspan="4" style="text-align:center; font-weight:600; background:var(--bg-soft,#f3f4f6);">BungeeNeRF</td></tr>
+          <tr><td>Scaffold-GS</td><td>26.62</td><td>0.865</td><td>183.0</td></tr>
+          <tr><td>HAC</td><td>26.48</td><td>0.845</td><td>18.49</td></tr>
+          <tr><td><strong>ContextGS (low)</strong></td><td><strong>26.90</strong></td><td><strong>0.866</strong></td><td><strong>14.00</strong></td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        ContextGS consistently beats HAC (the concurrent state-of-the-art) on both quality <em>and</em> size. On BungeeNeRF it&rsquo;s particularly striking: +0.42 dB PSNR over HAC at 24% less storage. The interesting part is that it also beats <em>Scaffold-GS itself</em> on PSNR&mdash;the entropy constraint acts as a regularizer that actually helps rendering quality.
+      </p>
+
+      <!-- Paper figure: RD curves -->
+      <figure class="paper-figure">
+        <img src="https://arxiv.org/html/2405.20721v1/x4.png" alt="Rate-Distortion curves comparing ContextGS with baselines" loading="lazy" />
+        <figcaption>Rate-Distortion curves across datasets. ContextGS (blue) dominates across a wide range of bitrates, consistently achieving better quality at the same size. Note the log-scale x-axis.</figcaption>
+      </figure>
+
+      <!-- ============================================================ -->
+      <h2>Ablation: What Actually Matters</h2>
+
+      <p>
+        The ablation study on BungeeNeRF cleanly isolates each component:
+      </p>
+
+      <table>
+        <thead>
+          <tr><th>Configuration</th><th>Size (MB) &darr;</th><th>PSNR &uarr;</th><th>&Delta; Size vs. Baseline</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Scaffold-GS</td><td>183.0</td><td>26.62</td><td>&mdash;</td></tr>
+          <tr><td>+ Entropy coding + Mask (baseline)</td><td>18.67</td><td>26.93</td><td>&mdash;</td></tr>
+          <tr><td>+ Hyperprior only</td><td>15.03</td><td>26.91</td><td>&minus;19.5%</td></tr>
+          <tr><td>+ Context model only</td><td>15.41</td><td>26.92</td><td>&minus;17.5%</td></tr>
+          <tr><td><strong>+ Both (ContextGS)</strong></td><td><strong>14.00</strong></td><td>26.90</td><td><strong>&minus;25.0%</strong></td></tr>
+        </tbody>
+      </table>
+
+      <p>
+        A few observations:
+      </p>
+      <ul>
+        <li>Just adding entropy coding + masking to Scaffold-GS already gives you a 10&times; reduction (183 &rarr; 18.67 MB). This is a strong baseline that many papers don&rsquo;t even compare against.</li>
+        <li>The context model and hyperprior contribute roughly equally (~18&ndash;20% each), and they stack for a 25% combined reduction.</li>
+        <li>PSNR is basically unchanged across all configurations&mdash;the compression is essentially &ldquo;free&rdquo; in terms of quality.</li>
+      </ul>
+
+      <!-- Diagram: Compression waterfall -->
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 200" width="760" height="200" font-family="IBM Plex Sans, sans-serif">
+          <text x="380" y="22" text-anchor="middle" font-weight="700" font-size="14" fill="#374151">Compression Waterfall (BungeeNeRF)</text>
+
+          <!-- Step boxes with centered text -->
+          <!-- Step 1: Scaffold-GS -->
+          <rect x="30" y="50" width="120" height="52" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5"/>
+          <text x="90" y="72" text-anchor="middle" font-size="10" fill="#991b1b">Scaffold-GS</text>
+          <text x="90" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#991b1b">183 MB</text>
+
+          <!-- Arrow 1 -->
+          <g transform="translate(158, 76)">
+            <line x1="0" y1="0" x2="24" y2="0" stroke="#9ca3af" stroke-width="1.5"/>
+            <polygon points="22,-4 22,4 30,0" fill="#9ca3af"/>
+          </g>
+          <text x="170" y="64" text-anchor="middle" font-size="8" fill="#6b7280">&minus;89.8%</text>
+
+          <!-- Step 2: + Entropy -->
+          <rect x="196" y="50" width="110" height="52" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+          <text x="251" y="72" text-anchor="middle" font-size="10" fill="#166534">+ entropy + mask</text>
+          <text x="251" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#166534">18.7 MB</text>
+
+          <!-- Arrow 2 -->
+          <g transform="translate(314, 76)">
+            <line x1="0" y1="0" x2="24" y2="0" stroke="#9ca3af" stroke-width="1.5"/>
+            <polygon points="22,-4 22,4 30,0" fill="#9ca3af"/>
+          </g>
+          <text x="326" y="64" text-anchor="middle" font-size="8" fill="#6b7280">&minus;19.5%</text>
+
+          <!-- Step 3: + Hyperprior -->
+          <rect x="352" y="50" width="110" height="52" rx="8" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.5"/>
+          <text x="407" y="72" text-anchor="middle" font-size="10" fill="#1e40af">+ hyperprior</text>
+          <text x="407" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af">15.0 MB</text>
+
+          <!-- Arrow 3 -->
+          <g transform="translate(470, 76)">
+            <line x1="0" y1="0" x2="24" y2="0" stroke="#9ca3af" stroke-width="1.5"/>
+            <polygon points="22,-4 22,4 30,0" fill="#9ca3af"/>
+          </g>
+          <text x="482" y="64" text-anchor="middle" font-size="8" fill="#6b7280">&minus;6.9%</text>
+
+          <!-- Step 4: + Context (final) -->
+          <rect x="502" y="50" width="110" height="52" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+          <text x="557" y="72" text-anchor="middle" font-size="10" fill="#1e40af">+ context model</text>
+          <text x="557" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#1e40af">14.0 MB</text>
+
+          <!-- Final result badge -->
+          <rect x="630" y="55" width="110" height="42" rx="8" fill="#166534"/>
+          <text x="685" y="74" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">115&times; smaller</text>
+          <text x="685" y="90" text-anchor="middle" font-size="10" fill="#bbf7d0">+0.28 dB PSNR</text>
+
+          <!-- Origin reference -->
+          <text x="380" y="130" text-anchor="middle" font-size="10" fill="#9ca3af">Vanilla 3DGS for the same dataset: 1,616 MB (1.6 GB)</text>
+
+          <!-- Bracket showing total -->
+          <line x1="30" y1="140" x2="612" y2="140" stroke="#d1d5db" stroke-width="1" stroke-dasharray="4,3"/>
+        </svg>
+        <div class="diagram-caption">Step-by-step compression gains. The biggest single jump comes from Scaffold-GS + entropy coding. The context model and hyperprior add meaningful incremental gains on top.</div>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2>Speed: Not What You&rsquo;d Expect</h2>
+
+      <p>
+        &ldquo;Autoregressive coding&rdquo; usually means &ldquo;painfully slow decoding.&rdquo; In image compression, pixel-level autoregressive models can take minutes to decode a single image. But ContextGS&rsquo;s autoregressive loop has only 3 iterations (one per level), and within each level, all anchors are coded in parallel. The actual decode time is ~18 seconds on an RTX 3090&mdash;comparable to non-autoregressive entropy coding baselines like HAC.
+      </p>
+      <p>
+        After decompression, rendering speed is identical to (or faster than) Scaffold-GS, because the masking loss tends to reduce the number of active anchors.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>Why Not Encode Positions?</h2>
+
+      <p>
+        An interesting design decision: the authors tried using the hyperprior to entropy-code anchor <em>positions</em> too (marked &ldquo;w/ APC&rdquo; in the paper). It works&mdash;saves about 1 MB&mdash;but the adaptive quantization needed for position encoding hurts PSNR, and the fixed quantization alternative increases the number of symbols so much that encoding/decoding slows down significantly (41s encode vs. 20s without). Since positions are only ~18% of the total, they just store them raw. Pragmatic.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>Key Takeaways</h2>
+
+      <ul>
+        <li>
+          <strong>Context models work in 3D.</strong> The idea of predicting not-yet-coded elements from already-coded neighbors transfers cleanly from 2D images to 3D anchor-based representations. The spatial redundancy among anchors is real and exploitable.
+        </li>
+        <li>
+          <strong>Level-wise &gt; element-wise autoregression.</strong> By operating at 3 hierarchical levels instead of per-element, ContextGS avoids the crippling serial bottleneck of traditional autoregressive models. You get most of the coding gain with none of the speed penalty.
+        </li>
+        <li>
+          <strong>Entropy regularization helps quality.</strong> A recurring theme in 3DGS compression: constraining the bitrate during training acts as an implicit regularizer, often improving PSNR beyond the uncompressed baseline.
+        </li>
+        <li>
+          <strong>Anchor forward is free compression.</strong> Reusing coarser-level anchors at the finest level avoids duplicate storage and actually improves quality vs. keeping them separate.
+        </li>
+        <li>
+          <strong>Strong baselines matter.</strong> Just adding entropy coding + masking to Scaffold-GS already beats most competitors. The context model and hyperprior are incremental-but-meaningful improvements on top of an already-strong baseline.
+        </li>
+      </ul>
+
+      <h3>Things I&rsquo;d Want to See Next</h3>
+      <ul>
+        <li>The 3-level hierarchy is fixed. Learning the optimal number of levels and their ratios per scene (or even spatially varying within a scene) could help&mdash;flat regions might need fewer levels, detailed areas more.</li>
+        <li>The context model uses only the single nearest coarser-level anchor. Aggregating from multiple neighbors (k-NN context) might capture richer spatial patterns at the cost of more computation.</li>
+        <li>The adaptive quantization step-size \(\Delta\) is learned per channel. More granular (per-block or per-region) quantization could further tighten the rate-distortion curve, similar to what SizeGS does with its ILP-based bit allocation.</li>
+        <li>Integration with hash-grid priors (as in HAC) could be complementary&mdash;hash features capture scene-wide patterns, while the context model captures local redundancy.</li>
+      </ul>
+
+      <hr />
+      <p style="color: var(--muted, #6b7280); font-size: 0.92rem;">
+        Wang, Y., Li, Z., Guo, L., Yang, W., Kot, A. C., &amp; Wen, B. (2024). ContextGS: Compact 3D Gaussian Splatting with Anchor Level Context Model. <a href="https://arxiv.org/abs/2405.20721" target="_blank" rel="noreferrer">arXiv:2405.20721</a>
+      </p>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell">&copy; Seunghyeon Seo</div>
+    </footer>
+
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] } };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  </body>
+</html>
