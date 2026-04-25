@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Paper Review] Scaffold-GS: Structured 3D Gaussians for View-Adaptive Rendering | Seunghyeon's Homepage</title>
+    <meta name="description" content="Review of Scaffold-GS (CVPR 2024 Highlight): anchor-based 3D Gaussian Splatting that predicts neural Gaussians on-the-fly for view-adaptive rendering." />
+    <meta property="og:title" content="[Paper Review] Scaffold-GS: Structured 3D Gaussians for View-Adaptive Rendering" />
+    <meta property="og:description" content="Scaffold-GS introduces anchor points that spawn neural Gaussians on-the-fly, reducing redundancy while handling view-dependent effects." />
+    <meta property="og:type" content="article" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .blog-article {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        line-height: 1.8;
+        font-size: 1.05rem;
+      }
+      .blog-article h1 { font-size: 1.75rem; margin-bottom: 8px; line-height: 1.3; }
+      .blog-article .meta { color: var(--muted, #6b7280); margin-bottom: 36px; font-size: 0.95rem; }
+      .blog-article h2 { margin-top: 44px; margin-bottom: 14px; font-size: 1.3rem; border-bottom: 1px solid var(--border, #e5e7eb); padding-bottom: 6px; }
+      .blog-article h3 { margin-top: 28px; margin-bottom: 10px; font-size: 1.12rem; }
+      .blog-article p { margin-bottom: 16px; }
+      .blog-article img { max-width: 100%; border-radius: 6px; margin: 16px 0; }
+      .blog-article figure { margin: 24px 0; text-align: center; }
+      .blog-article figcaption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 8px; font-style: italic; }
+      .blog-article pre { background: var(--bg-soft, #f3f4f6); padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 0.88rem; margin-bottom: 18px; line-height: 1.55; }
+      .blog-article code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 0.9em; }
+      .blog-article p > code, .blog-article li > code { background: var(--bg-soft, #f3f4f6); padding: 2px 5px; border-radius: 3px; }
+      .blog-article blockquote { border-left: 3px solid var(--accent, #2563eb); padding: 12px 16px; color: var(--fg, #374151); background: var(--bg-soft, #f3f4f6); margin: 18px 0; border-radius: 0 6px 6px 0; }
+      .blog-article blockquote p { margin-bottom: 0; }
+      .blog-article ul, .blog-article ol { margin-bottom: 16px; padding-left: 24px; }
+      .blog-article li { margin-bottom: 6px; }
+      .blog-article a { color: var(--accent, #2563eb); }
+      .blog-article .back-link { display: inline-block; margin-bottom: 24px; font-size: 0.95rem; }
+      .blog-article table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.92rem; }
+      .blog-article th, .blog-article td { border: 1px solid var(--border, #e5e7eb); padding: 8px 12px; text-align: center; }
+      .blog-article th { background: var(--bg-soft, #f3f4f6); font-weight: 600; }
+      .blog-article td:first-child { text-align: left; }
+      .blog-article .callout { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+      .blog-article .callout p { margin-bottom: 0; }
+      .blog-article hr { border: none; border-top: 1px solid var(--border, #e5e7eb); margin: 36px 0; }
+      .blog-article .paper-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 0.95rem; margin-bottom: 24px; }
+      .blog-article .paper-info dt { font-weight: 600; color: var(--muted, #6b7280); }
+      .blog-article .paper-info dd { margin: 0; }
+      .blog-article .diagram { margin: 28px 0; text-align: center; overflow-x: auto; }
+      .blog-article .diagram svg { max-width: 100%; height: auto; }
+      .blog-article .diagram-caption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 10px; font-style: italic; }
+      .blog-article .paper-figure { margin: 28px 0; text-align: center; }
+      .blog-article .paper-figure img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .paper-figure figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 640px; margin-left: auto; margin-right: auto; }
+      .blog-article .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+      .blog-article .stat-card { background: var(--bg-soft, #f3f4f6); border-radius: 10px; padding: 18px 14px; text-align: center; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+      .blog-article .stat-card .stat-label { font-size: 0.82rem; color: var(--muted, #6b7280); margin-top: 4px; }
+      @media (max-width: 600px) { .blog-article .stat-grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="site-name" href="../index.html">Seunghyeon's Homepage</a>
+        <nav class="site-nav">
+          <a href="../index.html">Home</a>
+          <a href="../publications.html">Publications</a>
+          <a href="../experience.html">Experience</a>
+          <a href="../blog.html" class="active" aria-current="page">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="blog-article">
+      <a class="back-link" href="../blog.html">&larr; Back to Blog</a>
+
+      <h1>[Paper Review] Scaffold-GS: Structured 3D Gaussians for View-Adaptive Rendering</h1>
+
+      <p class="meta">Apr. 25, 2026 &middot; Paper Review</p>
+
+      <dl class="paper-info">
+        <dt>Paper</dt>
+        <dd>Scaffold-GS: Structured 3D Gaussians for View-Adaptive Rendering</dd>
+        <dt>Authors</dt>
+        <dd>Tao Lu, Mulin Yu, Linning Xu, Yuanbo Xiangli, Limin Wang, Dahua Lin, Bo Dai</dd>
+        <dt>Venue</dt>
+        <dd>CVPR 2024 (Highlight)</dd>
+        <dt>Links</dt>
+        <dd><a href="https://arxiv.org/abs/2312.00109" target="_blank" rel="noreferrer">arXiv</a> &middot; <a href="https://github.com/city-super/Scaffold-GS" target="_blank" rel="noreferrer">Code</a> &middot; <a href="https://city-super.github.io/scaffold-gs/" target="_blank" rel="noreferrer">Project</a></dd>
+      </dl>
+
+      <!-- ============================================================ -->
+      <h2>The Problem with Vanilla 3DGS</h2>
+
+      <p>
+        3D Gaussian Splatting (3DGS) represents scenes as millions of independent Gaussian primitives, each with its own position, color (via spherical harmonics), scale, rotation, and opacity. It renders beautifully and fast. But there&rsquo;s a fundamental issue: every Gaussian is <em>static</em>. Its attributes are baked in at training time and don&rsquo;t change based on the viewing direction or distance.
+      </p>
+      <p>
+        This leads to three practical problems:
+      </p>
+      <ul>
+        <li><strong>Redundancy</strong> &mdash; The model spawns overlapping Gaussians to cover the same surface from different training views. A flat wall might have dozens of Gaussians stacked on top of each other, each optimized for a slightly different viewpoint.</li>
+        <li><strong>Poor generalization</strong> &mdash; When you render from a novel view far from any training view, the static Gaussians can&rsquo;t adapt. You get floaters, structural artifacts, and broken specularities.</li>
+        <li><strong>View-dependent effects</strong> &mdash; Spherical harmonics can represent some view-dependent color, but they struggle with sharp reflections, transparency, and shadows.</li>
+      </ul>
+      <p>
+        Scaffold-GS solves all three by introducing a simple structural change: instead of storing every Gaussian&rsquo;s attributes explicitly, store <strong>anchor points</strong> that generate Gaussians <em>on-the-fly</em> conditioned on the current view.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>The Core Idea: Anchors + Neural Gaussians</h2>
+
+      <p>
+        The key insight is a two-level hierarchy:
+      </p>
+      <ol>
+        <li><strong>Anchor points</strong> capture the scene&rsquo;s spatial structure. They&rsquo;re initialized by voxelizing SfM points and placed at voxel centers.</li>
+        <li><strong>Neural Gaussians</strong> are <em>predicted</em> from each anchor at render time. Small MLPs decode Gaussian attributes (opacity, color, scale, rotation) conditioned on the viewing direction and distance.</li>
+      </ol>
+      <p>
+        Each anchor spawns \(k\) neural Gaussians (default \(k=10\)) via learned 3D offsets, but only the ones with positive predicted opacity are actually rasterized. This means the model can dynamically decide <em>which</em> Gaussians matter for the current view and <em>what</em> they should look like.
+      </p>
+
+      <!-- Pipeline figure from the project page -->
+      <figure class="paper-figure">
+        <img src="https://city-super.github.io/scaffold-gs/static/images/pipeline.png" alt="Scaffold-GS pipeline: voxelization, anchor-based neural Gaussian spawning, and rasterization" loading="lazy" />
+        <figcaption>The Scaffold-GS pipeline. (a) SfM points are voxelized into anchors. (b) Each visible anchor spawns neural Gaussians via MLPs conditioned on view direction/distance. (c) Only non-trivial Gaussians (opacity &gt; 0) are rasterized.</figcaption>
+      </figure>
+
+      <!-- ============================================================ -->
+      <h2>Architecture Walkthrough</h2>
+
+      <h3>Per-Anchor Data Structure</h3>
+
+      <p>
+        Each anchor is surprisingly lightweight. It stores:
+      </p>
+
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" width="720" height="300" font-family="IBM Plex Sans, sans-serif">
+          <defs>
+            <marker id="arr" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto"><polygon points="0,0 6,2 0,4" fill="#6b7280"/></marker>
+          </defs>
+
+          <!-- Title -->
+          <text x="360" y="22" text-anchor="middle" font-weight="700" font-size="14" fill="#374151">Per-Anchor Data Structure</text>
+
+          <!-- Anchor box -->
+          <rect x="16" y="44" width="336" height="244" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+          <text x="184" y="70" text-anchor="middle" font-weight="700" font-size="13" fill="#166534">Anchor Point</text>
+
+          <!-- Attributes -->
+          <g font-size="11" fill="#374151">
+            <rect x="32" y="86" width="128" height="28" rx="6" fill="#bbf7d0"/>
+            <text x="96" y="104" text-anchor="middle" font-weight="600" fill="#166534">Feature f</text>
+            <text x="174" y="104" font-size="10" fill="#6b7280">&isin; &Ropf;&sup3;&sup2;</text>
+
+            <rect x="32" y="124" width="128" height="28" rx="6" fill="#bbf7d0"/>
+            <text x="96" y="142" text-anchor="middle" font-weight="600" fill="#166534">Position x</text>
+            <text x="174" y="142" font-size="10" fill="#6b7280">&isin; &Ropf;&sup3;</text>
+
+            <rect x="32" y="162" width="128" height="28" rx="6" fill="#bbf7d0"/>
+            <text x="96" y="180" text-anchor="middle" font-weight="600" fill="#166534">Scaling l</text>
+            <text x="174" y="176" font-size="10" fill="#6b7280">&isin; &Ropf;&#8310;</text>
+            <text x="174" y="190" font-size="9" fill="#9ca3af">3 anchor + 3 base</text>
+
+            <rect x="32" y="202" width="128" height="28" rx="6" fill="#bbf7d0"/>
+            <text x="96" y="220" text-anchor="middle" font-weight="600" fill="#166534">Offsets O</text>
+            <text x="174" y="216" font-size="10" fill="#6b7280">&isin; &Ropf;&#185;&#8304;&times;&sup3;</text>
+            <text x="174" y="230" font-size="9" fill="#9ca3af">k = 10 per anchor</text>
+
+            <rect x="32" y="246" width="128" height="28" rx="6" fill="#bbf7d0"/>
+            <text x="96" y="264" text-anchor="middle" font-weight="600" fill="#166534">Opacity &alpha;</text>
+            <text x="174" y="264" font-size="10" fill="#6b7280">&isin; &Ropf;&sup1;</text>
+          </g>
+
+          <!-- Arrow to MLPs -->
+          <line x1="356" y1="166" x2="392" y2="166" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+          <!-- MLP box -->
+          <rect x="396" y="44" width="308" height="244" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+          <text x="550" y="70" text-anchor="middle" font-weight="700" font-size="13" fill="#1e40af">View-Conditioned MLPs</text>
+          <text x="550" y="88" text-anchor="middle" font-size="10" fill="#9ca3af">input: [ f, view_dir, distance ]</text>
+
+          <g font-size="11">
+            <rect x="414" y="104" width="272" height="38" rx="6" fill="#bfdbfe"/>
+            <text x="500" y="128" text-anchor="middle" font-weight="600" fill="#1e40af">Opacity MLP</text>
+            <text x="668" y="128" text-anchor="end" font-size="10" fill="#6b7280">&rarr; k values</text>
+
+            <rect x="414" y="152" width="272" height="38" rx="6" fill="#bfdbfe"/>
+            <text x="500" y="176" text-anchor="middle" font-weight="600" fill="#1e40af">Covariance MLP</text>
+            <text x="668" y="176" text-anchor="end" font-size="10" fill="#6b7280">&rarr; k &times; 7</text>
+
+            <rect x="414" y="200" width="272" height="38" rx="6" fill="#bfdbfe"/>
+            <text x="500" y="224" text-anchor="middle" font-weight="600" fill="#1e40af">Color MLP</text>
+            <text x="668" y="224" text-anchor="end" font-size="10" fill="#6b7280">&rarr; k &times; 3</text>
+
+            <text x="550" y="262" text-anchor="middle" font-size="10" fill="#9ca3af">(+ appearance embedding for color)</text>
+          </g>
+        </svg>
+        <div class="diagram-caption">Each anchor stores a compact feature vector and spatial attributes. Three small MLPs predict the full Gaussian attributes at render time, conditioned on viewing direction and distance.</div>
+      </div>
+
+      <p>
+        The feature vector \(\mathbf{f} \in \mathbb{R}^{32}\) is the heart of each anchor&mdash;it encodes the local scene appearance. The scaling \(\mathbf{l} \in \mathbb{R}^{6}\) has a dual role: the first 3 components define the extent of the anchor&rsquo;s voxel (used to position spawned Gaussians via offsets), while the last 3 define the base scale of the spawned Gaussians. The offsets \(\mathbf{O} \in \mathbb{R}^{10 \times 3}\) are learned directions along which neural Gaussians are spawned:
+      </p>
+      <p>
+        \[
+          \boldsymbol{\mu}_i = \mathbf{x} + \mathbf{O}_i \cdot \mathbf{l}_{0:3}, \quad i = 0, \ldots, k-1
+        \]
+      </p>
+
+      <h3>View-Conditioned Decoding</h3>
+
+      <p>
+        Given a camera at position \(\mathbf{x}_c\), the MLPs receive:
+      </p>
+      <ul>
+        <li>The anchor feature \(\mathbf{f}\)</li>
+        <li>The normalized view direction \(\vec{\mathbf{d}}_c = \frac{\mathbf{x} - \mathbf{x}_c}{\|\mathbf{x} - \mathbf{x}_c\|}\)</li>
+        <li>The viewing distance \(\sigma_c = \|\mathbf{x} - \mathbf{x}_c\|\)</li>
+      </ul>
+      <p>
+        Each MLP is a simple 2-layer network (Linear &rarr; ReLU &rarr; Linear). The opacity MLP uses <code>tanh</code> activation (output in [&minus;1, 1]), and only Gaussians with predicted opacity &gt; 0 are rasterized. This gives the model a <em>per-view pruning</em> mechanism&mdash;Gaussians that don&rsquo;t contribute to the current viewpoint are simply not created.
+      </p>
+
+      <div class="callout">
+        <p><strong>Why is this powerful?</strong> The same anchor can produce different Gaussians depending on where the camera is. A glass surface might generate transparent Gaussians when viewed head-on but reflective ones at grazing angles. A distant tree might spawn fewer visible Gaussians than a close-up one. This is impossible with static 3DGS.</p>
+      </div>
+
+      <h3>Appearance Embedding</h3>
+      <p>
+        For in-the-wild scenes with varying lighting across captures, a per-camera learnable embedding \(\mathbf{e} \in \mathbb{R}^{32}\) is concatenated to the color MLP input. This lets the model disentangle view-dependent appearance from per-capture illumination changes.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>Initialization: From SfM Points to Anchors</h2>
+
+      <p>
+        Anchors are initialized by <strong>voxelizing</strong> the Structure-from-Motion point cloud:
+      </p>
+      <ol>
+        <li>Round each SfM point position to the nearest voxel grid: <code>np.round(point / voxel_size) * voxel_size</code></li>
+        <li>Remove duplicates&mdash;each voxel gets exactly one anchor at its center</li>
+        <li>Initial scaling is derived from k-NN distances; rotation is identity</li>
+      </ol>
+      <p>
+        If <code>voxel_size</code> isn&rsquo;t specified, the code automatically uses the median of each point&rsquo;s nearest-neighbor distance. This gives a scene-adaptive initialization without any manual tuning.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>Anchor Growing &amp; Pruning</h2>
+
+      <p>
+        Vanilla 3DGS uses a densification strategy that clones/splits Gaussians based on screen-space gradients. Scaffold-GS replaces this with an <strong>anchor-level growing and pruning</strong> scheme that&rsquo;s more structured and less prone to creating redundant primitives.
+      </p>
+
+      <h3>Growing</h3>
+      <p>
+        Every 100 iterations (between iterations 1,500&ndash;15,000), the model checks which neural Gaussians have large accumulated gradients&mdash;these are the ones the model is struggling to fit. Their positions become candidates for new anchors, but with a twist: candidates are quantized to a <strong>multi-resolution voxel grid</strong> with 3 hierarchy levels:
+      </p>
+
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 210" width="700" height="210" font-family="IBM Plex Sans, sans-serif">
+          <text x="350" y="22" text-anchor="middle" font-weight="700" font-size="14" fill="#374151">Multi-Resolution Anchor Growing</text>
+
+          <!-- Column headers -->
+          <text x="150" y="48" text-anchor="middle" font-size="9" font-weight="600" fill="#9ca3af" letter-spacing="0.5">GRID SIZE</text>
+          <text x="420" y="48" text-anchor="middle" font-size="9" font-weight="600" fill="#9ca3af" letter-spacing="0.5">GRADIENT THRESHOLD</text>
+          <text x="620" y="48" text-anchor="middle" font-size="9" font-weight="600" fill="#9ca3af" letter-spacing="0.5">SUBSAMPLE</text>
+
+          <!-- Level 0 -->
+          <rect x="0" y="58" width="700" height="44" rx="8" fill="#faf5ff" stroke="#c4b5fd" stroke-width="1.5"/>
+          <rect x="10" y="69" width="24" height="24" rx="12" fill="#7c3aed"/>
+          <text x="22" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">0</text>
+          <text x="48" y="78" font-size="12" font-weight="600" fill="#374151">Coarsest</text>
+          <text x="150" y="90" text-anchor="middle" font-size="10" fill="#6b7280">voxel_size &times; init_factor</text>
+          <text x="420" y="84" text-anchor="middle" font-size="10" fill="#6b7280">base &middot; 1&times;</text>
+          <text x="620" y="84" text-anchor="middle" font-size="11" font-weight="600" fill="#7c3aed">50%</text>
+
+          <!-- Level 1 -->
+          <rect x="0" y="110" width="700" height="44" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+          <rect x="10" y="121" width="24" height="24" rx="12" fill="#1e40af"/>
+          <text x="22" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">1</text>
+          <text x="48" y="130" font-size="12" font-weight="600" fill="#374151">Mid</text>
+          <text x="150" y="142" text-anchor="middle" font-size="10" fill="#6b7280">voxel_size &times; init_factor / 4</text>
+          <text x="420" y="136" text-anchor="middle" font-size="10" fill="#6b7280">base &middot; 2&times;</text>
+          <text x="620" y="136" text-anchor="middle" font-size="11" font-weight="600" fill="#1e40af">25%</text>
+
+          <!-- Level 2 -->
+          <rect x="0" y="162" width="700" height="44" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+          <rect x="10" y="173" width="24" height="24" rx="12" fill="#166534"/>
+          <text x="22" y="190" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">2</text>
+          <text x="48" y="182" font-size="12" font-weight="600" fill="#374151">Finest</text>
+          <text x="150" y="194" text-anchor="middle" font-size="10" fill="#6b7280">voxel_size &times; init_factor / 16</text>
+          <text x="420" y="188" text-anchor="middle" font-size="10" fill="#6b7280">base &middot; 4&times;</text>
+          <text x="620" y="188" text-anchor="middle" font-size="11" font-weight="600" fill="#166534">12.5%</text>
+        </svg>
+        <div class="diagram-caption">Anchors are grown at 3 hierarchy levels. Coarser levels have lower thresholds (easier to grow) and higher sampling rates. Finer levels require stronger gradient evidence and add fewer anchors.</div>
+      </div>
+
+      <p>
+        At each level, candidate positions are snapped to the corresponding grid, deduplicated against existing anchors, and randomly subsampled. Coarser levels have lower thresholds (easier to grow) and higher sampling rates; finer levels require stronger evidence. New anchors inherit features via max-pooling from their parent neural Gaussians.
+      </p>
+
+      <h3>Pruning</h3>
+      <p>
+        Anchors that don&rsquo;t contribute are removed: if an anchor&rsquo;s accumulated opacity is too low relative to its visibility count (<code>opacity_accum &lt; min_opacity &times; visit_count</code>), it&rsquo;s pruned. The <code>success_threshold</code> ensures only well-observed anchors are candidates for pruning&mdash;rarely-seen anchors are kept until there&rsquo;s enough evidence.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>Rendering Pipeline</h2>
+
+      <p>
+        The rendering pipeline has three stages:
+      </p>
+
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 116" width="720" height="116" font-family="IBM Plex Sans, sans-serif">
+          <defs>
+            <marker id="arr2" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0,0 8,2.5 0,5" fill="#374151"/></marker>
+          </defs>
+
+          <!-- Step 1 -->
+          <rect x="4" y="14" width="198" height="88" rx="10" fill="#faf5ff" stroke="#c4b5fd" stroke-width="1.5"/>
+          <text x="103" y="42" text-anchor="middle" font-weight="700" font-size="12" fill="#7c3aed">1. Frustum Culling</text>
+          <text x="103" y="62" text-anchor="middle" font-size="10" fill="#6b7280">Project anchor covariances</text>
+          <text x="103" y="76" text-anchor="middle" font-size="10" fill="#6b7280">to screen; keep visible ones</text>
+
+          <!-- Arrow -->
+          <line x1="206" y1="58" x2="254" y2="58" stroke="#374151" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+          <!-- Step 2 -->
+          <rect x="258" y="14" width="198" height="88" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+          <text x="357" y="42" text-anchor="middle" font-weight="700" font-size="12" fill="#1e40af">2. Spawn Gaussians</text>
+          <text x="357" y="62" text-anchor="middle" font-size="10" fill="#6b7280">MLPs predict attributes;</text>
+          <text x="357" y="76" text-anchor="middle" font-size="10" fill="#6b7280">mask out opacity &le; 0</text>
+
+          <!-- Arrow -->
+          <line x1="460" y1="58" x2="508" y2="58" stroke="#374151" stroke-width="1.5" marker-end="url(#arr2)"/>
+
+          <!-- Step 3 -->
+          <rect x="512" y="14" width="198" height="88" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+          <text x="611" y="42" text-anchor="middle" font-weight="700" font-size="12" fill="#166534">3. Rasterize</text>
+          <text x="611" y="62" text-anchor="middle" font-size="10" fill="#6b7280">Tile-based splatting</text>
+          <text x="611" y="76" text-anchor="middle" font-size="10" fill="#6b7280">(same as vanilla 3DGS)</text>
+        </svg>
+        <div class="diagram-caption">Three-stage rendering: view frustum culling at the anchor level, neural Gaussian spawning via MLPs, and standard tile-based rasterization.</div>
+      </div>
+
+      <p>
+        The first stage (<code>prefilter_voxel</code>) is cheap&mdash;it only checks whether each anchor&rsquo;s covariance ellipsoid is inside the view frustum. The second stage runs the three MLPs on visible anchors and applies the opacity mask. The third stage is identical to vanilla 3DGS: differentiable tile-based rasterization with alpha compositing.
+      </p>
+      <p>
+        The training loss is:
+      </p>
+      <p>
+        \[
+          \mathcal{L} = (1 - \lambda)\mathcal{L}_1 + \lambda\mathcal{L}_\text{D-SSIM} + \beta\mathcal{L}_\text{vol}
+        \]
+      </p>
+      <p>
+        where \(\mathcal{L}_\text{vol}\) is a volume regularization term that prevents Gaussians from becoming degenerate (infinitely thin or large). The default \(\lambda = 0.2\).
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>Why It Works: Reducing Redundancy</h2>
+
+      <p>
+        The fundamental advantage is that the anchor structure <em>forces</em> spatial organization onto the Gaussians. In vanilla 3DGS, Gaussians freely overlap and cluster&mdash;you often see dozens of semi-transparent Gaussians trying to represent the same surface. Scaffold-GS constrains this: each anchor owns a region of space, and its spawned Gaussians are spread within that region via learned offsets.
+      </p>
+      <p>
+        The view-conditioned opacity prediction adds another layer of efficiency. Instead of having separate Gaussians for different viewing angles, a single anchor can dynamically produce the right set of Gaussians for any viewpoint. A Gaussian that&rsquo;s relevant from the front but not the back simply gets predicted opacity &le; 0 for the back view and isn&rsquo;t rasterized.
+      </p>
+      <p>
+        The authors show that clustered anchor features exhibit interpretable patterns&mdash;similar materials and surfaces end up with similar features. This suggests the anchors actually learn a meaningful decomposition of the scene, not just an arbitrary fitting.
+      </p>
+
+      <!-- Feature clustering figure from project page -->
+      <figure class="paper-figure">
+        <img src="https://city-super.github.io/scaffold-gs/static/images/feature_clustering_web.png" alt="Scaffold-GS anchor feature clustering showing semantic grouping" loading="lazy" />
+        <figcaption>Clustered anchor features show interpretable scene decomposition: similar materials and surfaces group together, suggesting meaningful learned representations.</figcaption>
+      </figure>
+
+      <!-- ============================================================ -->
+      <h2>Results</h2>
+
+      <p>
+        Scaffold-GS was evaluated on Mip-NeRF 360, Tanks &amp; Temples, Deep Blending, and BungeeNeRF datasets. The headline numbers:
+      </p>
+
+      <!-- Stat cards -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color: #2563eb;">Fewer</div>
+          <div class="stat-label">primitives than 3DGS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #16a34a;">Better</div>
+          <div class="stat-label">quality on challenging views</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #9333ea;">Real-time</div>
+          <div class="stat-label">rendering maintained</div>
+        </div>
+      </div>
+
+      <p>
+        On standard benchmarks, Scaffold-GS matches or exceeds 3DGS in PSNR/SSIM while using significantly fewer Gaussians. But its real strength shows on <em>challenging</em> scenes:
+      </p>
+
+      <ul>
+        <li><strong>Reflections and specularity</strong> &mdash; The view-conditioned MLPs handle these naturally, unlike SH coefficients which have limited angular resolution.</li>
+        <li><strong>Texture-less regions</strong> &mdash; Vanilla 3DGS tends to hallucinate floaters in textureless areas; the anchor structure prevents this by constraining where Gaussians can appear.</li>
+        <li><strong>Multi-scale scenes</strong> &mdash; BungeeNeRF scenes span city-scale to close-up. The hierarchical growing strategy naturally distributes anchors at multiple resolutions.</li>
+        <li><strong>Novel viewpoints</strong> &mdash; Since Gaussians are predicted per-view, the model generalizes better to unseen angles.</li>
+      </ul>
+
+      <figure class="paper-figure">
+        <img src="https://city-super.github.io/scaffold-gs/static/images/teaser_big.png" alt="Scaffold-GS results on challenging scenes with reflections, transparency, and fine details" loading="lazy" />
+        <figcaption>Scaffold-GS handles transparency, specularity, reflections, texture-less regions, and fine-scale details better than vanilla 3DGS, while using fewer primitives.</figcaption>
+      </figure>
+
+      <!-- ============================================================ -->
+      <h2>The Downstream Impact</h2>
+
+      <p>
+        Scaffold-GS didn&rsquo;t just improve rendering&mdash;it became the <strong>backbone for an entire family of 3DGS compression methods</strong>. The anchor structure turns out to be perfect for compression because:
+      </p>
+      <ul>
+        <li><strong>Structured data</strong> &mdash; Anchors live on a voxel grid, which naturally maps to octree-based spatial coding (GPCC, etc.)</li>
+        <li><strong>Shared MLPs</strong> &mdash; The MLPs are tiny and shared across all anchors, so they add negligible overhead. The bulk of the storage is the anchor features.</li>
+        <li><strong>Spatial redundancy</strong> &mdash; Adjacent anchors have correlated features (similar materials/geometry), enabling context-based entropy coding.</li>
+        <li><strong>Compact representation</strong> &mdash; 73 floats per anchor × N anchors, versus 59+ floats per Gaussian × many more Gaussians in vanilla 3DGS.</li>
+      </ul>
+      <p>
+        Methods like <a href="contextgs-review.html">ContextGS</a>, HAC, and SizeGS all build on Scaffold-GS as their starting point. The anchor-level structure is what makes hierarchical entropy coding, RAHT transforms, and importance-based pruning tractable. Without Scaffold-GS, most of these compression techniques would have to deal with millions of unstructured points&mdash;a much harder problem.
+      </p>
+
+      <div class="callout">
+        <p><strong>In hindsight</strong>, Scaffold-GS&rsquo;s most lasting contribution may not be the rendering quality itself, but the <em>data structure</em>. It turned 3DGS from an unstructured point soup into something that can be indexed, compressed, and reasoned about spatially.</p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2>Key Takeaways</h2>
+
+      <ul>
+        <li>
+          <strong>View-adaptive is better than view-static.</strong> Predicting Gaussian attributes at render time (conditioned on the camera) is strictly more powerful than storing them. The cost is three small MLPs, but the savings in redundancy and improved generalization are substantial.
+        </li>
+        <li>
+          <strong>Structure pays off.</strong> Voxelizing SfM points into anchors seems like a simple idea, but it imposes a spatial organization that vanilla 3DGS completely lacks. This reduces floaters, improves robustness to novel views, and enables downstream compression.
+        </li>
+        <li>
+          <strong>Hierarchical growing beats naive densification.</strong> The multi-resolution growing strategy with gradient-based evidence accumulation is more principled than 3DGS&rsquo;s clone/split heuristic. It prevents the model from over-densifying in easy regions and under-covering in hard ones.
+        </li>
+        <li>
+          <strong>The opacity mask is underappreciated.</strong> The <code>tanh</code> opacity with a threshold at 0 gives each anchor a per-view &ldquo;kill switch&rdquo; for each of its Gaussians. This is what enables view-adaptive sparsity&mdash;the effective number of Gaussians changes depending on the viewpoint.
+        </li>
+        <li>
+          <strong>It&rsquo;s a compression-friendly design by accident.</strong> The authors didn&rsquo;t optimize for compression, but the anchor structure turned out to be the ideal foundation for it. Sometimes good abstractions have benefits beyond their original intent.
+        </li>
+      </ul>
+
+      <h3>Things I&rsquo;d Want to See Next</h3>
+      <ul>
+        <li>The MLPs are shared globally. Per-region or per-cluster MLPs might capture local appearance variations better (at the cost of more parameters).</li>
+        <li>The feature dimension (32) and offset count (10) are fixed. Adaptive allocation&mdash;more capacity for complex regions, less for simple ones&mdash;could improve the efficiency-quality tradeoff.</li>
+        <li>The voxel grid is uniform. An adaptive (e.g., octree-based) grid from the start would better handle scenes with varying density. Octree-GS (a follow-up from the same group) goes in this direction.</li>
+        <li>The appearance embedding is per-camera. A continuous embedding conditioned on camera parameters (exposure, white balance) would generalize better to unseen capture conditions.</li>
+      </ul>
+
+      <hr />
+      <p style="color: var(--muted, #6b7280); font-size: 0.92rem;">
+        Lu, T., Yu, M., Xu, L., Xiangli, Y., Wang, L., Lin, D., &amp; Dai, B. (2024). Scaffold-GS: Structured 3D Gaussians for View-Adaptive Rendering. <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 20654&ndash;20664. <a href="https://arxiv.org/abs/2312.00109" target="_blank" rel="noreferrer">arXiv:2312.00109</a>
+      </p>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell">&copy; Seunghyeon Seo</div>
+    </footer>
+
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] } };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  </body>
+</html>
