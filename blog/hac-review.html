@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Paper Review] HAC: Hash-grid Assisted Context for 3D Gaussian Splatting Compression | Seunghyeon's Homepage</title>
+    <meta name="description" content="Review of HAC (ECCV 2024): the first context-based compression framework for 3DGS that uses a binary hash grid to predict anchor attribute distributions for entropy coding." />
+    <meta property="og:title" content="[Paper Review] HAC: Hash-grid Assisted Context for 3D Gaussian Splatting Compression" />
+    <meta property="og:description" content="HAC bridges unorganized anchors and structured hash grids, achieving 75x compression over vanilla 3DGS while improving fidelity." />
+    <meta property="og:type" content="article" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .blog-article {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        line-height: 1.8;
+        font-size: 1.05rem;
+      }
+      .blog-article h1 { font-size: 1.75rem; margin-bottom: 8px; line-height: 1.3; }
+      .blog-article .meta { color: var(--muted, #6b7280); margin-bottom: 36px; font-size: 0.95rem; }
+      .blog-article h2 { margin-top: 44px; margin-bottom: 14px; font-size: 1.3rem; border-bottom: 1px solid var(--border, #e5e7eb); padding-bottom: 6px; }
+      .blog-article h3 { margin-top: 28px; margin-bottom: 10px; font-size: 1.12rem; }
+      .blog-article p { margin-bottom: 16px; }
+      .blog-article img { max-width: 100%; border-radius: 6px; margin: 16px 0; }
+      .blog-article figure { margin: 24px 0; text-align: center; }
+      .blog-article figcaption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 8px; font-style: italic; }
+      .blog-article pre { background: var(--bg-soft, #f3f4f6); padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 0.88rem; margin-bottom: 18px; line-height: 1.55; }
+      .blog-article code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 0.9em; }
+      .blog-article p > code, .blog-article li > code { background: var(--bg-soft, #f3f4f6); padding: 2px 5px; border-radius: 3px; }
+      .blog-article blockquote { border-left: 3px solid var(--accent, #2563eb); padding: 12px 16px; color: var(--fg, #374151); background: var(--bg-soft, #f3f4f6); margin: 18px 0; border-radius: 0 6px 6px 0; }
+      .blog-article blockquote p { margin-bottom: 0; }
+      .blog-article ul, .blog-article ol { margin-bottom: 16px; padding-left: 24px; }
+      .blog-article li { margin-bottom: 6px; }
+      .blog-article a { color: var(--accent, #2563eb); }
+      .blog-article .back-link { display: inline-block; margin-bottom: 24px; font-size: 0.95rem; }
+      .blog-article table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.92rem; }
+      .blog-article th, .blog-article td { border: 1px solid var(--border, #e5e7eb); padding: 8px 12px; text-align: center; }
+      .blog-article th { background: var(--bg-soft, #f3f4f6); font-weight: 600; }
+      .blog-article td:first-child { text-align: left; }
+      .blog-article .callout { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+      .blog-article .callout p { margin-bottom: 0; }
+      .blog-article hr { border: none; border-top: 1px solid var(--border, #e5e7eb); margin: 36px 0; }
+      .blog-article .paper-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 0.95rem; margin-bottom: 24px; }
+      .blog-article .paper-info dt { font-weight: 600; color: var(--muted, #6b7280); }
+      .blog-article .paper-info dd { margin: 0; }
+      .blog-article .diagram { margin: 28px 0; text-align: center; overflow-x: auto; }
+      .blog-article .diagram svg { max-width: 100%; height: auto; }
+      .blog-article .diagram-caption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 10px; font-style: italic; }
+      .blog-article .paper-figure { margin: 28px 0; text-align: center; }
+      .blog-article .paper-figure img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .paper-figure figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 640px; margin-left: auto; margin-right: auto; }
+      .blog-article .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+      .blog-article .stat-card { background: var(--bg-soft, #f3f4f6); border-radius: 10px; padding: 18px 14px; text-align: center; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+      .blog-article .stat-card .stat-label { font-size: 0.82rem; color: var(--muted, #6b7280); margin-top: 4px; }
+      @media (max-width: 600px) { .blog-article .stat-grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="site-name" href="../index.html">Seunghyeon's Homepage</a>
+        <nav class="site-nav">
+          <a href="../index.html">Home</a>
+          <a href="../publications.html">Publications</a>
+          <a href="../experience.html">Experience</a>
+          <a href="../blog.html" class="active" aria-current="page">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="blog-article">
+      <a class="back-link" href="../blog.html">&larr; Back to Blog</a>
+
+      <h1>[Paper Review] HAC &mdash; Hash-grid Assisted Context for 3D Gaussian Splatting Compression</h1>
+
+      <p class="meta">Apr. 26, 2026 &middot; Paper Review</p>
+
+      <dl class="paper-info">
+        <dt>Paper</dt>
+        <dd>HAC: Hash-grid Assisted Context for 3D Gaussian Splatting Compression</dd>
+        <dt>Authors</dt>
+        <dd>Yihang Chen, Qianyi Wu, Weiyao Lin, Mehrtash Harandi, Jianfei Cai</dd>
+        <dt>Venue</dt>
+        <dd>ECCV 2024</dd>
+        <dt>Links</dt>
+        <dd><a href="https://arxiv.org/abs/2403.14530" target="_blank" rel="noreferrer">arXiv</a> &middot; <a href="https://github.com/YihangChen-ee/HAC" target="_blank" rel="noreferrer">Code</a> &middot; <a href="https://yihangchen-ee.github.io/project_hac/" target="_blank" rel="noreferrer">Project</a></dd>
+      </dl>
+
+      <!-- ============================================================ -->
+      <h2>The Compression Gap</h2>
+
+      <p>
+        <a href="scaffold-gs-review.html">Scaffold-GS</a> made 3DGS more structured by introducing anchor points that spawn neural Gaussians via MLPs. But even with this improvement, each anchor is still treated <em>independently</em>. The model stores per-anchor features (\(\mathbf{f}_a \in \mathbb{R}^{D_a}\)), scaling (\(\mathbf{l} \in \mathbb{R}^6\)), and offsets (\(\mathbf{o} \in \mathbb{R}^{3K}\)) without leveraging the fact that neighboring anchors on the same surface tend to have very similar attributes.
+      </p>
+      <p>
+        Previous 3DGS compression methods focused on &ldquo;values&rdquo;&mdash;pruning unimportant Gaussians and quantizing parameters via codebooks. These are necessary, but they ignore <strong>structural redundancy</strong>: the spatial correlations between nearby primitives. In image and video compression, exploiting such structure is what makes the difference between naive JPEG and modern learned codecs. HAC brings this same principle to 3DGS.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>The Core Idea: Using a Hash Grid as Context</h2>
+
+      <p>
+        HAC&rsquo;s insight is beautifully simple. Instead of compressing anchor attributes in isolation, use a <strong>jointly-learned hash grid</strong> to predict what each anchor&rsquo;s attributes <em>should be</em>, and then only entropy-code the residual surprise. If the prediction is good (high probability), the attribute takes very few bits. If it&rsquo;s off (low probability), it costs more. This is exactly how context models work in image compression.
+      </p>
+      <p>
+        The key question the authors had to answer: <em>Is there actually mutual information between the hash grid and anchor attributes?</em> They verified this by a simple experiment&mdash;substituting anchor features \(\mathbf{f}_a\) with interpolated hash features \(\mathbf{f}_h\). The result: only moderate quality drop (33.41 &rarr; 32.85 PSNR on Synthetic-NeRF), confirming that the hash grid captures most of the information that anchor features encode.
+      </p>
+      <p>
+        But instead of <em>replacing</em> anchor features (which hurts rendering quality and destabilizes training), HAC uses hash features as <strong>context for probability estimation</strong> during entropy coding. This is a critical distinction: the actual rendering pipeline stays identical to Scaffold-GS. The hash grid is only needed during encoding/decoding, not at inference time.
+      </p>
+
+      <div class="callout">
+        <p><strong>The elegant part:</strong> Since the hash grid is only used for compression (not rendering), the rendering speed and quality upper-bound are completely unaffected. After decoding, you throw away the hash grid and run standard Scaffold-GS.</p>
+      </div>
+
+      <!-- Pipeline figure from the project page -->
+      <figure class="paper-figure">
+        <img src="https://yihangchen-ee.github.io/project_hac/static/images/main_method.png" alt="HAC framework overview: Scaffold-GS base model with hash grid context for entropy coding" loading="lazy" />
+        <figcaption>The HAC framework. Top: standard Scaffold-GS with anchor attributes. Middle: a binary hash grid is jointly learned and queried at anchor locations to obtain hash features. Bottom: context MLPs predict distribution parameters (&mu;, &sigma;) and quantization refinement for entropy coding.</figcaption>
+      </figure>
+
+      <!-- ============================================================ -->
+      <h2>How It Works</h2>
+
+      <h3>The Probability Framework</h3>
+
+      <p>
+        HAC frames compression as conditional probability estimation. For the set of anchor attributes \(\mathcal{A} = \{\mathbf{f}_a, \mathbf{l}, \mathbf{o}\}\):
+      </p>
+      <p>
+        \[
+          p(\mathcal{A}, \mathbf{x}_a, \mathcal{H}) = p(\mathcal{A} | \mathbf{x}_a, \mathcal{H}) \times p(\mathbf{x}_a, \mathcal{H}) \approx p(\mathcal{A} | \mathbf{f}_h) \times p(\mathcal{H})
+        \]
+      </p>
+      <p>
+        where \(\mathbf{f}_h = \text{Interp}(\mathbf{x}_a, \mathcal{H})\) is the hash feature interpolated at anchor location \(\mathbf{x}_a\). Higher \(p(\mathcal{A} | \mathbf{f}_h)\) means fewer bits. The hash grid itself (\(p(\mathcal{H})\)) also needs to be stored, but it&rsquo;s binarized to keep it tiny.
+      </p>
+
+      <h3>The Context Model</h3>
+
+      <p>
+        For each anchor, the context model works in three steps:
+      </p>
+
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="720" height="320" font-family="IBM Plex Sans, sans-serif">
+          <defs>
+            <marker id="arr" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0,0 7,2.5 0,5" fill="#374151"/></marker>
+          </defs>
+
+          <!-- Title -->
+          <text x="360" y="22" text-anchor="middle" font-weight="700" font-size="14" fill="#374151">HAC Context Model Pipeline</text>
+
+          <!-- Step 1: Hash Grid Query -->
+          <rect x="4" y="44" width="220" height="120" rx="12" fill="#faf5ff" stroke="#c4b5fd" stroke-width="1.5"/>
+          <text x="114" y="70" text-anchor="middle" font-weight="700" font-size="12" fill="#7c3aed">1. Hash Grid Query</text>
+          <text x="114" y="92" text-anchor="middle" font-size="10" fill="#6b7280">Anchor position x_a</text>
+          <text x="114" y="106" text-anchor="middle" font-size="10" fill="#6b7280">&darr;</text>
+          <text x="114" y="120" text-anchor="middle" font-size="10" fill="#6b7280">Interpolate on binary</text>
+          <text x="114" y="134" text-anchor="middle" font-size="10" fill="#6b7280">hash grid H (12 &times; 3D + 4 &times; 2D)</text>
+          <text x="114" y="152" text-anchor="middle" font-size="10" fill="#6b7280">&darr; f_h</text>
+
+          <!-- Arrow -->
+          <line x1="228" y1="104" x2="248" y2="104" stroke="#374151" stroke-width="1.5" marker-end="url(#arr)"/>
+
+          <!-- Step 2: Context MLP -->
+          <rect x="252" y="44" width="220" height="120" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+          <text x="362" y="70" text-anchor="middle" font-weight="700" font-size="12" fill="#1e40af">2. Context MLP</text>
+          <text x="362" y="92" text-anchor="middle" font-size="10" fill="#6b7280">f_h &rarr; 3-layer MLP (ReLU)</text>
+          <text x="362" y="112" text-anchor="middle" font-size="10" fill="#374151">outputs:</text>
+          <rect x="270" y="122" width="82" height="28" rx="5" fill="#bfdbfe"/>
+          <text x="311" y="140" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">r (AQM)</text>
+          <rect x="372" y="122" width="82" height="28" rx="5" fill="#bfdbfe"/>
+          <text x="413" y="140" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">&mu;, &sigma;</text>
+
+          <!-- Arrow -->
+          <line x1="476" y1="104" x2="496" y2="104" stroke="#374151" stroke-width="1.5" marker-end="url(#arr)"/>
+
+          <!-- Step 3: Entropy Coding -->
+          <rect x="500" y="44" width="216" height="120" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+          <text x="608" y="70" text-anchor="middle" font-weight="700" font-size="12" fill="#166534">3. Entropy Coding</text>
+          <text x="608" y="92" text-anchor="middle" font-size="10" fill="#6b7280">Quantize A with step q</text>
+          <text x="608" y="108" text-anchor="middle" font-size="10" fill="#6b7280">Estimate p(A&#770;) via</text>
+          <text x="608" y="124" text-anchor="middle" font-size="10" fill="#6b7280">Gaussian CDF(&mu;, &sigma;)</text>
+          <text x="608" y="148" text-anchor="middle" font-size="10" fill="#6b7280">&darr; Arithmetic Coding</text>
+
+          <!-- Bottom detail: AQM -->
+          <rect x="4" y="190" width="348" height="120" rx="12" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+          <text x="178" y="216" text-anchor="middle" font-weight="700" font-size="12" fill="#c2410c">Adaptive Quantization Module (AQM)</text>
+          <text x="178" y="240" text-anchor="middle" font-size="10" fill="#6b7280">q = Q&#8320; &times; (1 + tanh(r))</text>
+          <text x="178" y="260" text-anchor="middle" font-size="10" fill="#6b7280">Q&#8320; = 1.0 (features), 0.001 (scaling), 0.2 (offsets)</text>
+          <text x="178" y="282" text-anchor="middle" font-size="10" fill="#9ca3af">r is predicted per-anchor from f_h by MLP_q</text>
+          <text x="178" y="298" text-anchor="middle" font-size="10" fill="#9ca3af">q &isin; (0, 2Q&#8320;) &mdash; finer or coarser than default</text>
+
+          <!-- Bottom detail: Gaussian dist -->
+          <rect x="368" y="190" width="348" height="120" rx="12" fill="#fdf2f8" stroke="#f9a8d4" stroke-width="1.5"/>
+          <text x="542" y="216" text-anchor="middle" font-weight="700" font-size="12" fill="#be185d">Gaussian Distribution Modeling</text>
+          <text x="542" y="240" text-anchor="middle" font-size="10" fill="#6b7280">p(f&#770;) = &Phi;(f&#770; + q/2) &minus; &Phi;(f&#770; &minus; q/2)</text>
+          <text x="542" y="260" text-anchor="middle" font-size="10" fill="#6b7280">&mu;, &sigma; predicted per-anchor from f_h by MLP_c</text>
+          <text x="542" y="282" text-anchor="middle" font-size="10" fill="#9ca3af">All three attribute types (f_a, l, o)</text>
+          <text x="542" y="298" text-anchor="middle" font-size="10" fill="#9ca3af">follow Gaussian distributions empirically</text>
+        </svg>
+        <div class="diagram-caption">The three-step context model: query the hash grid for spatial context, predict quantization refinement and distribution parameters via a shared MLP, then entropy-code anchor attributes using the predicted Gaussian distributions.</div>
+      </div>
+
+      <p>
+        The empirical observation that anchor attributes follow Gaussian distributions is what makes this work cleanly. The context MLP only needs to predict two parameters (\(\boldsymbol{\mu}, \boldsymbol{\sigma}\)) per attribute dimension, and the probability integral becomes a simple CDF difference.
+      </p>
+
+      <h3>Adaptive Quantization Module (AQM)</h3>
+
+      <p>
+        A subtle but important detail: different attributes need different quantization step sizes. Anchor features \(\mathbf{f}_a\) are high-dimensional but have integer-like magnitudes. Scaling \(\mathbf{l}\) and offsets \(\mathbf{o}\) are small decimals. Using a single quantization step would destroy the small-valued attributes.
+      </p>
+      <p>
+        AQM solves this with per-anchor, per-attribute adaptive step sizes:
+      </p>
+      <p>
+        \[
+          \mathbf{q}_i = Q_0 \times (1 + \tanh(\mathbf{r}_i)), \quad \mathbf{r}_i = \text{MLP}_q(\mathbf{f}^h_i)
+        \]
+      </p>
+      <p>
+        where \(Q_0\) is a base step size (1.0 for features, 0.001 for scaling, 0.2 for offsets) and \(\mathbf{r}_i\) is a learned refinement. The \(\tanh\) bounds the step to \((0, 2Q_0)\), so each anchor can get a finer or coarser quantization depending on what the hash grid context suggests.
+      </p>
+
+      <h3>Binary Hash Grid</h3>
+
+      <p>
+        The hash grid itself needs to be compact, since it goes into the bitstream. HAC binarizes all hash parameters to \(\{-1, +1\}\) using straight-through estimation. The grid uses a mixed 3D-2D structure: 12 levels of 3D embeddings (resolution 16&ndash;512) plus 4 levels of 2D embeddings (resolution 128&ndash;1024), each with feature dimension 4. Since the grid is binary, it&rsquo;s compressed with simple frequency-based arithmetic coding.
+      </p>
+
+      <h3>Adaptive Masking</h3>
+
+      <p>
+        The authors observed that many offsets \(\mathbf{o}\) cluster at zero&mdash;meaning many spawned Gaussians are unnecessary. HAC applies learned binary masks (via straight-through estimation) to prune these. If <em>all</em> offsets of an anchor get masked, the entire anchor is pruned&mdash;saving its position, features, and everything else.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>The Training Pipeline</h2>
+
+      <p>
+        Training is carefully staged to avoid instability:
+      </p>
+
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 150" width="720" height="150" font-family="IBM Plex Sans, sans-serif">
+          <!-- Title -->
+          <text x="360" y="20" text-anchor="middle" font-weight="700" font-size="14" fill="#374151">Training Schedule</text>
+
+          <!-- Timeline bar -->
+          <rect x="30" y="44" width="660" height="10" rx="5" fill="#e5e7eb"/>
+
+          <!-- Phase 1 -->
+          <rect x="30" y="44" width="132" height="10" rx="5" fill="#c4b5fd"/>
+          <text x="96" y="38" text-anchor="middle" font-size="9" font-weight="600" fill="#7c3aed">iter 0 &ndash; 3k</text>
+          <text x="96" y="72" text-anchor="middle" font-size="10" fill="#374151" font-weight="600">Scaffold-GS</text>
+          <text x="96" y="86" text-anchor="middle" font-size="9" fill="#6b7280">Standard training</text>
+          <text x="96" y="100" text-anchor="middle" font-size="9" fill="#6b7280">No quantization</text>
+
+          <!-- Phase 2 -->
+          <rect x="162" y="44" width="308" height="10" rx="5" fill="#93c5fd"/>
+          <text x="316" y="38" text-anchor="middle" font-size="9" font-weight="600" fill="#1e40af">iter 3k &ndash; 10k</text>
+          <text x="316" y="72" text-anchor="middle" font-size="10" fill="#374151" font-weight="600">+ Quantization</text>
+          <text x="316" y="86" text-anchor="middle" font-size="9" fill="#6b7280">Add noise (Q&#8320; only)</text>
+          <text x="316" y="100" text-anchor="middle" font-size="9" fill="#6b7280">Pause spawn at 3k&ndash;4k</text>
+
+          <!-- Phase 3 -->
+          <rect x="470" y="44" width="220" height="10" rx="5" fill="#86efac"/>
+          <text x="580" y="38" text-anchor="middle" font-size="9" font-weight="600" fill="#166534">iter 10k &ndash; 30k</text>
+          <text x="580" y="72" text-anchor="middle" font-size="10" fill="#374151" font-weight="600">+ Full HAC</text>
+          <text x="580" y="86" text-anchor="middle" font-size="9" fill="#6b7280">Binary hash grid + AQM</text>
+          <text x="580" y="100" text-anchor="middle" font-size="9" fill="#6b7280">Entropy + masking loss</text>
+
+          <!-- Iteration markers -->
+          <line x1="30" y1="108" x2="30" y2="116" stroke="#6b7280" stroke-width="1"/>
+          <text x="30" y="128" text-anchor="middle" font-size="8" fill="#9ca3af">0</text>
+          <line x1="162" y1="108" x2="162" y2="116" stroke="#6b7280" stroke-width="1"/>
+          <text x="162" y="128" text-anchor="middle" font-size="8" fill="#9ca3af">3k</text>
+          <line x1="470" y1="108" x2="470" y2="116" stroke="#6b7280" stroke-width="1"/>
+          <text x="470" y="128" text-anchor="middle" font-size="8" fill="#9ca3af">10k</text>
+          <line x1="690" y1="108" x2="690" y2="116" stroke="#6b7280" stroke-width="1"/>
+          <text x="690" y="128" text-anchor="middle" font-size="8" fill="#9ca3af">30k</text>
+        </svg>
+        <div class="diagram-caption">Three-phase training: warm up Scaffold-GS, introduce quantization noise, then activate the full HAC framework with hash grid and entropy constraints.</div>
+      </div>
+
+      <p>
+        The overall loss combines three components:
+      </p>
+      <p>
+        \[
+          \mathcal{L} = \mathcal{L}_\text{Scaffold} + \frac{\lambda_e}{N(D_a + 6 + 3K)}(\mathcal{L}_\text{entropy} + \mathcal{L}_\text{hash}) + \lambda_m \mathcal{L}_m
+        \]
+      </p>
+      <p>
+        where \(\mathcal{L}_\text{entropy}\) measures the bit cost of anchor attributes, \(\mathcal{L}_\text{hash}\) measures the hash grid&rsquo;s bit cost, and \(\mathcal{L}_m\) encourages masking of redundant offsets. The parameter \(\lambda_e\) controls the rate&ndash;distortion tradeoff: larger \(\lambda_e\) means more aggressive compression at the cost of some quality.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>What Goes Into the Bitstream?</h2>
+
+      <p>
+        The final compressed representation has five components:
+      </p>
+
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" width="720" height="200" font-family="IBM Plex Sans, sans-serif">
+          <!-- Title -->
+          <text x="360" y="22" text-anchor="middle" font-weight="700" font-size="14" fill="#374151">Bitstream Composition (BungeeNeRF avg)</text>
+
+          <!-- Stacked bar background -->
+          <rect x="40" y="44" width="640" height="48" rx="8" fill="#e5e7eb" stroke="#d1d5db" stroke-width="1"/>
+
+          <!-- Segments (total ~18.5 MB) -->
+          <!-- f_a: 8.76 MB = 47.4% => 303px -->
+          <rect x="40" y="44" width="303" height="48" rx="8" fill="#bfdbfe"/>
+          <text x="192" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">Features f_a</text>
+          <text x="192" y="80" text-anchor="middle" font-size="10" fill="#1e40af">8.76 MB</text>
+
+          <!-- l: 2.53 MB = 13.7% => 88px -->
+          <rect x="343" y="44" width="88" height="48" fill="#c4b5fd"/>
+          <text x="387" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#7c3aed">Scaling</text>
+          <text x="387" y="80" text-anchor="middle" font-size="10" fill="#7c3aed">2.53</text>
+
+          <!-- o: 3.62 MB = 19.6% => 125px -->
+          <rect x="431" y="44" width="125" height="48" fill="#86efac"/>
+          <text x="494" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#166534">Offsets</text>
+          <text x="494" y="80" text-anchor="middle" font-size="10" fill="#166534">3.62</text>
+
+          <!-- x_a: 2.77 MB = 15% => 96px -->
+          <rect x="556" y="44" width="96" height="48" fill="#fde68a"/>
+          <text x="604" y="64" text-anchor="middle" font-size="10" font-weight="600" fill="#92400e">Positions</text>
+          <text x="604" y="80" text-anchor="middle" font-size="10" fill="#92400e">2.77</text>
+
+          <!-- hash + masks + MLPs: 0.83 MB = 4.5% => 28px -->
+          <rect x="652" y="44" width="28" height="48" rx="0 8 8 0" fill="#fca5a5"/>
+          <text x="666" y="72" text-anchor="middle" font-size="8" fill="#991b1b">...</text>
+
+          <!-- Legend row -->
+          <g font-size="9" fill="#6b7280">
+            <rect x="40" y="112" width="10" height="10" rx="2" fill="#bfdbfe"/>
+            <text x="56" y="121">Anchor attributes (AE coded) &mdash; dominant</text>
+
+            <rect x="40" y="130" width="10" height="10" rx="2" fill="#fde68a"/>
+            <text x="56" y="139">Positions (16-bit float, stored directly)</text>
+
+            <rect x="330" y="112" width="10" height="10" rx="2" fill="#fca5a5"/>
+            <text x="346" y="121">Hash grid + masks + MLPs = ~0.83 MB</text>
+
+            <rect x="330" y="130" width="10" height="10" rx="2" fill="#d1d5db"/>
+            <text x="346" y="139">Total: ~18.5 MB for challenging BungeeNeRF scenes</text>
+          </g>
+
+          <!-- Annotation -->
+          <text x="360" y="172" text-anchor="middle" font-size="10" fill="#374151" font-weight="600">
+            cf. Scaffold-GS: 183 MB &middot; vanilla 3DGS: 1,616 MB
+          </text>
+          <text x="360" y="188" text-anchor="middle" font-size="9" fill="#9ca3af">Bit allocation from the paper at &lambda;_e = 4e-3 on BungeeNeRF dataset</text>
+        </svg>
+        <div class="diagram-caption">Anchor attributes dominate the bitstream. The hash grid, masks, and MLPs together add less than 1 MB of overhead. Positions are stored at 16-bit precision without entropy coding.</div>
+      </div>
+
+      <p>
+        The hash grid overhead is only ~0.15 MB&mdash;because it&rsquo;s binary and compressed. The MLPs are 0.16 MB (stored at full precision since they&rsquo;re tiny and shared). The dominant cost is the entropy-coded anchor attributes, which is exactly what the context model is designed to minimize.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>Results</h2>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color: #2563eb;">75&times;</div>
+          <div class="stat-label">smaller than vanilla 3DGS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #16a34a;">11&times;</div>
+          <div class="stat-label">smaller than Scaffold-GS</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #9333ea;">Same</div>
+          <div class="stat-label">rendering FPS</div>
+        </div>
+      </div>
+
+      <p>
+        The compression numbers are striking:
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Synth-NeRF</th>
+            <th>Mip-NeRF 360</th>
+            <th>T&amp;T</th>
+            <th>Deep Blending</th>
+            <th>BungeeNeRF</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>3DGS</td>
+            <td>68.5 MB</td>
+            <td>744.7 MB</td>
+            <td>431.0 MB</td>
+            <td>663.9 MB</td>
+            <td>1,616 MB</td>
+          </tr>
+          <tr>
+            <td>Scaffold-GS</td>
+            <td>19.4 MB</td>
+            <td>253.9 MB</td>
+            <td>86.5 MB</td>
+            <td>66.0 MB</td>
+            <td>183.0 MB</td>
+          </tr>
+          <tr>
+            <td><strong>HAC (low)</strong></td>
+            <td><strong>0.96 MB</strong></td>
+            <td><strong>15.3 MB</strong></td>
+            <td><strong>8.1 MB</strong></td>
+            <td><strong>4.35 MB</strong></td>
+            <td><strong>18.5 MB</strong></td>
+          </tr>
+          <tr>
+            <td><strong>HAC (high)</strong></td>
+            <td><strong>1.86 MB</strong></td>
+            <td><strong>21.9 MB</strong></td>
+            <td><strong>11.2 MB</strong></td>
+            <td><strong>6.35 MB</strong></td>
+            <td><strong>29.7 MB</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        HAC achieves this while <em>matching or exceeding</em> Scaffold-GS in PSNR. For instance on Mip-NeRF 360, HAC-highrate gets 27.77 dB PSNR (vs. Scaffold-GS&rsquo;s 27.50) at 21.9 MB (vs. 253.9 MB). The fidelity improvement comes from two sources: (1) the entropy loss acts as a regularizer that prevents overfitting, and (2) the anchor feature dimension is increased to 50 (from 32 in Scaffold-GS), providing more capacity that the compression scheme can efficiently handle.
+      </p>
+
+      <figure class="paper-figure">
+        <img src="https://yihangchen-ee.github.io/project_hac/static/images/qualititave_curve.png" alt="HAC rate-distortion curves showing superior performance across multiple datasets" loading="lazy" />
+        <figcaption>Rate-distortion curves across five datasets. HAC (blue) dominates all other methods across the entire bitrate range. Note the log scale on the x-axis.</figcaption>
+      </figure>
+
+      <p>
+        An important practical detail: <strong>rendering speed is preserved</strong>. Since the hash grid is discarded after decoding, HAC runs at the same FPS as Scaffold-GS (actually slightly faster due to pruned Gaussians). On BungeeNeRF: 283 FPS for HAC vs. 232 FPS for Scaffold-GS.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>Ablation: What Matters Most?</h2>
+
+      <p>
+        The paper provides clean ablations by disabling each component:
+      </p>
+      <ul>
+        <li><strong>Without hash grid context</strong> (setting \(\mathcal{H} = 0\)) &mdash; The probability drops from \(p(\mathcal{A} | \mathbf{f}_h)\) to \(p(\mathcal{A})\). Bit consumption drastically increases because the model can only use global statistics (a single \(\mu, \sigma\) per attribute type) instead of per-anchor predictions. This is the single biggest contributor to compression performance.</li>
+        <li><strong>Without AQM</strong> &mdash; Using only the base step \(Q_0\) without per-anchor refinement. Significant fidelity drop, especially on complex scenes at higher bitrates. The fixed quantization is too coarse for some attributes and too fine for others.</li>
+        <li><strong>Without offset masking</strong> &mdash; Rate savings decrease, especially in simpler scenes where many Gaussians are genuinely unnecessary. The masking is most impactful at lower bitrates.</li>
+      </ul>
+
+      <!-- ============================================================ -->
+      <h2>Bit Allocation Visualization</h2>
+
+      <p>
+        One of the more insightful analyses in the paper is the bit allocation visualization. The authors voxelize the 3D space and color each voxel by its total (or per-anchor average) bit consumption:
+      </p>
+      <ul>
+        <li><strong>Total bits per voxel</strong>: Complex regions (specular objects, sharp edges) consume more total bits, as expected&mdash;they need more anchors with harder-to-predict attributes.</li>
+        <li><strong>Per-anchor bits</strong>: Interestingly, per-anchor bit consumption is <em>smooth</em> across space. In high-complexity regions, the model creates more anchors (increasing total bits) but each individual anchor&rsquo;s attributes are well-predicted by the hash grid context (keeping per-anchor bits low). This confirms the assumption that nearby anchors share inherent consistency.</li>
+      </ul>
+
+      <div class="callout">
+        <p><strong>This is elegant</strong>: the model naturally adapts bit allocation by adjusting both <em>how many</em> anchors exist in a region (via masking/pruning) and <em>how many bits</em> each anchor needs (via context-conditioned probability). The two mechanisms complement each other.</p>
+      </div>
+
+      <!-- ============================================================ -->
+      <h2>Position in the Compression Landscape</h2>
+
+      <p>
+        HAC occupies a very specific position in the 3DGS compression timeline:
+      </p>
+      <ul>
+        <li><strong>Before HAC</strong>: Compression was &ldquo;value-based&rdquo;&mdash;pruning, codebooks, vector quantization. Each anchor/Gaussian was treated independently.</li>
+        <li><strong>HAC</strong>: Introduced <em>context modeling</em> to 3DGS compression. The hash grid serves as the &ldquo;spatial context&rdquo; that bridges unorganized anchors.</li>
+        <li><strong>After HAC</strong>: <a href="contextgs-review.html">ContextGS</a> took the context idea further with hierarchical autoregressive prediction across octree levels. SizeGS explored RAHT transforms for another way to exploit spatial correlations.</li>
+      </ul>
+      <p>
+        What&rsquo;s interesting is the contrast between HAC and ContextGS in their approach to context. HAC uses a <em>separate data structure</em> (the hash grid) as context. ContextGS uses the <em>anchors themselves</em> as context for finer-level anchors (autoregressive). Both are valid approaches inspired by different traditions: HAC draws from Instant-NGP/learned image compression, while ContextGS draws from progressive coding/autoregressive models.
+      </p>
+
+      <!-- ============================================================ -->
+      <h2>Key Takeaways</h2>
+
+      <ul>
+        <li>
+          <strong>Context modeling is the real game-changer.</strong> Going from no context (\(p(\mathcal{A})\)) to hash-grid context (\(p(\mathcal{A} | \mathbf{f}_h)\)) accounts for the majority of the compression gain. This is the same lesson that image compression learned: entropy coding without a good probability model is just a fast baseline.
+        </li>
+        <li>
+          <strong>Separation of concerns is powerful.</strong> Using the hash grid <em>only</em> for compression (not rendering) means you get compression for free&mdash;no rendering overhead, no quality ceiling changes, and the grid can be discarded after decoding.
+        </li>
+        <li>
+          <strong>Adaptive quantization matters more than you&rsquo;d think.</strong> AQM&rsquo;s per-anchor, context-conditioned quantization step is a small change that makes a large difference, especially for the multi-scale attributes (features vs. scaling vs. offsets).
+        </li>
+        <li>
+          <strong>Binary hash grids are extremely cheap.</strong> The entire multi-resolution hash grid compresses to ~0.15 MB. Binarization via STE is aggressive but sufficient for context prediction, where you don&rsquo;t need high-precision features&mdash;just enough mutual information with the anchors.
+        </li>
+        <li>
+          <strong>The staged training is non-trivial.</strong> The paper&rsquo;s careful three-phase schedule (pure Scaffold-GS &rarr; quantization adaptation &rarr; full HAC) is likely essential for convergence. Jointly training everything from scratch would probably not work, as quantization noise destabilizes anchor spawning early on.
+        </li>
+      </ul>
+
+      <!-- <h3>Limitations &amp; Future Directions</h3>
+      <ul>
+        <li>Training time is ~0.9&times; longer than Scaffold-GS. Not terrible, but the hash grid + entropy computation add overhead.</li>
+        <li>Positions \(\mathbf{x}_a\) are stored at 16-bit without entropy coding. Given their spatial correlations (anchors on a voxel grid), differential or octree-based position coding could save more. ContextGS&rsquo;s octree approach addresses exactly this.</li>
+        <li>The context model is non-autoregressive: each anchor&rsquo;s distribution is predicted independently from the hash grid. An autoregressive model that conditions on already-decoded neighbors could push compression further (at the cost of sequential decoding).</li>
+        <li>HAC++ (a follow-up from the same team) extends this to ~100&times; compression, suggesting there was still significant room to improve.</li>
+      </ul> -->
+
+      <hr />
+      <p style="color: var(--muted, #6b7280); font-size: 0.92rem;">
+        Chen, Y., Wu, Q., Lin, W., Harandi, M., &amp; Cai, J. (2024). HAC: Hash-grid Assisted Context for 3D Gaussian Splatting Compression. <em>European Conference on Computer Vision</em>. <a href="https://arxiv.org/abs/2403.14530" target="_blank" rel="noreferrer">arXiv:2403.14530</a>
+      </p>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell">&copy; Seunghyeon Seo</div>
+    </footer>
+
+    <script>
+      window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] } };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  </body>
+</html>
