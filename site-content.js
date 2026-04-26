@@ -516,6 +516,12 @@ window.siteContent = {
       'Mostly paper reviews, technical rabbit holes, implementation notes, and field reports from work that looked easier on the whiteboard. But not everything here will be about models, benchmarks, or GPUs. Some posts will be about everyday life, hobbies, and whatever else earns a spot between experiments.',
     posts: [
       {
+        title: '[Paper Review] HAC: Hash-grid Assisted Context for 3D Gaussian Splatting Compression',
+        date: 'Apr. 26, 2026',
+        summary: 'HAC (ECCV 2024) pioneers context-based compression for 3DGS by using a binary hash grid to predict anchor attribute distributions. 75x smaller than vanilla 3DGS, 11x smaller than Scaffold-GS, with no rendering overhead.',
+        url: 'blog/hac-review.html'
+      },
+      {
         title: '[Paper Review] Scaffold-GS: Structured 3D Gaussians for View-Adaptive Rendering',
         date: 'Apr. 25, 2026',
         summary: 'Scaffold-GS (CVPR 2024 Highlight) replaces static Gaussians with anchor points that spawn neural Gaussians on-the-fly via view-conditioned MLPs. Fewer primitives, better quality, and the foundation for an entire family of 3DGS compression methods.',
