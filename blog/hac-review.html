@@ -511,7 +511,7 @@
       <ul>
         <li><strong>Before HAC</strong>: Compression was &ldquo;value-based&rdquo;&mdash;pruning, codebooks, vector quantization. Each anchor/Gaussian was treated independently.</li>
         <li><strong>HAC</strong>: Introduced <em>context modeling</em> to 3DGS compression. The hash grid serves as the &ldquo;spatial context&rdquo; that bridges unorganized anchors.</li>
-        <li><strong>After HAC</strong>: <a href="contextgs-review.html">ContextGS</a> took the context idea further with hierarchical autoregressive prediction across octree levels. <a href="sizegs-review.html">SizeGS</a> explored RAHT transforms for another way to exploit spatial correlations.</li>
+        <li><strong>After HAC</strong>: <a href="contextgs-review.html">ContextGS</a> took the context idea further with hierarchical autoregressive prediction across octree levels. SizeGS explored RAHT transforms for another way to exploit spatial correlations.</li>
       </ul>
       <p>
         What&rsquo;s interesting is the contrast between HAC and ContextGS in their approach to context. HAC uses a <em>separate data structure</em> (the hash grid) as context. ContextGS uses the <em>anchors themselves</em> as context for finer-level anchors (autoregressive). Both are valid approaches inspired by different traditions: HAC draws from Instant-NGP/learned image compression, while ContextGS draws from progressive coding/autoregressive models.
