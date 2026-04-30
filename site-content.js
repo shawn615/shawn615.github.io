@@ -195,7 +195,7 @@ window.siteContent = {
     },
     {
       id: 'divcon',
-      title: 'DivCon-NeRF: Generating Augmented Rays with Diversity and Consistency for Few-shot View Synthesis',
+      title: 'DivCon-NeRF: Diverse and Consistent Ray Augmentation for Few-Shot NeRF',
       authors: [
         { name: 'Ingyun Lee', url: 'https://scholar.google.co.kr/citations?hl=en&user=ChN2UUkAAAAJ' },
         { name: 'Jae Won Jang', url: 'https://jaewon040.github.io/' },
