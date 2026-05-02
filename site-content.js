@@ -524,6 +524,12 @@ window.siteContent = {
       'Mostly paper reviews, technical rabbit holes, implementation notes, and field reports from work that looked easier on the whiteboard. But not everything here will be about models, benchmarks, or GPUs. Some posts will be about everyday life, hobbies, and whatever else earns a spot between experiments.',
     posts: [
       {
+        title: '[Paper Review] TRELLIS and TRELLIS.2: From Structured 3D Latents to Native Compact 3D Assets',
+        date: 'May 2, 2026',
+        summary: 'A combined review of TRELLIS and TRELLIS.2, tracing the shift from versatile SLAT-based 3D generation to native O-Voxel latents with compact sparse compression, arbitrary topology, and PBR materials.',
+        url: 'blog/trellis-family-review.html'
+      },
+      {
         title: '[Paper Review] HAC: Hash-grid Assisted Context for 3D Gaussian Splatting Compression',
         date: 'Apr. 26, 2026',
         summary: 'HAC (ECCV 2024) pioneers context-based compression for 3DGS by using a binary hash grid to predict anchor attribute distributions. 75x smaller than vanilla 3DGS, 11x smaller than Scaffold-GS, with no rendering overhead.',
