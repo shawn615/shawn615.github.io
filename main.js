@@ -211,7 +211,7 @@ function renderBlog() {
           <h3>${post.title}</h3>
           <p class="blog-date">${post.date}</p>
           <p>${post.summary}</p>
-          <p><a href="${post.url}" target="_blank" rel="noreferrer">Read more</a></p>
+          <p><a href="${post.url}">Read more</a></p>
         </article>
       `
     )
