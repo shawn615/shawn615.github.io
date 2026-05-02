@@ -28,6 +28,14 @@ window.siteContent = {
   },
   news: [
     {
+      label: 'May 2026:',
+      segments: [
+        { text: 'One paper was accepted to ' },
+        { text: 'IJCAI 2026', url: 'https://2026.ijcai.org/' },
+        { text: '.' }
+      ]
+    },
+    {
       label: 'Feb. 2026:',
       segments: [
         { text: 'Started a new chapter at ' },
@@ -103,6 +111,27 @@ window.siteContent = {
     }
   ],
   publications: [
+    {
+      id: 'divcon',
+      title: 'DivCon-NeRF: Diverse and Consistent Ray Augmentation for Few-Shot NeRF',
+      authors: [
+        { name: 'Ingyun Lee', url: 'https://scholar.google.co.kr/citations?hl=en&user=ChN2UUkAAAAJ' },
+        { name: 'Jae Won Jang', url: 'https://jaewon040.github.io/' },
+        { name: 'Seunghyeon Seo', isMe: true },
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
+      ],
+      venue: 'IJCAI 2026',
+      summary:
+        'Few-shot novel view synthesis with ray augmentation that balances diversity and geometric consistency to reduce artifacts in sparse-input rendering.',
+      media: {
+        type: 'image',
+        src: 'images/divcon_before.png',
+        hoverSrc: 'images/divcon_after.png',
+        alt: 'DivCon-NeRF project preview'
+      },
+      links: [{ label: 'arXiv', url: 'https://arxiv.org/abs/2503.12947' }],
+      selected: false
+    },
     {
       id: 'bm25',
       title: 'Visual Words Meet BM25: Sparse Auto-encoder Visual Word Scoring for Image Retrieval',
@@ -191,27 +220,6 @@ window.siteContent = {
         { label: 'Project Page', url: 'https://yeonjin-chang.github.io/ROODI/' },
         { label: 'arXiv', url: 'https://arxiv.org/abs/2503.10256' }
       ],
-      selected: false
-    },
-    {
-      id: 'divcon',
-      title: 'DivCon-NeRF: Diverse and Consistent Ray Augmentation for Few-Shot NeRF',
-      authors: [
-        { name: 'Ingyun Lee', url: 'https://scholar.google.co.kr/citations?hl=en&user=ChN2UUkAAAAJ' },
-        { name: 'Jae Won Jang', url: 'https://jaewon040.github.io/' },
-        { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' }
-      ],
-      venue: 'Under Review',
-      summary:
-        'Few-shot novel view synthesis with ray augmentation that balances diversity and geometric consistency to reduce artifacts in sparse-input rendering.',
-      media: {
-        type: 'image',
-        src: 'images/divcon_before.png',
-        hoverSrc: 'images/divcon_after.png',
-        alt: 'DivCon-NeRF project preview'
-      },
-      links: [{ label: 'arXiv', url: 'https://arxiv.org/abs/2503.12947' }],
       selected: false
     },
     {
