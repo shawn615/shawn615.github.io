@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Daily Recommended Papers] 260501 | Seunghyeon's Homepage</title>
+    <meta name="description" content="Daily paper picks for May 1, 2026: SaveWildGS (sparse-view wild 3DGS, 25.06 PSNR), D-Rex (diffusion relighting avatars, NVIDIA/MPI), GenWildSplat (feed-forward wild reconstruction, 3 sec), RecGen (multi-object scene completion, 80% less data), MoCapAnything V2 (end-to-end motion capture, 6.54° error)." />
+    <meta property="og:title" content="[Daily Recommended Papers] 260501" />
+    <meta property="og:description" content="5 paper picks: sparse-view wild 3DGS, diffusion-based avatar relighting, feed-forward wild reconstruction, generative multi-object scene completion, and end-to-end arbitrary-skeleton motion capture." />
+    <meta property="og:type" content="article" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <script>window.MathJax={tex:{inlineMath:[['$','$']],displayMath:[['$$','$$']]}};</script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+    <style>
+      .blog-article{max-width:780px;margin:0 auto;padding:40px 20px 60px;line-height:1.8;font-size:1.05rem}
+      .blog-article h1{font-size:1.75rem;margin-bottom:8px;line-height:1.3}
+      .blog-article .meta{color:var(--muted,#6b7280);margin-bottom:36px;font-size:.95rem}
+      .blog-article h2{margin-top:52px;margin-bottom:14px;font-size:1.35rem;border-bottom:2px solid var(--accent,#2563eb);padding-bottom:8px;color:var(--fg,#111827)}
+      .blog-article h3{margin-top:28px;margin-bottom:10px;font-size:1.12rem}
+      .blog-article p{margin-bottom:16px}
+      .blog-article img{max-width:100%;border-radius:6px;margin:16px 0}
+      .blog-article figure{margin:24px 0;text-align:center}
+      .blog-article figcaption{color:var(--muted,#6b7280);font-size:.9rem;margin-top:8px;font-style:italic}
+      .blog-article pre{background:var(--bg-soft,#f3f4f6);padding:16px;border-radius:6px;overflow-x:auto;font-size:.88rem;margin-bottom:18px;line-height:1.55}
+      .blog-article code{font-family:'IBM Plex Mono','Fira Code',monospace;font-size:.9em}
+      .blog-article p>code,.blog-article li>code{background:var(--bg-soft,#f3f4f6);padding:2px 5px;border-radius:3px}
+      .blog-article blockquote{border-left:3px solid var(--accent,#2563eb);padding:12px 16px;color:var(--fg,#374151);background:var(--bg-soft,#f3f4f6);margin:18px 0;border-radius:0 6px 6px 0}
+      .blog-article blockquote p{margin-bottom:0}
+      .blog-article ul,.blog-article ol{margin-bottom:16px;padding-left:24px}
+      .blog-article li{margin-bottom:6px}
+      .blog-article a{color:var(--accent,#2563eb)}
+      .blog-article .back-link{display:inline-block;margin-bottom:24px;font-size:.95rem}
+      .blog-article table{width:100%;border-collapse:collapse;margin:20px 0;font-size:.92rem}
+      .blog-article th,.blog-article td{border:1px solid var(--border,#e5e7eb);padding:8px 12px;text-align:center}
+      .blog-article th{background:var(--bg-soft,#f3f4f6);font-weight:600}
+      .blog-article td:first-child{text-align:left}
+      .blog-article .callout{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px 20px;margin:20px 0}
+      .blog-article .callout p{margin-bottom:0}
+      .blog-article .callout-warning{background:#fef3c7;border:1px solid #fde68a}
+      .blog-article hr{border:none;border-top:1px solid var(--border,#e5e7eb);margin:36px 0}
+      .blog-article .paper-info{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.95rem;margin-bottom:24px}
+      .blog-article .paper-info dt{font-weight:600;color:var(--muted,#6b7280)}
+      .blog-article .paper-info dd{margin:0}
+      .blog-article .diagram{margin:28px 0;text-align:center;overflow-x:auto}
+      .blog-article .diagram svg{max-width:100%;height:auto}
+      .blog-article .diagram-caption{color:var(--muted,#6b7280);font-size:.9rem;margin-top:10px;font-style:italic}
+      .blog-article .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0}
+      .blog-article .stat-card{background:var(--bg-soft,#f3f4f6);border-radius:10px;padding:18px 14px;text-align:center;border:1px solid var(--border,#e5e7eb)}
+      .blog-article .stat-card .stat-value{font-size:1.6rem;font-weight:700;line-height:1.2}
+      .blog-article .stat-card .stat-label{font-size:.82rem;color:var(--muted,#6b7280);margin-top:4px}
+      .blog-article .paper-figure{margin:28px 0;text-align:center}
+      .blog-article .paper-figure img{max-width:100%;border-radius:8px;border:1px solid var(--border,#e5e7eb)}
+      .blog-article .paper-figure .caption{color:var(--muted,#6b7280);font-size:.88rem;margin-top:10px;font-style:italic;max-width:640px;margin-left:auto;margin-right:auto}
+      .paper-section{margin-top:56px}
+      .paper-section:first-of-type{margin-top:0}
+      .paper-tag{display:inline-block;font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:99px;margin-right:6px;vertical-align:middle}
+      .tag-3dgs{background:#dbeafe;color:#1e40af}
+      .tag-avatar{background:#d1fae5;color:#065f46}
+      .tag-recon{background:#ede9fe;color:#5b21b6}
+      .tag-mocap{background:#fef3c7;color:#92400e}
+      .tag-nvidia{background:#fce7f3;color:#9d174d}
+      .toc{background:var(--bg-soft,#f3f4f6);border:1px solid var(--border,#e5e7eb);border-radius:10px;padding:20px 28px;margin:0 0 36px}
+      .toc h3{margin:0 0 12px;font-size:1rem}
+      .toc ol{margin:0;padding-left:22px;line-height:2}
+      .toc a{text-decoration:none;font-size:.95rem}
+      .toc .toc-tag{font-size:.7rem;font-weight:600;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle}
+      @media(max-width:600px){.blog-article .stat-grid{grid-template-columns:1fr}}
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="site-name" href="../index.html">Seunghyeon's Homepage</a>
+        <nav class="site-nav">
+          <a href="../index.html">Home</a>
+          <a href="../publications.html">Publications</a>
+          <a href="../experience.html">Experience</a>
+          <a href="../blog.html" class="active" aria-current="page">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="blog-article">
+      <a class="back-link" href="../blog.html">&larr; Back to Blog</a>
+
+      <h1>[Daily Recommended Papers] 260501</h1>
+      <p class="meta">May 1, 2026 &middot; Daily Papers</p>
+
+      <p>
+        Today's picks centre on <strong>unconstrained 3D reconstruction</strong> and <strong>human/creature performance capture</strong>. Two papers tackle sparse-view 3DGS from in-the-wild photos (one per-scene optimization, one feed-forward), one decouples relighting from avatar modelling via video diffusion, one introduces a generative framework for occluded multi-object scene completion, and one unifies video-to-pose and pose-to-rotation for arbitrary-skeleton motion capture.
+      </p>
+
+      <nav class="toc">
+        <h3>Table of Contents</h3>
+        <ol>
+          <li><a href="#savewildgs">SaveWildGS: Sparse-View 3DGS in the Wild</a> <span class="toc-tag tag-3dgs">3DGS</span></li>
+          <li><a href="#drex">D-Rex: Diffusion Rendering for Relightable Avatars</a> <span class="toc-tag tag-avatar">Avatar</span> <span class="toc-tag tag-nvidia">NVIDIA/MPI</span></li>
+          <li><a href="#genwildsplat">GenWildSplat: Generalizable Sparse-View Wild Reconstruction</a> <span class="toc-tag tag-3dgs">3DGS</span></li>
+          <li><a href="#recgen">RecGen: Multi-Object Scene Reconstruction by Generation</a> <span class="toc-tag tag-recon">Reconstruction</span></li>
+          <li><a href="#mocapv2">MoCapAnything V2: End-to-End Motion Capture</a> <span class="toc-tag tag-mocap">MoCap</span></li>
+        </ol>
+      </nav>
+
+      <!-- ================================================================ -->
+      <!-- PAPER 1: SaveWildGS -->
+      <!-- ================================================================ -->
+      <div class="paper-section" id="savewildgs">
+      <h2><span class="paper-tag tag-3dgs">3DGS</span> 1. SaveWildGS: Sparse-View 3D Gaussian Splatting in the Wild</h2>
+
+      <dl class="paper-info">
+        <dt>Title</dt>
+        <dd>Sparse-View 3D Gaussian Splatting in the Wild</dd>
+        <dt>Authors</dt>
+        <dd>Wongi Park, Jordan A. James, Myeongseok Nam, Minjae Lee, Soomok Lee, Sang-Hyun Lee, William J. Beksi</dd>
+        <dt>Affiliation</dt>
+        <dd>Ajou University, UT Arlington, GenGenAI, Seoul National University, Kennesaw State University</dd>
+        <dt>Links</dt>
+        <dd><a href="https://arxiv.org/abs/2604.27422" target="_blank" rel="noreferrer">arXiv</a> &middot; <a href="https://robotic-vision-lab.github.io/SaveWildGS/" target="_blank" rel="noreferrer">Project</a></dd>
+      </dl>
+
+      <h3>Summary</h3>
+      <p>
+        SaveWildGS is the first method to perform 3D novel-view synthesis from <strong>sparse, in-the-wild images</strong>. Existing in-the-wild methods (WildGaussians, SpotlessSplats, RobustSplat) assume dense image collections, and few-shot methods (FSGS, Difix3D+) only handle constrained environments without distractors. SaveWildGS simultaneously addresses both challenges&mdash;sparsity and distractors.
+      </p>
+
+      <h3>Analysis</h3>
+      <p>
+        SaveWildGS consists of three core modules:
+      </p>
+      <ol>
+        <li><strong>Reference-Guided View Refinement (RGVR):</strong> Grounded SAM generates transient masks, which are applied to the cross-attention of a redesigned one-step diffusion model. Only corrupted regions are selectively refined using a reference view. While conventional DINOv2+MLP approaches fail to detect transients in sparse images, VFM-based masking resolves this issue.</li>
+        <li><strong>Reference-Guided Pseudo-Label Synthesis:</strong> A diffusion model generates pseudo views to ensure multi-view consistency and prevent overfitting. It is introduced after 5K iterations to allow proper warm-up.</li>
+        <li><strong>Sparsity-Aware Gaussian Replication (SAGR):</strong> Standard ADC relies on positional gradients and fails to densify sparse regions. SAGR leverages opacity maps to identify under-covered areas and replicates Gaussians to build a dense field.</li>
+      </ol>
+
+      <div class="paper-figure">
+        <img src="https://arxiv.org/html/2604.27422v1/fig/fig1.png" alt="SaveWildGS: sparse-view 3D novel view synthesis in real-world scenarios with distractors" loading="lazy" />
+        <p class="caption">SaveWildGS produces high-fidelity 3D renderings from sparse unconstrained images while handling distractors. (Figure from the paper)</p>
+      </div>
+
+      <div class="paper-figure">
+        <img src="https://arxiv.org/html/2604.27422v1/fig/fig3.png" alt="SaveWildGS method overview" loading="lazy" />
+        <p class="caption">SaveWildGS pipeline overview: reference-guided view refinement using a redesigned one-step diffusion model with transient masks and reference views, combined with pseudo-label synthesis and sparsity-aware Gaussian replication. (Figure from the paper)</p>
+      </div>
+
+      <h3>Key Contributions</h3>
+      <ul>
+        <li><strong>First to address sparse-view + in-the-wild NVS:</strong> Prior work treated these two problems independently.</li>
+        <li><strong>Plug-and-play RGVR:</strong> When applied alone to GS-W and WildGaussians, it improves PSNR by 2&ndash;4 dB (Table 4).</li>
+        <li><strong>Sparsity-aware densification:</strong> Opacity-map-based Gaussian replication reduces artifacts compared to standard ADC.</li>
+      </ul>
+
+      <h3>Key Insight</h3>
+      <p>
+        Existing diffusion-based few-shot methods (Difix3D+, ReconFusion) simply feed a reference view as input, but SaveWildGS <strong>injects the transient mask directly into cross-attention</strong>, enabling selective refinement of corrupted regions only. This removes distractors without distorting static areas. SAGR is also noteworthy: unlike gradient-based densification, it <strong>directly identifies sparse regions via opacity maps</strong>, allowing Gaussian placement in areas where gradients are insufficient under sparse views.
+      </p>
+
+      <h3>Key Results</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color:#059669">25.06</div>
+          <div class="stat-label">PSNR (NeRF On-the-go)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#2563eb">+17.2%</div>
+          <div class="stat-label">PSNR Improvement</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#7c3aed">0.218</div>
+          <div class="stat-label">LPIPS (avg.)</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>PSNR &uarr;</th><th>SSIM &uarr;</th><th>LPIPS &darr;</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>3DGS</td><td>13.18</td><td>0.331</td><td>0.474</td></tr>
+          <tr><td>WildGaussians</td><td>19.72</td><td>0.675</td><td>0.280</td></tr>
+          <tr><td>Difix3D+</td><td>21.38</td><td>0.723</td><td>0.227</td></tr>
+          <tr style="background:#eff6ff;font-weight:600"><td>SaveWildGS (Ours)</td><td>25.06</td><td>0.801</td><td>0.218</td></tr>
+        </tbody>
+      </table>
+
+      <div class="paper-figure">
+        <img src="https://arxiv.org/html/2604.27422v1/fig/fig5.png" alt="SaveWildGS qualitative results on NeRF On-the-go dataset" loading="lazy" />
+        <p class="caption">Qualitative comparison on NeRF On-the-go: SaveWildGS produces clean, distractor-free renderings with preserved fine details even from sparse views. (Figure from the paper)</p>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <ul>
+        <li><strong>Real-world applicability:</strong> Directly applicable to real scenarios where images are naturally sparse and contain distractors, such as drone or robot photography.</li>
+        <li><strong>Plug-and-play module:</strong> RGVR can be independently added to existing in-the-wild 3DGS pipelines, offering broad versatility.</li>
+        <li>Establishes a new benchmark setting&mdash;sparse-view + in-the-wild&mdash;that will serve as a reference point for follow-up research.</li>
+      </ul>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- PAPER 2: D-Rex -->
+      <!-- ================================================================ -->
+      <div class="paper-section" id="drex">
+      <h2><span class="paper-tag tag-avatar">Avatar</span> <span class="paper-tag tag-nvidia">NVIDIA/MPI</span> 2. D-Rex: Diffusion Rendering for Relightable Expressive Avatars</h2>
+
+      <dl class="paper-info">
+        <dt>Title</dt>
+        <dd>D-Rex: Diffusion Rendering for Relightable Expressive Avatars</dd>
+        <dt>Authors</dt>
+        <dd>Timo Teufel, Xilong Zhou, Umar Iqbal, Jan Kautz, Marc Habermann, Vladislav Golyanik, Christian Theobalt</dd>
+        <dt>Affiliation</dt>
+        <dd>Max Planck Institute for Informatics (SIC), NVIDIA</dd>
+        <dt>Category</dt>
+        <dd>cs.GR (Computer Graphics)</dd>
+        <dt>Links</dt>
+        <dd><a href="https://arxiv.org/abs/2604.27871" target="_blank" rel="noreferrer">arXiv</a> &middot; <a href="https://vcai.mpi-inf.mpg.de/projects/DRex/" target="_blank" rel="noreferrer">Project</a></dd>
+      </dl>
+
+      <h3>Summary</h3>
+      <p>
+        D-Rex is the first diffusion-based full-body relightable avatar framework that <strong>completely decouples relighting from avatar modelling</strong>, treating it as an image-space post-process. Existing PBR-based relightable avatar methods (IntrinsicAvatar, RANA, DNF) require accurate geometry registration and analytic BRDF estimation, making simultaneous relighting and facial expression modelling infeasible. D-Rex breaks this coupling by decomposing the problem into an independent white-light avatar and a diffusion-based relighting module.
+      </p>
+
+      <h3>Analysis</h3>
+      <p>D-Rex's key insight has three components:</p>
+      <ol>
+        <li><strong>Decoupled architecture:</strong> EVA (Expressive Virtual Avatars) generates flat-lit (albedo-like) renderings, and a Cosmos DiffusionRenderer is LoRA fine-tuned to convert them to a target HDR illumination. The two modules are trained completely independently.</li>
+        <li><strong>Light stage capture protocol:</strong> 4 subjects, 40 cameras, 331 LEDs. Flat-lit and HDR-illuminated frames are interleaved to collect 14,400 frame pairs per subject, capturing facial expressions and body motion simultaneously.</li>
+        <li><strong>LoRA fine-tuning sufficiency:</strong> Applying only LoRA to a pretrained video diffusion model achieves performance on par with full fine-tuning (PSNR 27.62 vs 27.88) while requiring only 1/4 of the GPU hours (48h vs 192h). Random initialization fails to converge.</li>
+      </ol>
+
+      <div class="paper-figure">
+        <img src="https://arxiv.org/html/2604.27871v1/Main_Images/Teaser.jpg" alt="D-Rex: relightable expressive full-body avatars" loading="lazy" />
+        <p class="caption">D-Rex renders photorealistic, relightable images of a person under novel views and illuminations, preserving expressive facial details. (Figure from the paper)</p>
+      </div>
+
+      <div class="paper-figure">
+        <img src="https://arxiv.org/html/2604.27871v1/Main_Images/Method.jpg" alt="D-Rex method overview" loading="lazy" />
+        <p class="caption">D-Rex overview: an expressive albedo avatar (EVA) renders flat-lit images, which are translated to target HDR illumination by a LoRA-fine-tuned video diffusion relighting model, yielding photorealistic, view- and temporally consistent results. (Figure from the paper)</p>
+      </div>
+
+      <h3>Key Contributions</h3>
+      <ul>
+        <li><strong>First diffusion-based relightable full-body avatar:</strong> Achieves relighting + facial expression + dynamic clothing simultaneously without PBR.</li>
+        <li><strong>Decoupled design:</strong> A modular approach applicable to any white-light avatar system.</li>
+        <li><strong>LoRA sufficiency:</strong> Person-specific fine-tuning is achievable in only ~48 GPU hours.</li>
+      </ul>
+
+      <h3>Key Insight</h3>
+      <p>
+        While Wang et al.'s recent PBR-based method achieves high relighting quality, it requires accurate mesh tracking and fails to show facial expressions. D-Rex <strong>performs relighting in image space</strong>, completely removing the dependency on geometry accuracy, while leveraging <strong>temporal consistency from the video diffusion model</strong> to maintain view/motion/illumination consistency within 57-frame chunks. An interesting finding is that an enhancement mode (direct EVA→relit training) can also correct EVA's own artifacts.
+      </p>
+
+      <h3>Key Results</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color:#059669">26.62</div>
+          <div class="stat-label">PSNR (Novel View/Motion)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#2563eb">0.077</div>
+          <div class="stat-label">LPIPS (best)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#7c3aed">~48h</div>
+          <div class="stat-label">LoRA Training (1×H100)</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>PSNR &uarr;</th><th>LPIPS &darr;</th><th>SSIM &uarr;</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>MeshAvatar/PBR</td><td>22.61</td><td>0.095</td><td>0.899</td></tr>
+          <tr><td>MeshAvatar/DR (Diffusion)</td><td>26.07</td><td>0.080</td><td>0.935</td></tr>
+          <tr><td>EVA + IC-Light (Zero-Shot)</td><td>10.26</td><td>0.108</td><td>0.853</td></tr>
+          <tr style="background:#eff6ff;font-weight:600"><td>D-Rex (Ours)</td><td>26.62</td><td>0.077</td><td>0.937</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Why It Matters</h3>
+      <ul>
+        <li><strong>Production pipeline integration:</strong> Since relighting is a post-process, it can be added to existing avatar pipelines without modification.</li>
+        <li><strong>Scalability:</strong> Cross-subject generalization experiments show that multi-subject LoRA produces plausible results, suggesting the possibility of a general relighting function via large-scale training.</li>
+        <li>Currently ~0.5 FPS, but real-time performance is feasible with one-step flow matching. An important milestone for telepresence, VR, and AR.</li>
+      </ul>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- PAPER 3: GenWildSplat -->
+      <!-- ================================================================ -->
+      <div class="paper-section" id="genwildsplat">
+      <h2><span class="paper-tag tag-3dgs">3DGS</span> 3. GenWildSplat: Generalizable Sparse-View 3D Reconstruction from Unconstrained Images</h2>
+
+      <dl class="paper-info">
+        <dt>Title</dt>
+        <dd>Generalizable Sparse-View 3D Reconstruction from Unconstrained Images</dd>
+        <dt>Authors</dt>
+        <dd>Vinayak Gupta, Chih-Hao Lin, Shenlong Wang, Anand Bhattad, Jia-Bin Huang</dd>
+        <dt>Affiliation</dt>
+        <dd>University of Maryland, UIUC, Johns Hopkins University</dd>
+        <dt>Links</dt>
+        <dd><a href="https://arxiv.org/abs/2604.28193" target="_blank" rel="noreferrer">arXiv</a> &middot; <a href="https://genwildsplat.github.io/" target="_blank" rel="noreferrer">Project</a></dd>
+      </dl>
+
+      <h3>Summary</h3>
+      <p>
+        GenWildSplat is a feed-forward framework that performs <strong>3D reconstruction from sparse, unposed in-the-wild images in just 3 seconds</strong> without per-scene optimization. Existing optimization-based wild methods (WildGaussians, NexusSplats) take 2&ndash;8 hours per scene and fail on sparse views. GenWildSplat builds on AnySplat by adding an appearance adapter and semantic occlusion handling, achieving illumination control and transient object removal simultaneously in feed-forward inference.
+      </p>
+
+      <h3>Analysis</h3>
+      <ol>
+        <li><strong>Appearance Adapter:</strong> A CNN-based light encoder extracts per-view 16-dim light codes, and an MLP modulates canonical Gaussian SH coefficients to match the target lighting. This enables <strong>cross-scene illumination transfer</strong>&mdash;applying one scene's lighting to another scene.</li>
+        <li><strong>Semantic Occlusion Handling:</strong> YOLOv8 detects transient-class objects (person, car, etc.) to generate binary masks. This avoids training collapse issues that arise from learning internal visibility maps.</li>
+        <li><strong>Curriculum Learning:</strong> A 3-stage training strategy&mdash;(1) single synthetic scene for illumination disentanglement, (2) multiple scenes for geometry+appearance generalization, (3) synthetic occlusion augmentation. Uses 700+ outdoor scenes from DL3DV with DiffusionRenderer relighting augmentation.</li>
+      </ol>
+
+      <div class="paper-figure">
+        <img src="https://arxiv.org/html/2604.28193v1/x1.png" alt="GenWildSplat: feed-forward 3D reconstruction from sparse wild images" loading="lazy" />
+        <p class="caption">GenWildSplat reconstructs 3D scenes from sparse, unposed images in a 3-second feed-forward pass, with appearance control and occlusion handling. (Figure from the paper)</p>
+      </div>
+
+      <div class="paper-figure">
+        <img src="https://arxiv.org/html/2604.28193v1/x3.png" alt="GenWildSplat method overview" loading="lazy" />
+        <p class="caption">GenWildSplat overview: a VGGT transformer extracts multi-view features from sparse unposed images, prediction heads output depth, cameras, and canonical Gaussians, an appearance adapter modulates colors for target lighting, and a segmentation network provides occlusion masks. (Figure from the paper)</p>
+      </div>
+
+      <h3>Key Contributions</h3>
+      <ul>
+        <li><strong>First feed-forward in-the-wild 3D reconstruction:</strong> Integrates appearance + occlusion modelling into the feed-forward paradigm.</li>
+        <li><strong>Cross-scene illumination transfer:</strong> Separates appearance from geometry, enabling rendering of the current scene under another scene's lighting.</li>
+        <li><strong>MegaScenes benchmark:</strong> Curates 20 challenging naturally sparse scenes (harder than PhotoTourism).</li>
+      </ul>
+
+      <h3>Key Insight</h3>
+      <p>
+        GenWildSplat addresses the same problem as SaveWildGS (Paper 1) but with the opposite approach. SaveWildGS uses <strong>per-scene optimization + diffusion refinement</strong> to maximize quality, while GenWildSplat employs <strong>feed-forward + large-scale pretrained priors</strong> to maximize speed (hours vs 3 seconds). Curriculum learning is crucial&mdash;direct end-to-end training causes Gaussian colour collapse. Additionally, the finding that an external segmentation prior (YOLO) is more stable than internal visibility estimation contrasts with WildGaussians' DINOv2-based mask learning.
+      </p>
+
+      <h3>Key Results</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color:#059669">15.84</div>
+          <div class="stat-label">PSNR (MegaScenes 6-view)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#2563eb">3 sec</div>
+          <div class="stat-label">Inference Time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#7c3aed">0</div>
+          <div class="stat-label">Per-Scene Optimization</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Gen.</th><th>Time</th><th>PSNR &uarr;</th><th>SSIM &uarr;</th><th>LPIPS &darr;</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>GS-W</td><td>&cross;</td><td>5 hrs</td><td>12.01</td><td>0.312</td><td>0.552</td></tr>
+          <tr><td>WildGaussians</td><td>&cross;</td><td>8 hrs</td><td>13.29</td><td>0.373</td><td>0.532</td></tr>
+          <tr><td>NexusSplats</td><td>&cross;</td><td>2.4 hrs</td><td>13.92</td><td>0.397</td><td>0.518</td></tr>
+          <tr style="background:#eff6ff;font-weight:600"><td>GenWildSplat (Ours)</td><td>&check;</td><td>3 sec</td><td>15.84</td><td>0.440</td><td>0.407</td></tr>
+        </tbody>
+      </table>
+
+      <div class="paper-figure">
+        <img src="https://arxiv.org/html/2604.28193v1/x6.png" alt="GenWildSplat comparison on MegaScenes" loading="lazy" />
+        <p class="caption">GenWildSplat produces clean, consistent renderings on the challenging MegaScenes dataset while optimization-based methods exhibit severe artifacts. (Figure from the paper)</p>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <ul>
+        <li><strong>Real-time 3D from tourist photos:</strong> Instantly generates 3D scenes from internet photos&mdash;directly applicable in AR/VR, tourism, and real estate.</li>
+        <li><strong>Complementary to SaveWildGS:</strong> Offers a quality-speed tradeoff&mdash;GenWildSplat for fast previews, SaveWildGS for high-quality final results.</li>
+        <li>The curriculum learning strategy that achieves real-world generalization from synthetic-only training is applicable to other domains.</li>
+      </ul>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- PAPER 4: RecGen -->
+      <!-- ================================================================ -->
+      <div class="paper-section" id="recgen">
+      <h2><span class="paper-tag tag-recon">Reconstruction</span> 4. RecGen: Reconstruction by Generation: 3D Multi-Object Scene Reconstruction</h2>
+
+      <dl class="paper-info">
+        <dt>Title</dt>
+        <dd>Reconstruction by Generation: 3D Multi-Object Scene Reconstruction from Sparse Observations</dd>
+        <dt>Authors</dt>
+        <dd>Andrii Zadaianchuk, Leonardo Barcellona, Lennard Schuenemann, Christian Gumbsch, Zehao Wang, M. Zubair Irshad, Fabien Despinoy, Rahaf Aljundi, Stratis Gavves, Sergey Zakharov</dd>
+        <dt>Affiliation</dt>
+        <dd>University of Amsterdam, KU Leuven, Toyota Motor Europe, Toyota Research Institute</dd>
+        <dt>Links</dt>
+        <dd><a href="https://arxiv.org/abs/2604.27106" target="_blank" rel="noreferrer">arXiv</a> &middot; <a href="https://reconstruction-by-generation.github.io/" target="_blank" rel="noreferrer">Project</a></dd>
+      </dl>
+
+      <h3>Summary</h3>
+      <p>
+        RecGen is a generative framework that <strong>jointly estimates complete shape, pose, and texture of heavily occluded multi-object scenes</strong> from just 1&ndash;2 RGB-D images. It outperforms the previous SOTA, SAM3D, with <strong>80% fewer</strong> training meshes, achieving 30.1% better geometry, 9.1% better texture, and 33.9% better pose estimation. This tackles a critical challenge in robotics digital twin construction.
+      </p>
+
+      <h3>Analysis</h3>
+      <p>RecGen uses a two-stage rectified flow transformer architecture:</p>
+      <ol>
+        <li><strong>Stage 1 &mdash; Structure + Pose Generation ($\mathcal{G}_{SP}$):</strong> Jointly denoises sparse occupancy grids and similarity transforms from DINOv2 features + pointmaps + mask conditioning. Pose uses 6D continuous representation with z-score normalization for stable training. Dynamic cropping captures context around objects.</li>
+        <li><strong>Stage 2 &mdash; High-Fidelity Asset Recovery ($\mathcal{G}_L$):</strong> Conditioned on Stage 1's sparse structure, it generates local latents and recovers detailed meshes + textures via sparse convolution with skip connections. Pose predictions from Stage 1 are reused.</li>
+        <li><strong>Multi-view extension:</strong> View ID embeddings with a CFG drop rate of 0.33 naturally support 2-view inputs while maintaining single-view inference capability.</li>
+      </ol>
+
+      <div class="paper-figure">
+        <img src="https://arxiv.org/html/2604.27106v1/x2.png" alt="RecGen architecture: structure-pose generation and high-fidelity asset recovery" loading="lazy" />
+        <p class="caption">RecGen two-stage architecture: (1) predict sparse structure and pose via flow transformer, (2) recover textured meshes conditioned on structure. (Figure from the paper)</p>
+      </div>
+
+
+
+      <h3>Key Contributions</h3>
+      <ul>
+        <li><strong>Joint shape + pose generation:</strong> Models shape and pose jointly in a generative framework rather than estimating them independently.</li>
+        <li><strong>Compositional synthetic dataset (198K assets):</strong> Generates 3.2M images from 6 public datasets, including occlusion and part-level annotations.</li>
+        <li><strong>Part-level reconstruction:</strong> Achieves SOTA not only on object-centric benchmarks but also on the ArtVIP parts benchmark.</li>
+        <li><strong>Efficiency:</strong> 1.8&times; faster than SAM3D with 1.6&times; less GPU memory.</li>
+      </ul>
+
+      <h3>Key Insight</h3>
+      <p>
+        RecGen's core insight is <strong>pose normalization</strong>. Applying z-score normalization to pose components prevents any single quantity from dominating the flow matching objective. Without this simple technique, pose estimation significantly degrades (ADD-SB 0.074 → 0.062). Another finding is that <strong>stereo noise augmentation</strong> greatly improves robustness to real-world sensor noise. The growing gap between RecGen and SAM3D as occlusion severity increases (0.044 vs 0.053 → 0.073 vs 0.116) clearly demonstrates the advantage of the generative approach.
+      </p>
+
+      <h3>Key Results</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color:#059669">+30.1%</div>
+          <div class="stat-label">Geometry vs SAM3D</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#2563eb">+33.9%</div>
+          <div class="stat-label">Pose vs SAM3D</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#7c3aed">80% less</div>
+          <div class="stat-label">Training Meshes</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Method</th><th>CDnorm &darr;</th><th>ADD-SB &darr;</th><th>ADD-SB@0.1 &uarr;</th><th>ADD-SB@0.05 &uarr;</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SceneComplete</td><td>0.234</td><td>0.258</td><td>65.2%</td><td>35.1%</td></tr>
+          <tr><td>Any6D (InstantMesh)</td><td>0.074</td><td>0.111</td><td>68.6%</td><td>36.4%</td></tr>
+          <tr><td>SAM3D</td><td>0.033</td><td>0.062</td><td>92.4%</td><td>54.6%</td></tr>
+          <tr style="background:#eff6ff;font-weight:600"><td>RecGen (1-view)</td><td>0.032</td><td>0.049</td><td>95.0%</td><td>73.8%</td></tr>
+          <tr style="background:#eff6ff;font-weight:600"><td>RecGen (2-view)</td><td>0.029</td><td>0.048</td><td>95.4%</td><td>74.2%</td></tr>
+        </tbody>
+      </table>
+
+      <div class="paper-figure">
+        <img src="https://arxiv.org/html/2604.27106v1/x1.png" alt="RecGen generates full reconstructions of complex occluded scenes" loading="lazy" />
+        <p class="caption">RecGen generates complete digital twin replicas of real-world environments from single or multiple RGB-D images, handling severe occlusions and object symmetries. (Figure from the paper)</p>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <ul>
+        <li><strong>Robotics real-to-sim:</strong> Generates complete digital twins from 1&ndash;2 RGB-D images for use in simulation and policy learning.</li>
+        <li><strong>Data efficiency:</strong> Achieving better performance with 80% fewer training meshes is crucial in environments where high-quality 3D assets are scarce.</li>
+        <li><strong>Part-level reasoning:</strong> Recognizes and reconstructs object parts, directly applicable to articulated object manipulation.</li>
+      </ul>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- PAPER 5: MoCapAnything V2 -->
+      <!-- ================================================================ -->
+      <div class="paper-section" id="mocapv2">
+      <h2><span class="paper-tag tag-mocap">MoCap</span> 5. MoCapAnything V2: End-to-End Motion Capture for Arbitrary Skeletons</h2>
+
+      <dl class="paper-info">
+        <dt>Title</dt>
+        <dd>MoCapAnything V2: End-to-End Motion Capture for Arbitrary Skeletons</dd>
+        <dt>Authors</dt>
+        <dd>Kehong Gong, Zhengyu Wen, Dao Thien Phong, Mingxi Xu, Weixia He, Qi Wang, Ning Zhang, Zhengyu Li, Guanli Hou, Dongze Lian, Xiaoyu He, Mingyuan Zhang, Hanwang Zhang</dd>
+        <dt>Affiliation</dt>
+        <dd>NTU Singapore (AniMotionLab)</dd>
+        <dt>Links</dt>
+        <dd><a href="https://arxiv.org/abs/2604.28130" target="_blank" rel="noreferrer">arXiv</a> &middot; <a href="https://animotionlab.github.io/MoCapAnythingV2/" target="_blank" rel="noreferrer">Project</a> &middot; <a href="https://github.com/animotionlab26/MocapAnything" target="_blank" rel="noreferrer">Code</a></dd>
+      </dl>
+
+      <h3>Summary</h3>
+      <p>
+        MoCapAnything V2 is the first fully end-to-end learnable framework for motion capture from monocular video for <strong>arbitrary skeleton topologies</strong> (humans, animals, and imaginary creatures). V1 used a decoupled pipeline of Video-to-Pose + analytical IK (inverse kinematics), but V2 makes Pose-to-Rotation a learnable module as well, enabling joint optimization of the entire pipeline.
+      </p>
+
+      <h3>Analysis</h3>
+      <p>Three key improvements from V1 to V2:</p>
+      <ol>
+        <li><strong>Learnable Pose-to-Rotation:</strong> Analytical IK is non-differentiable and cannot resolve DOF ambiguities like bone-axis twist. V2 uses a <strong>reference pose-rotation pair</strong> from the target asset to define the rotation coordinate system, eliminating ambiguity. This resolves the issue where the same joint position maps to different rotations under different rest poses or axis conventions.</li>
+        <li><strong>Mesh-free Video-to-Pose:</strong> V1 required mesh-conditioned pose estimation, but V2 predicts joint positions directly from video without mesh intermediates, improving both robustness and speed.</li>
+        <li><strong>GL-GMHA (Global-Local Graph-guided Multi-Head Attention):</strong> Leverages skeleton graph structure to perform joint-level local reasoning and global coordination simultaneously. Shared across both Video-to-Pose and Pose-to-Rotation modules.</li>
+      </ol>
+
+      <div class="paper-figure">
+        <img src="https://animotionlab.github.io/MoCapAnythingV2/assets/figure/framework.png" alt="MoCapAnything V2 framework: end-to-end video-to-pose-to-rotation" loading="lazy" />
+        <p class="caption">MoCapAnything V2 framework: Reference-conditioned pose decoder (A,B) predicts joint positions, then rotation decoder (C,D,E) generates animation-ready rotations conditioned on a reference pose-rotation pair. (Figure from the project page)</p>
+      </div>
+
+
+
+      <h3>Key Contributions</h3>
+      <ul>
+        <li><strong>First fully end-to-end arbitrary-skeleton MoCap:</strong> Both Video-to-Pose and Pose-to-Rotation are differentiably learned.</li>
+        <li><strong>Reference pose-rotation pair:</strong> A simple yet effective mechanism that solves the root cause of rotation ambiguity (absence of coordinate system).</li>
+        <li><strong>Mesh-free pipeline:</strong> Removing V1's mesh conditioning improves robustness and achieves ~20&times; speed-up.</li>
+      </ul>
+
+      <h3>Key Insight</h3>
+      <p>
+        The analysis of why V1's analytical IK fails is the key contribution: the root cause is the <strong>absence of coordinate system information</strong>. Since the same joint position maps to different rotations depending on the rest pose and local axis convention, the reference pose-rotation pair serves as an <strong>anchor that defines this coordinate system</strong>. This makes rotation prediction a well-constrained conditional problem. Joint spinning artifacts are greatly reduced compared to V1, and the 6.54&deg; rotation error on unseen skeletons demonstrates remarkable generalization.
+      </p>
+
+      <h3>Key Results</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value" style="color:#059669">~10&deg;</div>
+          <div class="stat-label">Rotation Error (seen)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#2563eb">6.54&deg;</div>
+          <div class="stat-label">Rotation Error (unseen)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:#7c3aed">~20&times;</div>
+          <div class="stat-label">Faster than Mesh-Based</div>
+        </div>
+      </div>
+
+      <div class="paper-figure">
+        <img src="https://animotionlab.github.io/MoCapAnythingV2/assets/figure/difference_V1V2.png" alt="MoCapAnything V1 vs V2: analytical IK vs learned rotation" loading="lazy" />
+        <p class="caption">V1 vs V2: V1's analytical IK produces joint spinning artifacts, while V2's learned rotation recovery generates stable, temporally consistent results. (Figure from the project page)</p>
+      </div>
+
+      <h3>Why It Matters</h3>
+      <ul>
+        <li><strong>Game/Animation production:</strong> Extracts motion directly from internet animal videos and retargets it to arbitrary characters, surpassing the limitations of marker-based MoCap.</li>
+        <li><strong>Robotics:</strong> Animal locomotion can be learned and used as a motion prior for legged robots.</li>
+        <li>Demonstrates that end-to-end learning can replace analytical IK. The simple reference conditioning mechanism for resolving rotation ambiguity is applicable to other IK/FK problems.</li>
+      </ul>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- CLOSING -->
+      <!-- ================================================================ -->
+      <hr />
+
+      <h2>Today's Themes</h2>
+      <p>Three threads stand out across today's picks:</p>
+      <ol>
+        <li><strong>Sparse-view + in-the-wild is the new frontier:</strong> SaveWildGS and GenWildSplat tackle exactly the same problem via per-scene optimization vs feed-forward. Both crucially leverage foundation models (Grounded SAM, YOLO, DiffusionRenderer), but occupy opposite ends of the quality-speed tradeoff. The simultaneous publication of both methods signals the timeliness of this problem.</li>
+        <li><strong>Decoupling is the answer:</strong> D-Rex decouples relighting from avatars, GenWildSplat decouples appearance from geometry, and RecGen decomposes structure and appearance into two stages. In all cases, modular decomposition outperforms joint optimization.</li>
+        <li><strong>The power of reference conditioning:</strong> SaveWildGS's reference-guided view refinement, RecGen's pointmap+mask conditioning, and MoCapAnything V2's reference pose-rotation pair all provide an explicit reference as conditioning to turn ill-posed problems into well-constrained ones. The choice of what to use as a reference is becoming a core model design decision.</li>
+      </ol>
+    </main>
+  </body>
+</html>
