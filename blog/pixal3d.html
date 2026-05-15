@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Paper Review] Pixal3D: Pixel-Aligned 3D Generation from Images | Seunghyeon's Homepage</title>
+    <meta name="description" content="A technical review of Pixal3D: pixel-aligned image-to-3D generation, back-projection conditioning, sparse SDF latents, multi-view extension, scene synthesis, and fidelity evaluation." />
+    <meta property="og:title" content="[Paper Review] Pixal3D: Pixel-Aligned 3D Generation from Images" />
+    <meta property="og:description" content="Pixal3D argues that image-to-3D fidelity is fundamentally a correspondence problem, and uses explicit pixel-to-voxel back-projection to make generation more reconstruction-like." />
+    <meta property="og:type" content="article" />
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .blog-article {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        line-height: 1.8;
+        font-size: 1.05rem;
+      }
+      .blog-article h1 { font-size: 1.75rem; margin-bottom: 8px; line-height: 1.3; }
+      .blog-article .meta { color: var(--muted, #6b7280); margin-bottom: 36px; font-size: 0.95rem; }
+      .blog-article h2 { margin-top: 44px; margin-bottom: 14px; font-size: 1.3rem; border-bottom: 1px solid var(--border, #e5e7eb); padding-bottom: 6px; }
+      .blog-article h3 { margin-top: 28px; margin-bottom: 10px; font-size: 1.12rem; }
+      .blog-article p { margin-bottom: 16px; }
+      .blog-article img { max-width: 100%; border-radius: 6px; margin: 16px 0; }
+      .blog-article figure { margin: 24px 0; text-align: center; }
+      .blog-article figcaption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 8px; font-style: italic; }
+      .blog-article code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 0.9em; }
+      .blog-article p > code, .blog-article li > code { background: var(--bg-soft, #f3f4f6); padding: 2px 5px; border-radius: 3px; }
+      .blog-article pre { background: #0f172a; color: #e5e7eb; border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.88rem; line-height: 1.55; }
+      .blog-article blockquote { border-left: 3px solid var(--accent, #2563eb); padding: 12px 16px; color: var(--fg, #374151); background: var(--bg-soft, #f3f4f6); margin: 18px 0; border-radius: 0 6px 6px 0; }
+      .blog-article blockquote p { margin-bottom: 0; }
+      .blog-article ul, .blog-article ol { margin-bottom: 16px; padding-left: 24px; }
+      .blog-article li { margin-bottom: 6px; }
+      .blog-article a { color: var(--accent, #2563eb); }
+      .blog-article .back-link { display: inline-block; margin-bottom: 24px; font-size: 0.95rem; }
+      .blog-article .table-scroll { overflow-x: auto; margin: 22px 0 24px; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06); }
+      .blog-article table { width: 100%; border-collapse: collapse; margin: 0; font-size: 0.88rem; }
+      .blog-article .table-scroll table { min-width: 620px; }
+      .blog-article .table-scroll table.wide { min-width: 920px; }
+      .blog-article th, .blog-article td { border: 1px solid var(--border, #e5e7eb); padding: 8px 10px; text-align: center; vertical-align: top; font-variant-numeric: tabular-nums; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { border-left: 0; }
+      .blog-article .table-scroll th:last-child, .blog-article .table-scroll td:last-child { border-right: 0; }
+      .blog-article .table-scroll thead tr:first-child th { border-top: 0; }
+      .blog-article .table-scroll tbody tr:last-child td { border-bottom: 0; }
+      .blog-article th { background: var(--bg-soft, #f3f4f6); font-weight: 600; }
+      .blog-article td:first-child { text-align: left; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 var(--border, #e5e7eb); }
+      .blog-article .table-scroll th:first-child { z-index: 2; background: var(--bg-soft, #f3f4f6); }
+      .blog-article .table-scroll strong { color: #0f766e; }
+      .blog-article .table-note { color: var(--muted, #6b7280); font-size: 0.84rem; margin: -12px auto 18px; line-height: 1.5; text-align: center; font-style: italic; max-width: 650px; }
+      .blog-article .callout { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+      .blog-article .callout.warning { background: #fff7ed; border-color: #fed7aa; }
+      .blog-article .callout.research { background: #f0fdf4; border-color: #bbf7d0; }
+      .blog-article .callout p { margin-bottom: 0; }
+      .blog-article .paper-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 0.95rem; margin-bottom: 24px; }
+      .blog-article .paper-info dt { font-weight: 600; color: var(--muted, #6b7280); }
+      .blog-article .paper-info dd { margin: 0; }
+      .blog-article .diagram { margin: 30px 0; text-align: center; overflow-x: auto; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 10px; background: linear-gradient(135deg, #f8fafc, #eef2ff); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08); }
+      .blog-article .diagram svg { max-width: 100%; height: auto; }
+      .blog-article .diagram-caption { color: var(--muted, #6b7280); font-size: 0.9rem; margin: 10px auto 2px; font-style: italic; max-width: 660px; line-height: 1.55; }
+      .blog-article .paper-figure { margin: 28px 0; text-align: center; }
+      .blog-article .paper-figure img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); background: #fff; }
+      .blog-article .paper-figure figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 650px; margin-left: auto; margin-right: auto; }
+      .blog-article .paper-video { margin: 28px 0; text-align: center; }
+      .blog-article .paper-video video { width: 100%; border-radius: 10px; border: 1px solid var(--border, #e5e7eb); background: #0f172a; }
+      .blog-article .paper-video figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 650px; margin-left: auto; margin-right: auto; }
+      .blog-article .model-comparison { display: grid; grid-template-columns: 0.85fr 1fr 1fr; gap: 12px; margin: 26px 0 8px; }
+      .blog-article .model-card { border: 1px solid var(--border, #e5e7eb); border-radius: 10px; overflow: hidden; background: #fff; }
+      .blog-article .model-card h3 { margin: 0; padding: 9px 10px; font-size: 0.9rem; text-align: center; background: var(--bg-soft, #f3f4f6); border-bottom: 1px solid var(--border, #e5e7eb); }
+      .blog-article .model-card img { width: 100%; height: 240px; margin: 0; border: 0; border-radius: 0; object-fit: contain; background: #0f172a; display: block; }
+      .blog-article .model-card model-viewer { width: 100%; height: 240px; background: #f8fafc; display: block; --poster-color: #f8fafc; }
+      .blog-article .model-note { color: var(--muted, #6b7280); font-size: 0.86rem; text-align: center; font-style: italic; margin-top: 8px; line-height: 1.5; }
+      .blog-article .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+      .blog-article .stat-card { background: var(--bg-soft, #f3f4f6); border-radius: 10px; padding: 18px 14px; text-align: center; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .stat-card .stat-value { font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
+      .blog-article .stat-card .stat-label { font-size: 0.82rem; color: var(--muted, #6b7280); margin-top: 6px; }
+      .blog-article .two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 22px 0; }
+      .blog-article .mini-card { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 16px; }
+      .blog-article .mini-card:nth-child(2n) { background: #f0fdf4; border-color: #bbf7d0; }
+      .blog-article .mini-card h3 { margin-top: 0; font-size: 1rem; }
+      .blog-article .mini-card p { margin-bottom: 0; }
+      @media (max-width: 600px) {
+        .blog-article .stat-grid,
+        .blog-article .two-col,
+        .blog-article .model-comparison { grid-template-columns: 1fr; }
+        .blog-article .paper-info { grid-template-columns: 1fr; gap: 2px; }
+        .blog-article .paper-info dt { margin-top: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="site-name" href="../index.html">Seunghyeon's Homepage</a>
+        <nav class="site-nav">
+          <a href="../index.html">Home</a>
+          <a href="../publications.html">Publications</a>
+          <a href="../experience.html">Experience</a>
+          <a href="../blog.html" class="active" aria-current="page">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="blog-article">
+      <a class="back-link" href="../blog.html">&larr; Back to Blog</a>
+
+      <h1>[Paper Review] Pixal3D: Pixel-Aligned 3D Generation from Images</h1>
+
+      <p class="meta">May 15, 2026 &middot; Paper Review</p>
+
+      <dl class="paper-info">
+        <dt>Paper</dt>
+        <dd>Pixal3D: Pixel-Aligned 3D Generation from Images</dd>
+        <dt>Authors</dt>
+        <dd>Dong-Yang Li, Wang Zhao, Yuxin Chen, Wenbo Hu, Meng-Hao Guo, Fang-Lue Zhang, Ying Shan, Shi-Min Hu</dd>
+        <dt>Venue</dt>
+        <dd>SIGGRAPH 2026</dd>
+        <dt>Links</dt>
+        <dd>
+          <a href="https://arxiv.org/abs/2605.10922" target="_blank" rel="noreferrer">arXiv</a> &middot;
+          <a href="https://ldyang694.github.io/projects/pixal3d/" target="_blank" rel="noreferrer">Project page</a> &middot;
+          <a href="https://github.com/TencentARC/Pixal3D" target="_blank" rel="noreferrer">Code</a> &middot;
+          <a href="https://huggingface.co/spaces/TencentARC/Pixal3D" target="_blank" rel="noreferrer">Demo</a> &middot;
+          <a href="https://huggingface.co/TencentARC/Pixal3D-T" target="_blank" rel="noreferrer">Model</a>
+        </dd>
+      </dl>
+
+      <figure class="paper-figure">
+        <img src="https://ldyang694.github.io/projects/pixal3d/assets/teaser.png" alt="Pixal3D teaser showing pixel-aligned meshes generated from input images" loading="lazy" />
+        <figcaption>Pixal3D frames image-to-3D as generative reconstruction: visible regions should obey the input pixels, while hidden regions are completed by a learned 3D prior. Figure credit: Li et al., Pixal3D project page.</figcaption>
+      </figure>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value">pixel-aligned</div>
+          <div class="stat-label">generation happens in the input camera frame, not a detached canonical pose</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">back-projection</div>
+          <div class="stat-label">multi-scale image features are lifted into a 3D conditioning volume</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">93.57 IoU</div>
+          <div class="stat-label">single-view normal-map overlap on Toys4K, reported by the paper</div>
+        </div>
+      </div>
+
+      <h2>The Core Idea</h2>
+
+      <p>
+        Pixal3D is built around a simple but important criticism of current image-to-3D generators: they often know what object to make, but they do not know exactly where each input pixel should land in 3D. The paper argues that this is not merely a data or model-size problem. It is a correspondence problem.
+      </p>
+
+      <p>
+        Most strong 3D-native generators build an object in a canonical 3D coordinate system and use image tokens through cross-attention. That works for category-level plausibility, but it gives the model too much freedom when the input contains local evidence: a keyboard layout, a face detail, a handle, a petal count, a small asymmetric mark. Pixal3D moves the generation coordinate system into the input camera frame and injects image features by geometric back-projection. In other words, the 3D volume is organized behind the image plane.
+      </p>
+
+      <div class="callout">
+        <p><strong>Core idea:</strong> make image-to-3D generation more like reconstruction where it should be constrained, and more like generation where the input view is silent. The visible surface should be pixel-faithful; the invisible surface can still be completed by a learned 3D prior.</p>
+      </div>
+
+      <p>
+        This is worth reading because it points to a broader shift in 3D generation: representation and conditioning geometry may matter as much as the generative model itself. Pixal3D does not claim that attention is useless. It says that for high-fidelity image-conditioned 3D, attention should not be responsible for discovering basic 2D-3D alignment from scratch.
+      </p>
+
+      <h2>Problem Setting</h2>
+
+      <p>
+        The paper studies image-conditioned 3D asset generation. The input is one or more images of an object; the output is a complete 3D mesh. The desired behavior is stricter than ordinary image-to-3D semantic matching. A good result should preserve the visible surface details in the input image and plausibly infer the unobserved backside or occluded regions.
+      </p>
+
+      <p>
+        This is technically awkward because single-view 3D is underconstrained. A pixel gives a camera ray, not a unique 3D point. Many shapes can explain the same image. Generative models are helpful because they learn shape priors, but those priors can also overpower the actual evidence in the input. A canonical-space generator may produce a good-looking chair while missing the exact slat count, curvature, or silhouette that made the input chair specific.
+      </p>
+
+      <p>
+        Pixal3D assumes that the object can be represented in a camera-aligned 3D volume placed inside the input frustum. During training, ground-truth camera and cube placement parameters are available from rendered data. At inference, the method uses a fixed strategy to place a unit cube in the camera frustum, avoiding the need for user-provided camera calibration in the single-view case.
+      </p>
+
+      <h2>Background</h2>
+
+      <h3>Canonical 3D Generation</h3>
+      <p>
+        Many 3D-native methods learn a distribution over objects in a normalized object coordinate frame. This makes training easier because cars, chairs, animals, and tools can be statistically aligned. The cost is that the input image must be related to that canonical frame. If the input object is rotated, asymmetric, or partially occluded, the model has to infer pose, shape, and local correspondence at once.
+      </p>
+
+      <h3>Cross-Attention as Conditioning</h3>
+      <p>
+        Cross-attention is a flexible way to let 3D tokens query image tokens. It is also deliberately loose. A voxel or latent token can attend to any image region, and the correct relation is learned from data. That flexibility is useful for semantic conditioning, but it is not an ideal substitute for projective geometry. For fine structure, the model may attend to the right concept but the wrong pixel neighborhood.
+      </p>
+
+      <h3>Pixel-Aligned Reconstruction</h3>
+      <p>
+        Classical reconstruction is built around correspondence. Multi-view stereo, depth estimation, normal prediction, and point-map methods all preserve a tight relationship between image coordinates and predicted geometry. A pixel-aligned output is not necessarily complete, but it is anchored. Pixal3D borrows this anchoring and inserts it into a generative 3D pipeline.
+      </p>
+
+      <h3>Sparse SDF Latents and Direct3D-S2</h3>
+      <p>
+        The SIGGRAPH paper version adopts Direct3D-S2 as the base framework. Direct3D-S2 uses a dense stage for coarse occupancy and a sparse stage for detailed voxel latents. The sparse VAE decodes latent features into a sparse signed distance field, and Marching Cubes extracts the mesh. Pixal3D keeps much of this machinery, but changes the coordinate convention and the way images condition the diffusion model.
+      </p>
+
+      <div class="callout warning">
+        <p><strong>Implementation note:</strong> the public repository states that the latest main branch is an improved implementation based on TRELLIS.2, while the paper branch corresponds to the SIGGRAPH 2026 paper version based on Direct3D-S2. The review below separates the paper's technical claims from the later codebase direction.</p>
+      </div>
+
+      <h2>Method</h2>
+
+      <figure class="paper-figure">
+        <img src="https://ldyang694.github.io/projects/pixal3d/assets/pipeline.png" alt="Pixal3D framework overview with pixel-aligned latent learning, back-projection conditioner, and two-stage generation" loading="lazy" />
+        <figcaption>Pixal3D has three main parts: pixel-aligned latent learning, image feature back-projection, and a two-stage generation process for structure and detailed sparse latents. Figure credit: Li et al., Pixal3D project page.</figcaption>
+      </figure>
+
+      <h3>1. Pixel-Aligned Structured Latent Learning</h3>
+      <p>
+        The VAE target is not a canonical object. Pixal3D encodes a camera-space object, meaning the 3D asset is represented in the input view's coordinate frame. Different views of the same object correspond to different pixel-aligned 3D instances and therefore different latents. This may sound less elegant than a canonical representation, but it is exactly what preserves local evidence from the image.
+      </p>
+
+      <h3>2. Back-Projection Conditioning</h3>
+      <p>
+        The main technical move is to replace most local cross-attention conditioning with a 3D feature volume constructed from image features. Pixal3D extracts DINOv2 features from the input image. For each voxel center in the camera-aligned cube, it projects the 3D point onto the image plane and samples the corresponding feature. The result is a voxel-aligned image feature volume.
+      </p>
+
+      <p>
+        This is a quiet but strong inductive bias. A voxel can still represent any surface along a ray, but the local evidence it receives comes from the pixel where that voxel would be seen. The conditioning is no longer a global learned search over all image tokens; it is a geometric lookup.
+      </p>
+
+      <h3>3. Multi-Scale Image Features</h3>
+      <p>
+        DINOv2 patch features are semantically strong but spatially coarse. Pixal3D uses a feature upsampling model, NAF, to obtain higher-resolution feature maps. The same projection mechanism samples from multiple feature scales and averages the sampled features. This is a good fit for the method: once projection gives every voxel a corresponding image location, increasing feature resolution is much cheaper than asking a transformer to attend densely over high-resolution tokens.
+      </p>
+
+      <h3>4. Two-Stage Generation</h3>
+      <p>
+        Pixal3D inherits the dense/sparse decomposition from Direct3D-S2. First, a dense DiT predicts the coarse structure. Then a sparse DiT predicts the detailed sparse latents. The back-projected feature volume is spatially aligned with the noisy 3D volume and is directly added as a conditioning signal. The method also keeps a global DINOv2 token through cross-attention for image-level semantic guidance.
+      </p>
+
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 360" width="780" height="360" role="img" aria-label="Pixal3D method pipeline">
+          <defs>
+            <linearGradient id="pixalBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0f172a" />
+              <stop offset="100%" stop-color="#064e3b" />
+            </linearGradient>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#cbd5e1" />
+            </marker>
+          </defs>
+          <rect width="780" height="360" rx="24" fill="url(#pixalBg)" />
+          <text x="390" y="42" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="22" font-weight="700" fill="#f8fafc">Pixal3D data flow</text>
+          <text x="390" y="68" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="#cbd5e1">local image evidence is lifted into the same 3D coordinate system as the generated latent</text>
+          <g font-family="IBM Plex Sans, sans-serif">
+            <rect x="42" y="122" width="128" height="86" rx="16" fill="#dbeafe" />
+            <text x="106" y="153" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">Input image</text>
+            <text x="106" y="176" text-anchor="middle" font-size="11" fill="#1e40af">RGB crop</text>
+            <line x1="176" y1="165" x2="248" y2="165" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)" />
+            <rect x="256" y="112" width="150" height="106" rx="16" fill="#dcfce7" />
+            <text x="331" y="143" text-anchor="middle" font-size="14" font-weight="700" fill="#166534">DINOv2 + NAF</text>
+            <text x="331" y="166" text-anchor="middle" font-size="11" fill="#166534">multi-scale</text>
+            <text x="331" y="184" text-anchor="middle" font-size="11" fill="#166534">feature maps</text>
+            <line x1="412" y1="165" x2="482" y2="165" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)" />
+            <rect x="490" y="102" width="158" height="126" rx="16" fill="#ffedd5" />
+            <text x="569" y="134" text-anchor="middle" font-size="14" font-weight="700" fill="#9a3412">Back-project</text>
+            <text x="569" y="157" text-anchor="middle" font-size="11" fill="#9a3412">sample features</text>
+            <text x="569" y="175" text-anchor="middle" font-size="11" fill="#9a3412">at voxel projections</text>
+            <text x="569" y="193" text-anchor="middle" font-size="11" fill="#9a3412">build 3D condition</text>
+            <line x1="569" y1="234" x2="569" y2="270" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)" />
+            <rect x="431" y="276" width="276" height="52" rx="14" fill="#fef3c7" />
+            <text x="569" y="307" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">Dense DiT -> Sparse DiT -> VAE Decoder -> Mesh</text>
+            <rect x="76" y="260" width="250" height="52" rx="14" fill="#ede9fe" />
+            <text x="201" y="291" text-anchor="middle" font-size="13" font-weight="700" fill="#5b21b6">global DINO token via cross-attention</text>
+            <line x1="326" y1="286" x2="424" y2="300" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)" />
+          </g>
+        </svg>
+        <div class="diagram-caption">The local route is geometric back-projection; the global route remains semantic cross-attention. That division of labor is the design principle.</div>
+      </div>
+
+      <h3>5. Multi-View Extension</h3>
+      <p>
+        The multi-view version is almost embarrassingly natural: back-project features from each calibrated view into the same 3D volume and average the per-voxel features. Unlike single-view inference, this setting assumes known camera parameters, matching standard multi-view reconstruction practice. As the number of views increases, the visible surface is less ambiguous, and the generative prior has less room to hallucinate.
+      </p>
+
+      <h3>6. Scene Pipeline</h3>
+      <p>
+        For scenes, Pixal3D takes an object-centric modular route. It segments objects with SAM3, completes occluded image regions with Qwen-image-edit, generates each object with Pixal3D, and then aligns object scale/depth using a global point map from MoGe. The important distinction from canonical object pipelines is that Pixal3D does not need to estimate a full 7-DoF pose for each generated asset. The object is already generated in the image-aligned orientation.
+      </p>
+
+      <h2>Equations and Geometry</h2>
+
+      <p>
+        The paper explains the geometry mostly in words. The following equations are explanatory notation for the same mechanism, not necessarily the paper's exact notation.
+      </p>
+
+      <p>
+        Let \(\mathbf{x}_{ijk}\in\mathbb{R}^{3}\) be the center of voxel \((i,j,k)\) in camera coordinates. With camera intrinsics \(K\), its image projection is:
+      </p>
+
+      <p>
+        \[
+          \tilde{\mathbf{u}}_{ijk}=K\mathbf{x}_{ijk},
+          \qquad
+          \mathbf{u}_{ijk}=
+          \left(
+            \frac{\tilde{u}_{ijk}}{\tilde{w}_{ijk}},
+            \frac{\tilde{v}_{ijk}}{\tilde{w}_{ijk}}
+          \right).
+        \]
+      </p>
+
+      <p>
+        Once \(\mathbf{u}_{ijk}\) is known, the model does not have to learn which image patch should condition voxel \((i,j,k)\). Geometry has already answered that question.
+      </p>
+
+      <p>
+        Given multi-scale image features \(F^{(l)}\), Pixal3D samples features at the projected image location and averages across scales:
+      </p>
+
+      <p>
+        \[
+          C_{ijk}
+          =
+          \frac{1}{L}
+          \sum_{l=1}^{L}
+          \operatorname{bilinear}
+          \left(
+            F^{(l)}, \mathbf{u}_{ijk}
+          \right).
+        \]
+      </p>
+
+      <p>
+        For \(M\) calibrated views, the same idea becomes:
+      </p>
+
+      <p>
+        \[
+          C_{ijk}
+          =
+          \frac{1}{M}
+          \sum_{m=1}^{M}
+          \phi_m
+          \left(
+            \pi_m(\mathbf{x}_{ijk})
+          \right),
+        \]
+      </p>
+
+      <p>
+        where \(\pi_m\) projects a voxel center into view \(m\), and \(\phi_m\) samples the multi-scale image features of that view. The average is simple, but the simplicity is the point: all views speak in the same 3D coordinate system.
+      </p>
+
+      <h2>Experiments</h2>
+
+      <h3>Single-View Evaluation on Toys4K</h3>
+      <p>
+        The most informative evaluation compares rendered surface normals of generated meshes against ground-truth normal maps in the input image coordinate frame. This is a better fidelity test than a pure CLIP-style score because it asks whether the generated shape agrees with the actual pixels and silhouette.
+      </p>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>IoU &uarr;</th>
+              <th>PSNR &uarr;</th>
+              <th>SSIM &uarr;</th>
+              <th>LPIPS &darr;</th>
+              <th>Mean &darr;</th>
+              <th>Median &darr;</th>
+              <th>Mean_B &darr;</th>
+              <th>11.25&deg; &uarr;</th>
+              <th>22.5&deg; &uarr;</th>
+              <th>30&deg; &uarr;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>TRELLIS</td>
+              <td>79.48</td>
+              <td>20.98</td>
+              <td>0.883</td>
+              <td>0.204</td>
+              <td>25.00</td>
+              <td>17.97</td>
+              <td>36.04</td>
+              <td>46.82</td>
+              <td>63.99</td>
+              <td>70.80</td>
+            </tr>
+            <tr>
+              <td>TripoSG</td>
+              <td>73.54</td>
+              <td>19.73</td>
+              <td>0.873</td>
+              <td>0.250</td>
+              <td>28.55</td>
+              <td>21.20</td>
+              <td>41.71</td>
+              <td>39.85</td>
+              <td>57.18</td>
+              <td>64.81</td>
+            </tr>
+            <tr>
+              <td>Hunyuan3D-2.1</td>
+              <td>83.33</td>
+              <td>21.96</td>
+              <td>0.889</td>
+              <td>0.179</td>
+              <td>21.19</td>
+              <td>14.05</td>
+              <td>32.46</td>
+              <td>51.37</td>
+              <td>69.08</td>
+              <td>75.83</td>
+            </tr>
+            <tr>
+              <td>Direct3D-S2</td>
+              <td>74.23</td>
+              <td>19.49</td>
+              <td>0.851</td>
+              <td>0.268</td>
+              <td>29.99</td>
+              <td>23.46</td>
+              <td>41.04</td>
+              <td>37.56</td>
+              <td>55.46</td>
+              <td>63.20</td>
+            </tr>
+            <tr>
+              <td><strong>Pixal3D</strong></td>
+              <td><strong>93.57</strong></td>
+              <td><strong>24.21</strong></td>
+              <td><strong>0.897</strong></td>
+              <td><strong>0.108</strong></td>
+              <td><strong>16.63</strong></td>
+              <td><strong>11.77</strong></td>
+              <td><strong>21.80</strong></td>
+              <td><strong>53.13</strong></td>
+              <td><strong>77.96</strong></td>
+              <td><strong>85.35</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Reported by Li et al. on Toys4K. Higher is better for IoU, PSNR, SSIM, and angular-threshold accuracies; lower is better for LPIPS and angular errors.</p>
+
+      <p>
+        The pattern is not subtle. Pixal3D gains strongly on overlap, pixel-level normal consistency, perceptual normal-map error, and angular accuracy. The result supports the paper's main claim because the metric directly tests the kind of fidelity that canonical-space image-to-3D methods tend to lose.
+      </p>
+
+      <figure class="paper-video">
+        <video controls preload="metadata" poster="https://ldyang694.github.io/projects/pixal3d/assets/teaser.png">
+          <source src="https://github.com/LDYang694/LDYang694.github.io/releases/download/Pixal3D_Assets/video.mp4" type="video/mp4" />
+        </video>
+        <figcaption>The official project video is a better visual reference than a single input image: it shows generated geometry, comparisons, and the practical effect of pixel-aligned conditioning. Video credit: Li et al., Pixal3D project page.</figcaption>
+      </figure>
+
+      <h3>In-the-Wild Test Set and User Study</h3>
+      <p>
+        The authors also collect 150 images from Internet and AI-generated sources. Without ground-truth normal maps or camera poses, they report 3D-image consistency metrics and a 30-participant user study. The user study is useful here because automatic 3D-image metrics are still weak proxies for visual faithfulness.
+      </p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Uni3D &uarr;</th>
+              <th>ULIP2 &uarr;</th>
+              <th>Fidelity &uarr;</th>
+              <th>Quality &uarr;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>TRELLIS</td>
+              <td>41.09</td>
+              <td>44.76</td>
+              <td>1.86</td>
+              <td>1.99</td>
+            </tr>
+            <tr>
+              <td>TripoSG</td>
+              <td>40.99</td>
+              <td>44.64</td>
+              <td>2.25</td>
+              <td>2.14</td>
+            </tr>
+            <tr>
+              <td>Hunyuan3D-2.1</td>
+              <td>41.15</td>
+              <td>44.65</td>
+              <td>2.77</td>
+              <td>2.50</td>
+            </tr>
+            <tr>
+              <td>Direct3D-S2</td>
+              <td>41.62</td>
+              <td>44.79</td>
+              <td>3.21</td>
+              <td>3.64</td>
+            </tr>
+            <tr>
+              <td><strong>Pixal3D</strong></td>
+              <td><strong>42.11</strong></td>
+              <td><strong>45.04</strong></td>
+              <td><strong>4.91</strong></td>
+              <td><strong>4.74</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Reported by Li et al. on the in-the-wild set. User-study scores range from 1 to 5.</p>
+
+      <p>
+        The automatic metric margin is modest, but the human score margin is large. That is plausible: CLIP-like and 3D feature metrics often under-measure pixel-level geometry agreement. A keyboard with the wrong key structure may remain semantically close, while a user immediately sees that it is wrong.
+      </p>
+
+      <div class="model-comparison" aria-label="Interactive comparison using web-hosted project assets">
+        <div class="model-card">
+          <h3>Input image</h3>
+          <img src="https://ldyang694.github.io/projects/pixal3d/compa/image/keyboard.jpg" alt="Keyboard input used in the Pixal3D project comparison" loading="lazy" />
+        </div>
+        <div class="model-card">
+          <h3>Pixal3D output</h3>
+          <model-viewer
+            src="https://ldyang694.github.io/projects/pixal3d/compa/pixal3d/keyboard.glb"
+            alt="Interactive Pixal3D keyboard output"
+            poster="https://ldyang694.github.io/projects/pixal3d/compa/image/keyboard.jpg"
+            camera-controls
+            camera-orbit="180deg 90deg auto"
+            shadow-intensity="1"
+            environment-image="neutral"
+            exposure="1.0"
+            loading="lazy"
+            reveal="interaction">
+          </model-viewer>
+        </div>
+        <div class="model-card">
+          <h3>TRELLIS.2 output</h3>
+          <model-viewer
+            src="https://ldyang694.github.io/projects/pixal3d/compa/trellis2/keyboard-new.glb"
+            alt="Interactive TRELLIS.2 keyboard output from the Pixal3D project comparison"
+            poster="https://ldyang694.github.io/projects/pixal3d/compa/image/keyboard.jpg"
+            camera-controls
+            camera-orbit="180deg 90deg auto"
+            shadow-intensity="1"
+            environment-image="neutral"
+            exposure="1.0"
+            loading="lazy"
+            reveal="interaction">
+          </model-viewer>
+        </div>
+      </div>
+      <p class="model-note">Interactive comparison assets are loaded directly from the Pixal3D project page. They are intentionally lazy-loaded because the GLB files are much heavier than static figures.</p>
+
+      <h3>Multi-View Generation</h3>
+      <p>
+        The multi-view experiment compares Pixal3D with VGGT and a multi-view TRELLIS variant on Toys4K using Chamfer Distance, Earth Mover's Distance, and F-Score. The important result is that the same back-projection mechanism scales from one view to several views by feature-volume aggregation.
+      </p>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>CD 2 views &darr;</th>
+              <th>EMD 2 views &darr;</th>
+              <th>F 2 views &uarr;</th>
+              <th>CD 4 views &darr;</th>
+              <th>EMD 4 views &darr;</th>
+              <th>F 4 views &uarr;</th>
+              <th>CD 6 views &darr;</th>
+              <th>EMD 6 views &darr;</th>
+              <th>F 6 views &uarr;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>VGGT</td>
+              <td>613.55</td>
+              <td>19.60</td>
+              <td>9.57</td>
+              <td>881.53</td>
+              <td>21.71</td>
+              <td>10.25</td>
+              <td>2791.10</td>
+              <td>25.33</td>
+              <td>9.67</td>
+            </tr>
+            <tr>
+              <td>TRELLIS</td>
+              <td>21.39</td>
+              <td>2.40</td>
+              <td>43.68</td>
+              <td>18.35</td>
+              <td>2.19</td>
+              <td>45.90</td>
+              <td>18.13</td>
+              <td>2.16</td>
+              <td>46.02</td>
+            </tr>
+            <tr>
+              <td><strong>Pixal3D</strong></td>
+              <td><strong>5.27</strong></td>
+              <td><strong>1.13</strong></td>
+              <td><strong>64.94</strong></td>
+              <td><strong>4.73</strong></td>
+              <td><strong>1.05</strong></td>
+              <td><strong>67.85</strong></td>
+              <td><strong>4.16</strong></td>
+              <td><strong>1.00</strong></td>
+              <td><strong>69.04</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Reported by Li et al. on Toys4K. CD is shown at \(10^{-4}\) scale and EMD at \(10^{-2}\) scale in the paper table.</p>
+
+      <p>
+        The multi-view result is conceptually important. A canonical generator must reconcile multiple images through a learned global representation. Pixal3D can let each view vote into the same 3D volume. When camera poses are good, this is exactly the kind of place where classical reconstruction priors should help a generative model.
+      </p>
+
+      <h3>Ablations</h3>
+      <p>
+        The paper's ablations are especially aligned with the thesis. Removing high-resolution feature upsampling loses fine image details. Replacing back-projection with cross-attention makes training less stable and reduces fidelity. These are not decorative modules; they are the mechanism by which the method preserves local evidence.
+      </p>
+
+      <h3>Scene Generation</h3>
+      <p>
+        The scene result is qualitative but interesting. Pixal3D generates object-separated scene assets by segmenting, completing, generating, and globally aligning objects. Compared with SAM3D-style canonical object generation plus pose estimation, the pixel-aligned formulation reduces the burden on pose recovery. I would treat this as a promising direction rather than a fully solved scene-generation benchmark.
+      </p>
+
+      <h2>Strengths</h2>
+
+      <div class="two-col">
+        <div class="mini-card">
+          <h3>Correct diagnosis</h3>
+          <p>The paper treats fidelity as a correspondence failure, not merely as insufficient model capacity. That is the right level of abstraction.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Strong inductive bias</h3>
+          <p>Back-projection gives local image features a geometrically meaningful destination in the 3D volume.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Backbone-compatible</h3>
+          <p>The idea is not tied to one final representation. It can ride on sparse SDFs today and potentially on stronger asset latents later.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Convincing metric choice</h3>
+          <p>Normal-map fidelity in the input frame directly tests the claim better than broad semantic similarity scores alone.</p>
+        </div>
+      </div>
+
+      <p>
+        The most valuable part of Pixal3D is not the exact backbone. It is the conditioning contract: the model is no longer allowed to treat pixel evidence as vague inspiration. That makes the method feel closer to a reconstruction system where the image is informative, while preserving a generative completion prior where the image is silent.
+      </p>
+
+      <h2>Limitations</h2>
+
+      <p>
+        The paper is honest about several limitations. First, the same pixel sensitivity that gives Pixal3D fidelity can backfire. Segmentation noise, boundary errors, and artifacts in the input can be lifted into 3D and become small geometric defects. A canonical generator might ignore that noise; Pixal3D is more likely to believe it.
+      </p>
+
+      <p>
+        Second, the multi-view formulation assumes known and reasonably accurate camera poses. That is fair for reconstruction-style setups, but it means the strongest multi-view story depends on calibration quality. If camera poses are wrong, the averaged feature volume can become a corrupted condition rather than a stronger one.
+      </p>
+
+      <p>
+        Third, the scene pipeline relies on 2D inpainting for occluded object completion. That is practical, but it moves part of the 3D reasoning problem into a 2D image-editing model. In complex occlusions, errors from completion can become errors in 3D asset generation.
+      </p>
+
+      <p>
+        Finally, the SIGGRAPH paper version focuses on geometry. Texture, material decomposition, relighting, rigging, physical affordances, and part-level semantics are not solved by pixel alignment alone. The public repository's newer TRELLIS.2-based direction is relevant here, but it should be read as implementation evolution rather than evidence for every claim in the paper tables.
+      </p>
+
+      <h2>Research Insight</h2>
+
+      <div class="callout research">
+        <p><strong>Research insight:</strong> Pixal3D suggests that the next stage of image-to-3D progress may come less from replacing one generator with another and more from tightening the contract between 2D evidence and 3D latent coordinates.</p>
+      </div>
+
+      <p>
+        There is a useful historical pattern here. In 2D generation, conditioning moved from global class labels to text tokens to layouts, edges, depth, masks, correspondences, and control signals. 3D generation is going through a similar maturation. Early systems were impressive because they could produce plausible 3D at all. The next systems need to respect constraints.
+      </p>
+
+      <p>
+        Pixal3D's design principle is that geometric constraints should be hard-coded when they are known. A pixel and a camera model define a ray. Letting a transformer rediscover that relation from data is wasteful and brittle. This does not make learning less important; it gives learning a better problem. The model can spend capacity on completion, shape priors, and ambiguity resolution rather than on basic image-to-volume routing.
+      </p>
+
+      <p>
+        The paper also exposes a tension that will keep coming back. Canonical representations are excellent for learning category-level priors and editing in object space. Pixel-aligned representations are excellent for preserving view-specific evidence. A future system may need both: a camera-aligned evidence field coupled to a canonical asset latent, with an explicit and differentiable bridge between them.
+      </p>
+
+      <h2>Practical Perspective</h2>
+
+      <p>
+        For research engineers, Pixal3D is attractive because the core idea is modular. You can imagine attaching a back-projection conditioner to several 3D-native backbones, provided the latent has spatial structure. The method is less obvious for unstructured global vector sets, where there is no clean voxel or local token coordinate to receive the projected feature.
+      </p>
+
+      <p>
+        In production terms, the key benefit is fidelity to the reference image. The key risk is over-trusting the reference image. If the segmentation mask is bad, the crop is blurry, or the image contains inconsistent generated details, a pixel-faithful method can faithfully preserve the wrong thing. Practical systems will need preprocessing, confidence estimation, and probably user-facing cleanup tools.
+      </p>
+
+      <h2>Future Directions</h2>
+
+      <ul>
+        <li><strong>Camera-robust multi-view conditioning:</strong> combine Pixal3D-style aggregation with pose refinement or uncertainty-aware fusion.</li>
+        <li><strong>Texture and material generation:</strong> extend pixel alignment from geometry to PBR attributes without baking view-dependent artifacts into the asset.</li>
+        <li><strong>Canonical-pixel hybrid latents:</strong> preserve input-view fidelity while maintaining an editable object-centric representation.</li>
+        <li><strong>Better scene benchmarks:</strong> evaluate object separation, contact, support relations, scale consistency, and alignment beyond qualitative examples.</li>
+        <li><strong>Noise-aware conditioning:</strong> prevent segmentation errors and pixel artifacts from becoming unnecessary geometric bumps.</li>
+        <li><strong>2D interaction for 3D editing:</strong> use pixel-aligned correspondence to make image-space edits propagate into the generated asset.</li>
+        <li><strong>Video-based generation:</strong> extend from calibrated multi-view images to short videos, where temporal evidence can reduce ambiguity.</li>
+      </ul>
+
+      <h2>Key Takeaways</h2>
+
+      <ul>
+        <li><strong>Pixal3D is a correspondence paper at heart.</strong> Its main claim is that image-to-3D fidelity improves when pixel-to-3D alignment is explicit rather than learned implicitly through attention.</li>
+        <li><strong>Pixel-aligned generation changes the coordinate system.</strong> The generated object lives in the input camera frame, which makes local image evidence much easier to use.</li>
+        <li><strong>Back-projection is doing the heavy lifting.</strong> DINOv2 and NAF provide image features, but geometry decides where those features enter the 3D volume.</li>
+        <li><strong>The evaluation is well matched to the claim.</strong> Normal-map fidelity in the input frame is a meaningful test of whether the generated mesh follows the image.</li>
+        <li><strong>The idea is bigger than this backbone.</strong> Pixel-aligned conditioning should remain relevant as 3D asset latents move toward better geometry, materials, and editability.</li>
+      </ul>
+
+      <h2>Citation</h2>
+
+      <pre><code>@article{li2026pixal3d,
+  title   = {Pixal3D: Pixel-Aligned 3D Generation from Images},
+  author  = {Li, Dong-Yang and Zhao, Wang and Chen, Yuxin and Hu, Wenbo and Guo, Meng-Hao and Zhang, Fang-Lue and Shan, Ying and Hu, Shi-Min},
+  journal = {arXiv preprint arXiv:2605.10922},
+  year    = {2026}
+}</code></pre>
+
+      <hr />
+      <p style="color: var(--muted, #6b7280); font-size: 0.92rem;">
+        Sources: Li et al., <em>Pixal3D: Pixel-Aligned 3D Generation from Images</em>, SIGGRAPH Conference Papers 2026 / ACM TOG, arXiv:2605.10922; project page and public repository linked above.
+      </p>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell">&copy; Seunghyeon Seo</div>
+    </footer>
+
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  </body>
+</html>
