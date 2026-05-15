@@ -524,6 +524,13 @@ window.siteContent = {
       'Mostly paper reviews, technical rabbit holes, implementation notes, and field reports from work that looked easier on the whiteboard. But not everything here will be about models, benchmarks, or GPUs. Some posts will be about everyday life, hobbies, and whatever else earns a spot between experiments.',
     posts: [
       {
+        title: "[Paper Review] Pixal3D: Pixel-Aligned 3D Generation from Images",
+        date: "May 15, 2026",
+        summary: "Pixal3D (SIGGRAPH 2026) reframes image-to-3D fidelity as a correspondence problem and replaces ambiguous local cross-attention with explicit pixel-to-voxel back-projection.",
+        url: "blog/pixal3d.html",
+        category: "Paper Review"
+      },
+      {
         title: '[Daily Recommended Papers] 260504',
         date: 'May 4, 2026',
         summary: 'Daily paper picks for May 4, 2026: PAD (pose-aware 3D diffusion), CrossGrad-GS (hybrid-capture splatting), GOR-IS (intrinsic-space object removal), Adaptive Geodesic CP (egocentric pose), LeGS (RL density control for 3DGS, ICML).',
