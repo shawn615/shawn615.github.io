@@ -540,31 +540,36 @@ window.siteContent = {
         title: '[Paper Review] TRELLIS and TRELLIS.2: From Structured 3D Latents to Native Compact 3D Assets',
         date: 'May 2, 2026',
         summary: 'A combined review of TRELLIS and TRELLIS.2, tracing the shift from versatile SLAT-based 3D generation to native O-Voxel latents with compact sparse compression, arbitrary topology, and PBR materials.',
-        url: 'blog/trellis-family-review.html'
+        url: 'blog/trellis-family-review.html',
+        category: "Paper Review"
       },
       {
         title: '[Daily Recommended Papers] 260501',
         date: 'May 1, 2026',
         summary: 'Daily paper picks for May 1, 2026: SaveWildGS (sparse-view wild 3DGS, 25.06 PSNR), D-Rex (diffusion relighting avatars, NVIDIA/MPI), GenWildSplat (feed-forward wild reconstruction, 3 sec), RecGen (multi-object scene completion, 80% less data), MoCapAnything V2 (end-to-end motion capture, 6.54° error).',
-        url: 'blog/daily-papers-2026-05-01.html'
+        url: 'blog/daily-papers-2026-05-01.html',
+        category: "Paper Review"
       },
       {
         title: '[Paper Review] HAC: Hash-grid Assisted Context for 3D Gaussian Splatting Compression',
         date: 'Apr. 26, 2026',
         summary: 'HAC (ECCV 2024) pioneers context-based compression for 3DGS by using a binary hash grid to predict anchor attribute distributions. 75x smaller than vanilla 3DGS, 11x smaller than Scaffold-GS, with no rendering overhead.',
-        url: 'blog/hac-review.html'
+        url: 'blog/hac-review.html',
+        category: "Paper Review"
       },
       {
         title: '[Paper Review] Scaffold-GS: Structured 3D Gaussians for View-Adaptive Rendering',
         date: 'Apr. 25, 2026',
         summary: 'Scaffold-GS (CVPR 2024 Highlight) replaces static Gaussians with anchor points that spawn neural Gaussians on-the-fly via view-conditioned MLPs. Fewer primitives, better quality, and the foundation for an entire family of 3DGS compression methods.',
-        url: 'blog/scaffold-gs-review.html'
+        url: 'blog/scaffold-gs-review.html',
+        category: "Paper Review"
       },
       {
         title: '[Paper Review] ContextGS: Compact 3D Gaussian Splatting with Anchor Level Context Model',
         date: 'Apr. 24, 2026',
         summary: 'ContextGS brings autoregressive context models from image compression to 3D Gaussian Splatting. By predicting finer anchors from coarser ones across 3 hierarchical levels, it achieves 100× compression over vanilla 3DGS with no quality loss.',
-        url: 'blog/contextgs-review.html'
+        url: 'blog/contextgs-review.html',
+        category: "Paper Review"
       }
     ]
   },
