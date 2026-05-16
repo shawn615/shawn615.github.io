@@ -524,6 +524,13 @@ window.siteContent = {
       'Mostly paper reviews, technical rabbit holes, implementation notes, and field reports from work that looked easier on the whiteboard. But not everything here will be about models, benchmarks, or GPUs. Some posts will be about everyday life, hobbies, and whatever else earns a spot between experiments.',
     posts: [
       {
+        title: "[Paper Review] PAD: Pose-Aware Diffusion for 3D Generation",
+        date: "May 16, 2026",
+        summary: "A technical review of PAD, a pose-aware image-to-3D diffusion framework that generates directly in observation space by conditioning on unprojected partial point clouds.",
+        url: "blog/pad.html",
+        category: "Paper Review"
+      },
+      {
         title: "[Paper Review] Pixal3D: Pixel-Aligned 3D Generation from Images",
         date: "May 15, 2026",
         summary: "Pixal3D (SIGGRAPH 2026) reframes image-to-3D fidelity as a correspondence problem and replaces ambiguous local cross-attention with explicit pixel-to-voxel back-projection.",
