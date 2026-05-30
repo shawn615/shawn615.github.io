@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Paper Review] CUBE: Representing 3D Faces with Learnable B-Spline Volumes | Seunghyeon's Homepage</title>
+    <meta name="description" content="A technical review of CUBE: Control-based Unified B-spline Encoding, learnable B-spline feature volumes, scan registration, monocular face reconstruction, local editing, and 3D face representation design." />
+    <meta property="og:title" content="[Paper Review] CUBE: Representing 3D Faces with Learnable B-Spline Volumes" />
+    <meta property="og:description" content="CUBE hybridizes B-spline local control with high-dimensional learned features for expressive, editable, semantically corresponding 3D face geometry." />
+    <meta property="og:type" content="article" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .blog-article {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        line-height: 1.8;
+        font-size: 1.05rem;
+      }
+      .blog-article h1 { font-size: 1.75rem; margin-bottom: 8px; line-height: 1.3; }
+      .blog-article .meta { color: var(--muted, #6b7280); margin-bottom: 36px; font-size: 0.95rem; }
+      .blog-article h2 { margin-top: 44px; margin-bottom: 14px; font-size: 1.3rem; border-bottom: 1px solid var(--border, #e5e7eb); padding-bottom: 6px; }
+      .blog-article h3 { margin-top: 28px; margin-bottom: 10px; font-size: 1.12rem; }
+      .blog-article p { margin-bottom: 16px; }
+      .blog-article img { max-width: 100%; border-radius: 6px; margin: 16px 0; }
+      .blog-article figure { margin: 24px 0; text-align: center; }
+      .blog-article figcaption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 8px; font-style: italic; }
+      .blog-article code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 0.9em; }
+      .blog-article p > code, .blog-article li > code { background: var(--bg-soft, #f3f4f6); padding: 2px 5px; border-radius: 3px; }
+      .blog-article pre { background: #0f172a; color: #e5e7eb; border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.88rem; line-height: 1.55; }
+      .blog-article blockquote { border-left: 3px solid var(--accent, #2563eb); padding: 12px 16px; color: var(--fg, #374151); background: var(--bg-soft, #f3f4f6); margin: 18px 0; border-radius: 0 6px 6px 0; }
+      .blog-article blockquote p { margin-bottom: 0; }
+      .blog-article ul, .blog-article ol { margin-bottom: 16px; padding-left: 24px; }
+      .blog-article li { margin-bottom: 6px; }
+      .blog-article a { color: var(--accent, #2563eb); }
+      .blog-article .back-link { display: inline-block; margin-bottom: 24px; font-size: 0.95rem; }
+      .blog-article .table-scroll { overflow-x: auto; margin: 22px 0 24px; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06); }
+      .blog-article table { width: 100%; border-collapse: collapse; margin: 0; font-size: 0.88rem; }
+      .blog-article .table-scroll table { min-width: 620px; }
+      .blog-article .table-scroll table.wide { min-width: 760px; }
+      .blog-article th, .blog-article td { border: 1px solid var(--border, #e5e7eb); padding: 8px 10px; text-align: center; vertical-align: top; font-variant-numeric: tabular-nums; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { border-left: 0; }
+      .blog-article .table-scroll th:last-child, .blog-article .table-scroll td:last-child { border-right: 0; }
+      .blog-article .table-scroll thead tr:first-child th { border-top: 0; }
+      .blog-article .table-scroll tbody tr:last-child td { border-bottom: 0; }
+      .blog-article th { background: var(--bg-soft, #f3f4f6); font-weight: 600; }
+      .blog-article td:first-child { text-align: left; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 var(--border, #e5e7eb); }
+      .blog-article .table-scroll th:first-child { z-index: 2; background: var(--bg-soft, #f3f4f6); }
+      .blog-article .table-scroll strong { color: #0f766e; }
+      .blog-article .table-note { color: var(--muted, #6b7280); font-size: 0.84rem; margin: -12px auto 18px; line-height: 1.5; text-align: center; font-style: italic; max-width: 650px; }
+      .blog-article .callout { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+      .blog-article .callout.warning { background: #fff7ed; border-color: #fed7aa; }
+      .blog-article .callout.research { background: #f0fdf4; border-color: #bbf7d0; }
+      .blog-article .callout p { margin-bottom: 0; }
+      .blog-article .paper-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 0.95rem; margin-bottom: 24px; }
+      .blog-article .paper-info dt { font-weight: 600; color: var(--muted, #6b7280); }
+      .blog-article .paper-info dd { margin: 0; }
+      .blog-article .diagram { margin: 30px 0; text-align: center; overflow-x: auto; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; padding: 10px; background: linear-gradient(135deg, #f8fafc, #eef2ff); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08); }
+      .blog-article .diagram svg { max-width: 100%; height: auto; }
+      .blog-article .diagram-caption { color: var(--muted, #6b7280); font-size: 0.9rem; margin: 10px auto 2px; font-style: italic; max-width: 660px; line-height: 1.55; }
+      .blog-article .paper-figure { margin: 28px 0; text-align: center; }
+      .blog-article .paper-figure img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); background: #fff; }
+      .blog-article .paper-figure figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 650px; margin-left: auto; margin-right: auto; }
+      .blog-article .paper-video { margin: 28px 0; text-align: center; }
+      .blog-article .paper-video video { width: 100%; border-radius: 10px; border: 1px solid var(--border, #e5e7eb); background: #0f172a; }
+      .blog-article .paper-video figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 650px; margin-left: auto; margin-right: auto; }
+      .blog-article .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+      .blog-article .stat-card { background: var(--bg-soft, #f3f4f6); border-radius: 10px; padding: 18px 14px; text-align: center; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .stat-card .stat-value { font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
+      .blog-article .stat-card .stat-label { font-size: 0.82rem; color: var(--muted, #6b7280); margin-top: 6px; }
+      .blog-article .two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 22px 0; }
+      .blog-article .mini-card { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 16px; }
+      .blog-article .mini-card:nth-child(2n) { background: #f0fdf4; border-color: #bbf7d0; }
+      .blog-article .mini-card h3 { margin-top: 0; font-size: 1rem; }
+      .blog-article .mini-card p { margin-bottom: 0; }
+      @media (max-width: 600px) {
+        .blog-article .stat-grid,
+        .blog-article .two-col { grid-template-columns: 1fr; }
+        .blog-article .paper-info { grid-template-columns: 1fr; gap: 2px; }
+        .blog-article .paper-info dt { margin-top: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="site-name" href="../index.html">Seunghyeon's Homepage</a>
+        <nav class="site-nav">
+          <a href="../index.html">Home</a>
+          <a href="../publications.html">Publications</a>
+          <a href="../experience.html">Experience</a>
+          <a href="../blog.html" class="active" aria-current="page">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="blog-article">
+      <a class="back-link" href="../blog.html">&larr; Back to Blog</a>
+
+      <h1>[Paper Review] CUBE: Representing 3D Faces with Learnable B-Spline Volumes</h1>
+
+      <p class="meta">May 31, 2026 &middot; Paper Review</p>
+
+      <dl class="paper-info">
+        <dt>Paper</dt>
+        <dd>Representing 3D Faces with Learnable B-Spline Volumes</dd>
+        <dt>Authors</dt>
+        <dd>Prashanth Chandran, Daoye Wang, Timo Bolkart</dd>
+        <dt>Venue</dt>
+        <dd>CVPR 2026 Highlight</dd>
+        <dt>Links</dt>
+        <dd>
+          <a href="https://arxiv.org/abs/2604.12894" target="_blank" rel="noreferrer">arXiv</a> &middot;
+          <a href="https://prashanth-chandran.github.io/CUBE/" target="_blank" rel="noreferrer">Project page</a> &middot;
+          <a href="https://www.youtube.com/watch?v=J_xbbQKvD74" target="_blank" rel="noreferrer">Video</a>
+        </dd>
+      </dl>
+
+      <figure class="paper-figure">
+        <img src="https://prashanth-chandran.github.io/CUBE/images/teaser_fin_2.png" alt="CUBE teaser showing local editing, control swapping, scan registration, and image regression" loading="lazy" />
+        <figcaption>CUBE extends B-spline volumes with learned high-dimensional control features, giving a face representation that is expressive, locally editable, and usable as a decoder for scan and image encoders. Figure credit: Chandran et al., CUBE project page.</figcaption>
+      </figure>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value">16<sup>3</sup></div>
+          <div class="stat-label">best scan model control-feature lattice in the paper</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">0.95 mm</div>
+          <div class="stat-label">CUBE-L mean point-to-scan distance on real scans</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">2.92 s</div>
+          <div class="stat-label">reported CUBE-L 16<sup>3</sup> inference time on V100</div>
+        </div>
+      </div>
+
+      <h2>The Core Idea</h2>
+
+      <p>
+        CUBE is a face-geometry representation paper, not another generic face reconstruction model. The central move is to keep the parts of B-splines that are still valuable for production geometry, namely local support and intuitive control, while replacing low-dimensional 3D control points with high-dimensional learned control features.
+      </p>
+
+      <p>
+        Traditional 3D Morphable Models give dense correspondence and editable coefficients, but their low-dimensional linear spaces tend to wash out person-specific details. Implicit models can recover fine surfaces, but they usually lack a native mesh topology, dense semantic correspondence, and direct local edit handles. CUBE tries to sit in the middle: continuous like an implicit mapping, correspondence-preserving like a template mesh, and locally controllable like a spline.
+      </p>
+
+      <div class="callout">
+        <p><strong>Core idea:</strong> evaluate a B-spline volume over a fixed template domain, but let each control point be a learned feature vector rather than just a 3D coordinate. The first three feature dimensions define a base mesh, and a small residual MLP adds local detail.</p>
+      </div>
+
+      <p>
+        This is worth reading because it treats representation design as the main research object. The paper is less about inventing a larger encoder and more about asking what kind of geometric decoder gives the right tradeoff among accuracy, correspondence, editability, and compatibility with standard mesh pipelines.
+      </p>
+
+      <h2>Problem Setting</h2>
+
+      <p>
+        The main task is 3D facial scan registration: given an unstructured point cloud or scan of a face, predict a registered mesh in a common semantic topology. The paper also demonstrates monocular image-based regression, where a ViT-style image encoder predicts the same CUBE control-feature representation from a portrait image.
+      </p>
+
+      <p>
+        This problem is difficult because face geometry has two opposing requirements. It needs dense semantic correspondence for animation, editing, blendshape transfer, avatar construction, and downstream graphics tools. At the same time, it needs enough representational capacity to capture expression details, lips, tongue, local wrinkles, accessories, and identity-specific shape variations. A rigid low-dimensional model is too restrictive; a purely implicit surface is often inconvenient for standard mesh-based workflows.
+      </p>
+
+      <p>
+        CUBE assumes a fixed template mesh domain for querying the representation. That is a strong design choice. It gives dense correspondence and topology control, but it also makes CUBE primarily a representation for aligned face surfaces, not a general-purpose open-world 3D generator.
+      </p>
+
+      <h2>Background</h2>
+
+      <h3>3DMMs and Dense Correspondence</h3>
+      <p>
+        3D Morphable Models such as FLAME remain popular because they are compact, differentiable, and semantically consistent. Their limitation is expressivity. A low-dimensional linear identity/expression space is convenient for tracking and animation, but it often cannot represent high-frequency, person-specific geometry without additional offsets or neural detail layers.
+      </p>
+
+      <h3>B-Splines and Local Support</h3>
+      <p>
+        B-splines are attractive because each control point only affects a bounded region of the surface. If a basis function is zero outside a knot interval, moving a control point does not disturb the whole shape. This is exactly the kind of locality artists and geometry-processing systems like. The problem is that classical B-spline control points are usually geometric coordinates, which limits the complexity that a small lattice can express.
+      </p>
+
+      <h3>Implicit Neural Representations</h3>
+      <p>
+        Implicit face models can represent detailed geometry by evaluating a neural field at arbitrary 3D points. The tradeoff is that extracting a mesh typically requires isosurface extraction, and the output does not automatically come in dense semantic correspondence with a template. For facial assets, correspondence is not a minor convenience; it is the basis for animation, retargeting, editing, and evaluation.
+      </p>
+
+      <h2>Method</h2>
+
+      <figure class="paper-video">
+        <video controls preload="metadata" poster="https://prashanth-chandran.github.io/CUBE/images/teaser_fin_2.png">
+          <source src="https://prashanth-chandran.github.io/CUBE/videos/CUBE_method.mp4" type="video/mp4" />
+        </video>
+        <figcaption>The project-page method video shows CUBE's two-stage evaluation: B-spline blending of control features followed by a residual MLP. Video credit: Chandran et al., CUBE project page.</figcaption>
+      </figure>
+
+      <h3>B-Spline Feature Volumes</h3>
+      <p>
+        CUBE defines a feature volume over a 3D parametric domain. Let \(C_{ijk}\in\mathbb{R}^{d}\) be a lattice of high-dimensional control features, \(w_{ijk}\) their scalar weights, and \(B_i^p(u)\) a B-spline basis function of degree \(p\). The feature volume maps a parameter point \((u,v,w)\) to a feature vector:
+      </p>
+
+      <p>
+        \[
+          f(u,v,w)=
+          \frac{
+            \sum_{i,j,k}
+            B_i^p(u)B_j^p(v)B_k^p(w)
+            w_{ijk}C_{ijk}
+          }{
+            \sum_{i,j,k}
+            B_i^p(u)B_j^p(v)B_k^p(w)
+            w_{ijk}
+          }.
+        \]
+      </p>
+
+      <p>
+        The paper uses degree \(p=2\). Because B-spline bases have local support, each queried feature vector is influenced by at most \((p+1)^3\) control features. With \(p=2\), that means at most \(27\) nearby controls, which is the mathematical reason local edits stay local.
+      </p>
+
+      <h3>Two-Stage Decode</h3>
+      <p>
+        For a template-domain sample \(q\in[0,1]^3\), CUBE first evaluates the feature volume:
+      </p>
+
+      <p>
+        \[
+          z = f(q).
+        \]
+      </p>
+
+      <p>
+        The first three dimensions of \(z\) are interpreted as a base point:
+      </p>
+
+      <p>
+        \[
+          x_{\text{base}} = z_{1:3}.
+        \]
+      </p>
+
+      <p>
+        Then a lightweight four-layer MLP predicts a residual displacement:
+      </p>
+
+      <p>
+        \[
+          x_{\text{out}} = x_{\text{base}} + \operatorname{MLP}(z).
+        \]
+      </p>
+
+      <p>
+        This split is important. The B-spline component provides a smooth coarse shape and local control. The MLP lets the high-dimensional features express details that would be hard to encode with 3D control coordinates alone.
+      </p>
+
+      <figure class="paper-figure">
+        <img src="https://arxiv.org/html/2604.12894v1/x2.png" alt="CUBE representation concept diagram" loading="lazy" />
+        <figcaption>CUBE reconstructs a 3D face by querying a template-domain point, blending nearby high-dimensional control features, using the first three values as a base point, and predicting a residual with an MLP. Figure credit: Chandran et al., arXiv:2604.12894.</figcaption>
+      </figure>
+
+      <h3>Querying a Template Surface</h3>
+      <p>
+        CUBE is not queried everywhere like a usual volumetric implicit field. To reconstruct a surface in dense semantic correspondence, the model is queried at 3D coordinates sampled from a fixed template mesh normalized into the unit cube. Querying at template vertices gives a mesh with the template topology. Querying at other template-surface samples can produce different output topologies without retraining.
+      </p>
+
+      <h3>Predicting Control Features from Scans</h3>
+      <p>
+        For feed-forward scan registration, the input is an unordered point cloud. The model tokenizes sampled scan vertices, concatenates trainable control tokens, and processes the sequence with transformer blocks using XCiT attention. The output embeddings corresponding to the control tokens are reshaped into the \(m\times m\times m\) CUBE feature lattice; the scan tokens are discarded. The CUBE decoder then reconstructs the registered mesh by querying the template points.
+      </p>
+
+      <figure class="paper-figure">
+        <img src="https://prashanth-chandran.github.io/CUBE/images/scan-arch.png" alt="CUBE scan encoder architecture" loading="lazy" />
+        <figcaption>The scan encoder predicts the CUBE control-feature lattice from unordered scan points plus learnable control tokens. Figure credit: Chandran et al., CUBE project page.</figcaption>
+      </figure>
+
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 360" width="780" height="360" role="img" aria-label="CUBE representation pipeline">
+          <defs>
+            <linearGradient id="cubeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0f172a" />
+              <stop offset="100%" stop-color="#134e4a" />
+            </linearGradient>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#cbd5e1" />
+            </marker>
+          </defs>
+          <rect width="780" height="360" rx="24" fill="url(#cubeBg)" />
+          <text x="390" y="42" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="22" font-weight="700" fill="#f8fafc">CUBE decode path</text>
+          <text x="390" y="68" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="13" fill="#cbd5e1">spline locality plus learned feature expressivity</text>
+
+          <g font-family="IBM Plex Sans, sans-serif">
+            <rect x="46" y="112" width="138" height="96" rx="16" fill="#dbeafe" />
+            <text x="115" y="145" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">Template point</text>
+            <text x="115" y="170" text-anchor="middle" font-size="11" fill="#1e40af">q in [0,1]^3</text>
+
+            <line x1="190" y1="160" x2="252" y2="160" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)" />
+
+            <rect x="260" y="98" width="156" height="124" rx="16" fill="#dcfce7" />
+            <text x="338" y="130" text-anchor="middle" font-size="14" font-weight="700" fill="#166534">B-spline blend</text>
+            <text x="338" y="154" text-anchor="middle" font-size="11" fill="#166534">nearby feature</text>
+            <text x="338" y="172" text-anchor="middle" font-size="11" fill="#166534">controls only</text>
+            <text x="338" y="190" text-anchor="middle" font-size="11" fill="#166534">local support</text>
+
+            <line x1="422" y1="160" x2="486" y2="160" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)" />
+
+            <rect x="494" y="98" width="126" height="124" rx="16" fill="#ffedd5" />
+            <text x="557" y="130" text-anchor="middle" font-size="14" font-weight="700" fill="#9a3412">Feature z</text>
+            <text x="557" y="154" text-anchor="middle" font-size="11" fill="#9a3412">z[1:3] = base</text>
+            <text x="557" y="172" text-anchor="middle" font-size="11" fill="#9a3412">full z -> MLP</text>
+
+            <line x1="626" y1="160" x2="688" y2="160" stroke="#cbd5e1" stroke-width="3" marker-end="url(#arrow)" />
+
+            <rect x="696" y="98" width="70" height="124" rx="16" fill="#ede9fe" />
+            <text x="731" y="138" text-anchor="middle" font-size="13" font-weight="700" fill="#5b21b6">Point</text>
+            <text x="731" y="162" text-anchor="middle" font-size="10" fill="#5b21b6">base +</text>
+            <text x="731" y="178" text-anchor="middle" font-size="10" fill="#5b21b6">residual</text>
+
+            <rect x="198" y="270" width="384" height="48" rx="14" fill="#fef3c7" />
+            <text x="390" y="300" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">repeat over template samples -> dense corresponding face mesh</text>
+          </g>
+        </svg>
+        <div class="diagram-caption">The decoder is continuous, but it is sampled on a known template domain, so the output remains semantically corresponding and mesh-friendly.</div>
+      </div>
+
+      <h2>Training and Data</h2>
+
+      <p>
+        For scan registration, the authors create paired scan/mesh training data synthetically. Starting from randomly sampled head meshes, they add appearance, clothing, hair, and accessories, render 16 views in Blender, and reconstruct scans using a multi-view reconstruction pipeline. This avoids manual registration and yields 300,000 examples with a 90:10 train/test split.
+      </p>
+
+      <p>
+        The scan encoder is trained with random scan orientations and 50,000 sampled points. The paper evaluates CUBE-S, CUBE-M, and CUBE-L, following ViT-like model sizes. The largest CUBE-L model with \(16^3\) controls is trained on 16 TPUs with batch size 64 for 250,000 iterations, taking roughly one day.
+      </p>
+
+      <figure class="paper-figure">
+        <img src="https://arxiv.org/html/2604.12894v1/x4.png" alt="CUBE synthetic data generation process" loading="lazy" />
+        <figcaption>The training data pipeline produces paired synthetic meshes and scans by rendering accessorized heads and reconstructing them with a multi-view pipeline. Figure credit: Chandran et al., arXiv:2604.12894.</figcaption>
+      </figure>
+
+      <h2>Experiments</h2>
+
+      <h3>Ablation: Controls, Encoder Size, and Residuals</h3>
+      <p>
+        The ablation is useful because it isolates the representation choices. Larger encoders and denser control lattices generally improve registration accuracy. The residual MLP helps every configuration, and it matters most when the control lattice is small. That is exactly what one would expect if the MLP is compensating for the limited expressivity of pure B-spline control geometry.
+      </p>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Controls</th>
+              <th>Residual</th>
+              <th>PTS mean mm &darr;</th>
+              <th>PTS median mm &darr;</th>
+              <th>V2V mean mm &darr;</th>
+              <th>V2V median mm &darr;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>CUBE-S</td>
+              <td>16<sup>3</sup></td>
+              <td>yes</td>
+              <td>1.64</td>
+              <td>0.87</td>
+              <td>2.01</td>
+              <td>1.76</td>
+            </tr>
+            <tr>
+              <td>CUBE-M</td>
+              <td>16<sup>3</sup></td>
+              <td>yes</td>
+              <td>1.63</td>
+              <td>0.84</td>
+              <td>1.87</td>
+              <td>1.62</td>
+            </tr>
+            <tr>
+              <td>CUBE-L</td>
+              <td>4<sup>3</sup></td>
+              <td>yes</td>
+              <td>1.62</td>
+              <td>0.81</td>
+              <td>1.81</td>
+              <td>1.58</td>
+            </tr>
+            <tr>
+              <td>CUBE-L</td>
+              <td>8<sup>3</sup></td>
+              <td>yes</td>
+              <td>1.47</td>
+              <td>0.67</td>
+              <td><strong>1.50</strong></td>
+              <td><strong>1.27</strong></td>
+            </tr>
+            <tr>
+              <td><strong>CUBE-L</strong></td>
+              <td><strong>16<sup>3</sup></strong></td>
+              <td><strong>yes</strong></td>
+              <td><strong>1.40</strong></td>
+              <td><strong>0.67</strong></td>
+              <td>1.54</td>
+              <td>1.31</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Selected rows from the paper's ablation table on synthetic scans. PTS is point-to-scan distance; V2V is vertex-to-vertex distance.</p>
+
+      <figure class="paper-figure">
+        <img src="https://arxiv.org/html/2604.12894v1/x5.png" alt="CUBE ablation results with control lattice and residual MLP variations" loading="lazy" />
+        <figcaption>The ablation figure shows how control density, encoder size, and the residual MLP affect detail and error maps. Figure credit: Chandran et al., arXiv:2604.12894.</figcaption>
+      </figure>
+
+      <h3>Comparison with Feed-Forward Registration Baselines</h3>
+      <p>
+        The main comparison is against BPS, which encodes point clouds via distances to basis points, and TEMPEH, which uses multi-view image features and refinement. All methods are trained on the same training dataset, and evaluation is performed on 18,000 real scans from multi-view captures.
+      </p>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>PTS mean mm &darr;</th>
+              <th>PTS median mm &darr;</th>
+              <th>V2V mean mm &darr;</th>
+              <th>V2V median mm &darr;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Ground Truth registration</td>
+              <td>0.60</td>
+              <td>0.40</td>
+              <td>n/a</td>
+              <td>n/a</td>
+            </tr>
+            <tr>
+              <td>BPS 1024 points</td>
+              <td>4.66</td>
+              <td>4.01</td>
+              <td>15.16</td>
+              <td>15.03</td>
+            </tr>
+            <tr>
+              <td>TEMPEH with refinement</td>
+              <td>1.13</td>
+              <td>0.80</td>
+              <td>2.27</td>
+              <td>2.01</td>
+            </tr>
+            <tr>
+              <td>CUBE-S with residuals</td>
+              <td>1.17</td>
+              <td>0.90</td>
+              <td>2.13</td>
+              <td>1.86</td>
+            </tr>
+            <tr>
+              <td>CUBE-M with residuals</td>
+              <td>1.11</td>
+              <td>0.85</td>
+              <td>1.99</td>
+              <td>1.72</td>
+            </tr>
+            <tr>
+              <td><strong>CUBE-L with residuals</strong></td>
+              <td><strong>0.95</strong></td>
+              <td><strong>0.71</strong></td>
+              <td><strong>1.69</strong></td>
+              <td><strong>1.45</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Selected rows from the paper's real-scan comparison table. Lower is better.</p>
+
+      <p>
+        The strongest result is that CUBE-L improves both surface fit and dense-correspondence accuracy over TEMPEH while using the raw scan path rather than multi-view image features. The BPS numbers are much worse, which matches the qualitative explanation: fixed basis-point distances are brittle to scan orientation and can collapse toward average faces.
+      </p>
+
+      <figure class="paper-figure">
+        <img src="https://arxiv.org/html/2604.12894v1/x6.png" alt="CUBE qualitative comparison with BPS and TEMPEH on real scans" loading="lazy" />
+        <figcaption>Qualitative comparison on real scans. The paper argues that CUBE better preserves identity and expression while avoiding noisy refinement artifacts. Figure credit: Chandran et al., arXiv:2604.12894.</figcaption>
+      </figure>
+
+      <h2>Applications</h2>
+
+      <h3>Local Editing and Control Arithmetic</h3>
+      <p>
+        The most interesting non-benchmark part of the paper is editing. Because control features have local support, CUBE can swap lower-face control features between expressions or adjust one control feature to deform a localized region such as the lower lip. This locality is inherited from the spline basis, not learned through a special locality loss.
+      </p>
+
+      <figure class="paper-video">
+        <video controls preload="metadata" poster="https://prashanth-chandran.github.io/CUBE/images/teaser_fin_2.png">
+          <source src="https://prashanth-chandran.github.io/CUBE/videos/shape_editing.mp4" type="video/mp4" />
+        </video>
+        <figcaption>Local editing through CUBE control features. Video credit: Chandran et al., CUBE project page.</figcaption>
+      </figure>
+
+      <p>
+        The paper also shows interpolation and expression transfer. Since the control features are geometrically meaningful enough to interpolate, linear interpolation between source and target control lattices produces smooth transitions. Difference vectors between neutral and expressive scans can be added to other identities, giving expression transfer through feature arithmetic.
+      </p>
+
+      <figure class="paper-figure">
+        <img src="https://arxiv.org/html/2604.12894v1/x8.png" alt="CUBE expression transfer through control feature arithmetic" loading="lazy" />
+        <figcaption>CUBE feature arithmetic transfers an expression offset from one subject to other target identities. Figure credit: Chandran et al., arXiv:2604.12894.</figcaption>
+      </figure>
+
+      <h3>Image-Based Regression</h3>
+      <p>
+        CUBE can also be predicted from a monocular image. The supplementary material describes a ViT-Large encoder that patchifies the input image, appends learnable control embeddings, and predicts \(8^3\) CUBE control features. The image model is trained on 500,000 synthetic portraits at 224 x 224 resolution, initialized from MAE encoder weights, with an L1 shape loss.
+      </p>
+
+      <figure class="paper-figure">
+        <img src="https://prashanth-chandran.github.io/CUBE/images/image_arch.png" alt="CUBE image-based regression architecture" loading="lazy" />
+        <figcaption>The image encoder uses patch tokens plus learnable control tokens to regress CUBE control features from a portrait. Figure credit: Chandran et al., CUBE project page.</figcaption>
+      </figure>
+
+      <figure class="paper-figure">
+        <img src="https://prashanth-chandran.github.io/CUBE/images/image_result_row_1.png" alt="CUBE image-based reconstruction result examples" loading="lazy" />
+        <figcaption>Example image-based reconstructions from the project page. This demonstrates CUBE as an output representation beyond scan registration. Figure credit: Chandran et al., CUBE project page.</figcaption>
+      </figure>
+
+      <h2>Strengths</h2>
+
+      <div class="two-col">
+        <div class="mini-card">
+          <h3>Representation-first contribution</h3>
+          <p>The paper's core value is the decoder design, not just a larger encoder or a new training dataset.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Locality by construction</h3>
+          <p>Local editability comes from B-spline support, so it does not require a learned disentanglement trick.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Mesh-friendly output</h3>
+          <p>CUBE keeps dense correspondence and avoids expensive isosurface extraction for standard template-topology outputs.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Practical encoder story</h3>
+          <p>The same representation can be predicted from point clouds and images, making it a reusable target for different input modalities.</p>
+        </div>
+      </div>
+
+      <h2>Limitations</h2>
+
+      <p>
+        CUBE is not a general 3D representation in the broad generative-model sense. It is designed around faces and template-domain sampling. That is exactly why it gives dense semantic correspondence, but it also means the representation is most natural when a meaningful template parameterization exists.
+      </p>
+
+      <p>
+        The method depends on synthetic paired data for scan registration training. The paper shows generalization to CoMA and FaMoS scans without finetuning, which is encouraging, but the training distribution is still an important assumption. Real capture artifacts, hair, facial accessories, and expression extremes can challenge any model trained this way.
+      </p>
+
+      <p>
+        The image-regression part is promising, but less central than the scan registration result. The paper gives qualitative demonstrations rather than a broad benchmark comparison for monocular reconstruction. I would read it as evidence that CUBE is a useful output representation, not as a complete replacement for all image-based face reconstruction pipelines.
+      </p>
+
+      <p>
+        Finally, locality is bounded but not semantic by itself. A control feature has local support in parameter space, but whether that region aligns with an intuitive facial part depends on the template parameterization and the learned representation.
+      </p>
+
+      <h2>Research Insight</h2>
+
+      <div class="callout research">
+        <p><strong>Research insight:</strong> CUBE is a reminder that old geometry machinery is not obsolete. The useful move is not replacing splines with neural networks, but letting splines define the support structure and neural features define the expressive content.</p>
+      </div>
+
+      <p>
+        A lot of recent 3D work treats representation as a choice among meshes, Gaussians, implicit fields, voxels, and triplanes. CUBE suggests a different design axis: combine a classical geometric basis with learned high-dimensional controls. That gives the network a structured prior about locality and correspondence while avoiding the rigidity of low-dimensional parametric models.
+      </p>
+
+      <p>
+        This direction feels especially relevant for digital humans. Production systems need stable topology, semantic correspondence, local editing, temporal stability, and compatibility with animation tools. Pure neural fields often look attractive in isolation but become awkward when they have to enter those pipelines. CUBE's design is more conservative, but that conservatism is a strength.
+      </p>
+
+      <h2>Practical Perspective</h2>
+
+      <p>
+        For graphics and vision researchers, CUBE is most useful as a decoder target. If you have a scan encoder, an image encoder, or a tracking model, predicting a local-control feature lattice may be more practical than predicting raw vertices, low-dimensional 3DMM coefficients, or a full implicit field.
+      </p>
+
+      <p>
+        For production-facing tools, the local-control story is the main attraction. A face representation that supports dense correspondence, local edits, expression transfer, and arbitrary template-surface sampling is easier to integrate into animation and avatar pipelines than a black-box implicit model.
+      </p>
+
+      <h2>Future Directions</h2>
+
+      <ul>
+        <li><strong>Full-head and hair-aware representations:</strong> extend the template and control domain to better cover scalp, hair proxy surfaces, ears, mouth interiors, and accessories.</li>
+        <li><strong>Temporal training objectives:</strong> the supplemental sequence results are encouraging, but explicit temporal losses could make CUBE more robust for performance capture.</li>
+        <li><strong>Appearance-coupled CUBE:</strong> pair geometry controls with learned material or texture controls while preserving local support.</li>
+        <li><strong>Better monocular benchmarks:</strong> evaluate the image encoder against established in-the-wild 3D face reconstruction protocols, not only qualitative examples.</li>
+        <li><strong>Semantic control analysis:</strong> study how control-lattice regions correspond to facial parts and whether the lattice can be regularized for more intuitive editing.</li>
+        <li><strong>Beyond faces:</strong> test whether the same feature-volume idea works for hands, bodies, garments, or object categories with reusable template domains.</li>
+      </ul>
+
+      <h2>Key Takeaways</h2>
+
+      <ul>
+        <li><strong>CUBE is a hybrid geometric representation.</strong> It combines B-spline local support with high-dimensional learned features and a residual MLP.</li>
+        <li><strong>The representation keeps dense correspondence.</strong> It is queried on a fixed template domain, producing meshes that remain compatible with graphics pipelines.</li>
+        <li><strong>The residual MLP matters.</strong> It improves every ablated configuration and compensates for limited control-lattice resolution.</li>
+        <li><strong>Scan registration results are strong.</strong> CUBE-L reports 0.95 mm mean PTS and 1.69 mm mean V2V on real scans, outperforming BPS and TEMPEH in the paper's evaluation.</li>
+        <li><strong>The broader lesson is representation design.</strong> Classical locality plus learned expressivity is a productive recipe for digital-human geometry.</li>
+      </ul>
+
+      <h2>Citation</h2>
+
+      <pre><code>@inproceedings{chandran26a,
+  title     = {Representing 3D Faces with Learnable B-Spline Volumes},
+  author    = {Chandran, Prashanth and Wang, Daoye and Bolkart, Timo},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  year      = {2026}
+}</code></pre>
+
+      <hr />
+      <p style="color: var(--muted, #6b7280); font-size: 0.92rem;">
+        Sources: Chandran, Wang, and Bolkart, <em>Representing 3D Faces with Learnable B-Spline Volumes</em>, CVPR 2026 Highlight / arXiv:2604.12894; official CUBE project page linked above. Paper figures are loaded from the arXiv HTML and project-page assets.
+      </p>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell">&copy; Seunghyeon Seo</div>
+    </footer>
+
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  </body>
+</html>
