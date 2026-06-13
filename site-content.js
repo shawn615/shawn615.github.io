@@ -524,6 +524,13 @@ window.siteContent = {
       'Mostly paper reviews, technical rabbit holes, implementation notes, and field reports from work that looked easier on the whiteboard. But not everything here will be about models, benchmarks, or GPUs. Some posts will be about everyday life, hobbies, and whatever else earns a spot between experiments.',
     posts: [
       {
+      title: "[Paper Review] Chorus: Multi-Teacher Pretraining for Holistic 3D Gaussian Scene Encoding",
+      date: "Jun. 13, 2026",
+      summary: "A technical review of Chorus, a multi-teacher distillation framework that turns 3D Gaussian Splatting scenes into transferable encoders for segmentation, instance understanding, point clouds, and 3D VQA.",
+      url: "blog/chorus.html",
+      category: "Paper Review"
+      },
+      {
         title: "[Paper Review] CUBE: Representing 3D Faces with Learnable B-Spline Volumes",
         date: "May 30, 2026",
         summary: "A technical review of CUBE, a learnable B-spline-volume representation for 3D faces that combines local control, dense correspondence, and high-dimensional learned features.",
