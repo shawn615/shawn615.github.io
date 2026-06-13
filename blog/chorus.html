@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Paper Review] Chorus: Multi-Teacher Pretraining for Holistic 3D Gaussian Scene Encoding | Seunghyeon's Homepage</title>
+    <meta name="description" content="A technical review of Chorus: multi-teacher pretraining for holistic 3D Gaussian scene encoding, 3DGS feature lifting, teacher distillation, render-and-distill adaptation, segmentation, point-cloud transfer, and 3D VQA." />
+    <meta property="og:title" content="[Paper Review] Chorus: Multi-Teacher Pretraining for Holistic 3D Gaussian Scene Encoding" />
+    <meta property="og:description" content="Chorus trains a feed-forward 3DGS scene encoder by distilling language-aligned, generalist, and object-aware 2D foundation-model signals into a shared 3D embedding." />
+    <meta property="og:type" content="article" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .blog-article {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        line-height: 1.8;
+        font-size: 1.05rem;
+      }
+      .blog-article h1 { font-size: 1.75rem; margin-bottom: 8px; line-height: 1.3; }
+      .blog-article .meta { color: var(--muted, #6b7280); margin-bottom: 36px; font-size: 0.95rem; }
+      .blog-article h2 { margin-top: 44px; margin-bottom: 14px; font-size: 1.3rem; border-bottom: 1px solid var(--border, #e5e7eb); padding-bottom: 6px; }
+      .blog-article h3 { margin-top: 28px; margin-bottom: 10px; font-size: 1.12rem; }
+      .blog-article p { margin-bottom: 16px; }
+      .blog-article img { max-width: 100%; border-radius: 6px; margin: 16px 0; }
+      .blog-article figure { margin: 24px 0; text-align: center; }
+      .blog-article figcaption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 8px; font-style: italic; }
+      .blog-article code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 0.9em; }
+      .blog-article p > code, .blog-article li > code { background: var(--bg-soft, #f3f4f6); padding: 2px 5px; border-radius: 3px; }
+      .blog-article pre { background: #0f172a; color: #e5e7eb; border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.88rem; line-height: 1.55; }
+      .blog-article blockquote { border-left: 3px solid var(--accent, #2563eb); padding: 12px 16px; color: var(--fg, #374151); background: var(--bg-soft, #f3f4f6); margin: 18px 0; border-radius: 0 6px 6px 0; }
+      .blog-article blockquote p { margin-bottom: 0; }
+      .blog-article ul, .blog-article ol { margin-bottom: 16px; padding-left: 24px; }
+      .blog-article li { margin-bottom: 6px; }
+      .blog-article a { color: var(--accent, #2563eb); }
+      .blog-article .back-link { display: inline-block; margin-bottom: 24px; font-size: 0.95rem; }
+      .blog-article .table-scroll { overflow-x: auto; margin: 22px 0 24px; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06); }
+      .blog-article table { width: 100%; border-collapse: collapse; margin: 0; font-size: 0.88rem; }
+      .blog-article .table-scroll table { min-width: 620px; }
+      .blog-article .table-scroll table.wide { min-width: 760px; }
+      .blog-article th, .blog-article td { border: 1px solid var(--border, #e5e7eb); padding: 8px 10px; text-align: center; vertical-align: top; font-variant-numeric: tabular-nums; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { border-left: 0; }
+      .blog-article .table-scroll th:last-child, .blog-article .table-scroll td:last-child { border-right: 0; }
+      .blog-article .table-scroll thead tr:first-child th { border-top: 0; }
+      .blog-article .table-scroll tbody tr:last-child td { border-bottom: 0; }
+      .blog-article th { background: var(--bg-soft, #f3f4f6); font-weight: 600; }
+      .blog-article td:first-child { text-align: left; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 var(--border, #e5e7eb); }
+      .blog-article .table-scroll th:first-child { z-index: 2; background: var(--bg-soft, #f3f4f6); }
+      .blog-article .table-scroll strong { color: #0f766e; }
+      .blog-article .table-note { color: var(--muted, #6b7280); font-size: 0.84rem; margin: -12px auto 18px; line-height: 1.5; text-align: center; font-style: italic; max-width: 650px; }
+      .blog-article .callout { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+      .blog-article .callout.warning { background: #fff7ed; border-color: #fed7aa; }
+      .blog-article .callout.research { background: #f0fdf4; border-color: #bbf7d0; }
+      .blog-article .callout p { margin-bottom: 0; }
+      .blog-article .paper-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 0.95rem; margin-bottom: 24px; }
+      .blog-article .paper-info dt { font-weight: 600; color: var(--muted, #6b7280); }
+      .blog-article .paper-info dd { margin: 0; }
+      .blog-article .diagram { margin: 30px 0; text-align: center; overflow-x: auto; border: 1px solid var(--border, #e5e7eb); border-radius: 14px; padding: 10px; background: #ffffff; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06); }
+      .blog-article .diagram svg { max-width: 100%; height: auto; }
+      .blog-article .diagram-caption { color: var(--muted, #6b7280); font-size: 0.9rem; margin: 10px auto 2px; font-style: italic; max-width: 660px; line-height: 1.55; }
+      .blog-article .paper-figure { margin: 28px 0; text-align: center; }
+      .blog-article .paper-figure img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); background: #fff; }
+      .blog-article .paper-figure figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 650px; margin-left: auto; margin-right: auto; }
+      .blog-article .image-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; align-items: start; margin: 24px 0; }
+      .blog-article .image-row figure { margin: 0; }
+      .blog-article .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+      .blog-article .stat-card { background: var(--bg-soft, #f3f4f6); border-radius: 10px; padding: 18px 14px; text-align: center; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .stat-card .stat-value { font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
+      .blog-article .stat-card .stat-label { font-size: 0.82rem; color: var(--muted, #6b7280); margin-top: 6px; }
+      .blog-article .two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 22px 0; }
+      .blog-article .mini-card { background: #ffffff; border: 1px solid var(--border, #e5e7eb); border-left: 4px solid var(--accent, #2563eb); border-radius: 8px; padding: 16px; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04); }
+      .blog-article .mini-card h3 { margin-top: 0; font-size: 1rem; }
+      .blog-article .mini-card p { margin-bottom: 0; }
+      @media (max-width: 600px) {
+        .blog-article .stat-grid,
+        .blog-article .two-col,
+        .blog-article .image-row { grid-template-columns: 1fr; }
+        .blog-article .paper-info { grid-template-columns: 1fr; gap: 2px; }
+        .blog-article .paper-info dt { margin-top: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="site-name" href="../index.html">Seunghyeon's Homepage</a>
+        <nav class="site-nav">
+          <a href="../index.html">Home</a>
+          <a href="../publications.html">Publications</a>
+          <a href="../experience.html">Experience</a>
+          <a href="../blog.html" class="active" aria-current="page">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="blog-article">
+      <a class="back-link" href="../blog.html">&larr; Back to Blog</a>
+
+      <h1>[Paper Review] Chorus: Multi-Teacher Pretraining for Holistic 3D Gaussian Scene Encoding</h1>
+
+      <p class="meta">June 13, 2026 &middot; Paper Review</p>
+
+      <dl class="paper-info">
+        <dt>Paper</dt>
+        <dd>Chorus: Multi-Teacher Pretraining for Holistic 3D Gaussian Scene Encoding</dd>
+        <dt>Authors</dt>
+        <dd>Yue Li, Qi Ma, Runyi Yang, Mengjiao Ma, Bin Ren, Nikola Popovic, Nicu Sebe, Theo Gevers, Luc Van Gool, Danda Pani Paudel, Martin R. Oswald</dd>
+        <dt>Venue</dt>
+        <dd>CVPR 2026 Oral</dd>
+        <dt>Links</dt>
+        <dd>
+          <a href="https://arxiv.org/abs/2512.17817" target="_blank" rel="noreferrer">arXiv</a> &middot;
+          <a href="https://gaussianworld.github.io/Chorus/" target="_blank" rel="noreferrer">Project page</a> &middot;
+          <a href="https://github.com/GaussianWorld/Chorus" target="_blank" rel="noreferrer">Code</a> &middot;
+          <a href="https://huggingface.co/SceneSplatPro/Chorus" target="_blank" rel="noreferrer">Model</a>
+        </dd>
+      </dl>
+
+      <figure class="paper-figure">
+        <img src="https://gaussianworld.github.io/Chorus/media/teaser_transparent.png" alt="Chorus framework teaser showing multi-teacher pretraining, feature PCA, and data-efficient evaluation" loading="lazy" />
+        <figcaption>Chorus trains a feed-forward 3DGS scene encoder with multiple 2D teacher signals, then uses the learned scene features for open-vocabulary segmentation, instance reasoning, point-cloud transfer, and 3D VQA. Figure credit: Li et al., Chorus project page.</figcaption>
+      </figure>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value">3</div>
+          <div class="stat-label">2D teacher families: SigLIP2, DINOv3, PE-Spatial</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">8.32&times;</div>
+          <div class="stat-label">less training data than Mosaic3D in the zero-shot comparison</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">0.70 s</div>
+          <div class="stat-label">reported inference time per InteriorGS scene</div>
+        </div>
+      </div>
+
+      <h2>The Core Idea</h2>
+
+      <p>
+        Chorus is a representation-learning paper for 3D Gaussian Splatting scenes. Its main claim is not that 3DGS renders well. That is already known. The more interesting claim is that optimized Gaussian primitives can be treated as a native 3D modality for pretraining a general scene encoder, if supervision is distilled carefully from complementary 2D foundation models.
+      </p>
+
+      <p>
+        The paper takes the "lift-then-align" idea from SceneSplat and makes it broader. SceneSplat primarily taught a 3DGS encoder language-aligned semantics. Chorus asks for a richer embedding: language alignment from SigLIP2, general visual structure from DINOv3, and object-aware spatial cues from PE-Spatial. A shared 3D encoder learns common factors, while lightweight teacher-specific heads absorb the incompatible parts of each teacher's feature space.
+      </p>
+
+      <div class="callout">
+        <p><strong>Core idea:</strong> render or lift 2D foundation-model features onto individual 3D Gaussians, train a feed-forward 3DGS encoder to predict those features, and use per-teacher projector heads so language, generic visual, and object-aware supervision can coexist without forcing all teachers into one brittle output space.</p>
+      </div>
+
+      <p>
+        I read Chorus as part of a larger shift: 3DGS is becoming more than a rendering data structure. It is becoming a substrate for scene-level representation learning. The paper is strongest where it treats renderability as a supervision interface. Because Gaussians can be projected, alpha-composited, and re-rendered, they offer a clean bridge between 2D foundation models and feed-forward 3D encoders.
+      </p>
+
+      <h2>Problem Setting</h2>
+
+      <p>
+        The input is an optimized 3DGS scene, represented as a set of Gaussian primitives. Each primitive has a center, scale, orientation, opacity, and color. Chorus outputs per-Gaussian latent features through a shared encoder, with optional teacher-specific projections for language-aligned, DINO-style, or PE-Spatial-style features.
+      </p>
+
+      <p>
+        The downstream tasks are deliberately broad: zero-shot open-vocabulary semantic segmentation, open-vocabulary instance segmentation, linear and decoder probing, data-efficient supervised segmentation, point-cloud transfer, and 3D visual question answering through a GaussianVLM-style pipeline. This breadth matters. If a method only improves one segmentation benchmark, it may simply be a better semantic feature lifter. Chorus is trying to show that the learned 3D encoding is reusable.
+      </p>
+
+      <p>
+        The technically hard part is teacher conflict. SigLIP2, DINOv3, and PE-Spatial do not define the same representation space. One emphasizes language alignment, another general visual features, and the third object-aware spatial locality. Naively averaging or concatenating targets would likely produce a compromise embedding that is hard to optimize and hard to transfer. Chorus instead keeps a shared backbone and gives each teacher its own small projector and loss.
+      </p>
+
+      <h2>Background</h2>
+
+      <h3>3D Gaussian Splatting</h3>
+      <p>
+        A 3DGS scene stores many anisotropic Gaussian primitives rather than a mesh or a neural field. During rendering, each Gaussian is projected to the image plane and alpha-composited in depth order. This is useful for feature learning because the same rendering weights that explain RGB pixels can also relate 2D teacher features back to 3D primitives.
+      </p>
+
+      <h3>2D-to-3D Feature Lifting</h3>
+      <p>
+        Many open-vocabulary 3D methods use 2D foundation models as teachers. The usual recipe is to run a model such as CLIP, SigLIP, DINO, or SAM-related encoders on images, then transfer those 2D features to 3D points, voxels, Gaussians, or radiance-field samples through known camera geometry. Chorus follows this family, but it uses the lifted features as pretraining targets for a feed-forward 3DGS encoder rather than storing them only as scene-specific features.
+      </p>
+
+      <h3>Why Multi-Teacher Distillation Is Not Trivial</h3>
+      <p>
+        Multi-teacher distillation works only if the student can absorb complementary information without destructive interference. Language-aligned features are useful for open-vocabulary retrieval, but they may be spatially coarse. DINO-style features often carry strong part and correspondence structure, but they are not directly text-queryable. Object-aware features can improve grouping and locality, but they may overemphasize segmentation boundaries. Chorus makes this tension explicit through separate heads and balanced losses.
+      </p>
+
+      <h2>Method</h2>
+
+      <figure class="paper-figure">
+        <img src="https://gaussianworld.github.io/Chorus/media/chorus_pipeline_transparent.png" alt="Chorus pipeline showing multi-teacher pretraining, render-and-distill adaptation, and task transfer" loading="lazy" />
+        <figcaption>The Chorus pipeline: lifted teacher supervision trains a shared 3DGS encoder with per-teacher heads, while rendering-based adaptation reuses the same teachers online for new domains. Figure credit: Li et al., Chorus project page.</figcaption>
+      </figure>
+
+      <h3>3DGS Scene and Feature Lifting</h3>
+      <p>
+        The paper represents a 3DGS scene as
+      </p>
+
+      <p>
+        \[
+          \mathcal{G} =
+          \{(\mathbf{x}_i,\mathbf{s}_i,\mathbf{q}_i,\alpha_i,\mathbf{c}_i)\}_{i=1}^{N},
+        \]
+      </p>
+
+      <p>
+        where \(\mathbf{x}_i\) is the center, \(\mathbf{s}_i\) the scale, \(\mathbf{q}_i\) the orientation quaternion, \(\alpha_i\) the opacity, and \(\mathbf{c}_i\) the color of Gaussian \(i\). For a pixel \(\mathbf{u}\) from viewpoint \(p\), rendering follows alpha compositing:
+      </p>
+
+      <p>
+        \[
+          \mathbf{C}(\mathbf{u}\mid p)
+          =
+          \sum_{i\in\mathcal{S}_{d,\mathbf{u}}}
+          T_i\,\alpha_i(\mathbf{u}\mid p)\,\mathbf{c}_i,
+          \qquad
+          T_i=\prod_{j&lt;i}\left(1-\alpha_j(\mathbf{u}\mid p)\right).
+        \]
+      </p>
+
+      <p>
+        The same weights can lift a 2D teacher feature \(F_{p,\mathbf{u}}\) into a per-Gaussian target feature. If \(\mathcal{S}_i\) is the set of view-pixel pairs where Gaussian \(i\) contributes, then Chorus uses a normalized weighted average:
+      </p>
+
+      <p>
+        \[
+          f_i =
+          \sum_{(p,\mathbf{u})\in\mathcal{S}_i}
+          \bar{w}_i(p,\mathbf{u})F_{p,\mathbf{u}},
+          \qquad
+          \bar{w}_i(p,\mathbf{u}) =
+          \frac{w_i(p,\mathbf{u})}
+          {\sum_{(p',\mathbf{u}')\in\mathcal{S}_i} w_i(p',\mathbf{u}')}.
+        \]
+      </p>
+
+      <p>
+        This is the key geometric bridge. It converts dense 2D teacher maps into per-Gaussian pseudo-labels using the exact visibility and compositing behavior of the 3DGS scene.
+      </p>
+
+      <h3>Shared Encoder, Teacher-Specific Projectors</h3>
+      <p>
+        Chorus uses a shared 3D encoder \(g_\theta\) that maps the Gaussian set into per-Gaussian latent features:
+      </p>
+
+      <p>
+        \[
+          Z = g_\theta(\mathcal{G}) \in \mathbb{R}^{N\times d_z}.
+        \]
+      </p>
+
+      <p>
+        Each teacher \(t\in\mathcal{T}=\{\text{lang},\text{dino},\text{pe}\}\) has its own projector \(h_t\), implemented as a two-layer MLP with LayerNorm and GELU:
+      </p>
+
+      <p>
+        \[
+          \hat{f}^{(t)} = h_t(Z) \in \mathbb{R}^{N\times d_t}.
+        \]
+      </p>
+
+      <p>
+        This design is conservative but important. A single projector would force SigLIP2, DINOv3, and PE-Spatial to share an output coordinate system. Chorus instead uses one backbone for reusable scene structure and small heads for teacher-specific feature geometry.
+      </p>
+
+      <h3>Matching Loss and Total Objective</h3>
+      <p>
+        For each teacher, the base matching loss combines angular and magnitude agreement:
+      </p>
+
+      <p>
+        \[
+          \mathcal{L}_{\mathrm{match}}^{(t)}
+          =
+          \frac{1}{|M^{(t)}|}
+          \sum_{i\in M^{(t)}}
+          \lambda_1
+          \left(1-\cos(\hat{f}^{(t)}_i,\widetilde{f}^{(t)}_i)\right)
+          +
+          \lambda_2
+          \mathrm{SmoothL1}(\hat{f}^{(t)}_i,\widetilde{f}^{(t)}_i).
+        \]
+      </p>
+
+      <p>
+        The teacher features are standardized using PHI-S, which applies a PCA rotation and isotropic Hadamard scaling so that teacher feature scales are easier to balance. When semantic or instance labels are available, Chorus also uses teacher-specific contrastive terms: semantic class pooling for the language teacher and instance pooling for PE-Spatial.
+      </p>
+
+      <p>
+        With an active teacher set \(\mathcal{A}(e)\) at epoch \(e\), the total objective is
+      </p>
+
+      <p>
+        \[
+          \mathcal{L}_{\mathrm{total}}(e)
+          =
+          \sum_{t\in\mathcal{A}(e)}
+          \lambda_t
+          \left(
+          \mathcal{L}_{\mathrm{match}}^{(t)}
+          +
+          \eta_t\mathcal{L}_{\mathrm{con}}^{(t)}
+          \right).
+        \]
+      </p>
+
+      <p>
+        The implementation uses equal teacher weights \(\lambda_t=1.0\) and contrastive weight \(\eta_t=0.02\). PE-Spatial is introduced in a staged way rather than from the first epoch, which the ablations suggest is better than forcing object-aware local supervision too early.
+      </p>
+
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 430" width="780" height="430" role="img" aria-label="Chorus multi-teacher training structure">
+          <defs>
+            <marker id="chorusArrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#64748b" />
+            </marker>
+            <style>
+              .label { font-family: IBM Plex Sans, sans-serif; fill: #0f172a; }
+              .muted { font-family: IBM Plex Sans, sans-serif; fill: #475569; }
+              .small { font-size: 12px; }
+              .tiny { font-size: 11px; }
+            </style>
+          </defs>
+
+          <rect x="1" y="1" width="778" height="428" rx="18" fill="#ffffff" stroke="#e5e7eb" />
+          <text x="390" y="34" text-anchor="middle" class="label" font-size="22" font-weight="700">Chorus Multi-Teacher Training</text>
+          <text x="390" y="58" text-anchor="middle" class="muted small">One 3DGS encoder learns shared scene structure; each teacher keeps its own projection space.</text>
+
+          <g>
+            <rect x="36" y="92" width="156" height="112" rx="14" fill="#f8fafc" stroke="#cbd5e1" />
+            <text x="114" y="122" text-anchor="middle" class="label" font-size="15" font-weight="700">Input 3DGS</text>
+            <text x="114" y="148" text-anchor="middle" class="muted tiny">per-Gaussian primitives</text>
+            <text x="114" y="169" text-anchor="middle" class="muted tiny">center, scale, rotation</text>
+            <text x="114" y="188" text-anchor="middle" class="muted tiny">opacity, color</text>
+
+            <line x1="204" y1="148" x2="252" y2="148" stroke="#64748b" stroke-width="2.4" marker-end="url(#chorusArrow)" />
+
+            <rect x="264" y="84" width="178" height="128" rx="14" fill="#eff6ff" stroke="#93c5fd" />
+            <text x="353" y="115" text-anchor="middle" class="label" font-size="15" font-weight="700">Shared 3D Encoder</text>
+            <text x="353" y="141" text-anchor="middle" class="muted tiny">Sonata-style transformer</text>
+            <text x="353" y="160" text-anchor="middle" class="muted tiny">512-D bottleneck</text>
+            <text x="353" y="184" text-anchor="middle" class="label tiny" font-weight="700">outputs latent Z</text>
+
+            <rect x="508" y="76" width="236" height="32" rx="10" fill="#f8fafc" stroke="#cbd5e1" />
+            <text x="626" y="97" text-anchor="middle" class="label small" font-weight="700">Teacher-specific projectors and losses</text>
+
+            <rect x="508" y="122" width="236" height="54" rx="12" fill="#fefce8" stroke="#fde68a" />
+            <text x="526" y="145" class="label small" font-weight="700">SigLIP2 head</text>
+            <text x="526" y="163" class="muted tiny">language-aligned semantics, match loss</text>
+
+            <rect x="508" y="188" width="236" height="54" rx="12" fill="#ecfeff" stroke="#67e8f9" />
+            <text x="526" y="211" class="label small" font-weight="700">DINOv3 head</text>
+            <text x="526" y="229" class="muted tiny">general visual structure, match loss</text>
+
+            <rect x="508" y="254" width="236" height="54" rx="12" fill="#f5f3ff" stroke="#c4b5fd" />
+            <text x="526" y="277" class="label small" font-weight="700">PE-Spatial head</text>
+            <text x="526" y="295" class="muted tiny">object locality, match + contrastive loss</text>
+
+            <line x1="454" y1="148" x2="478" y2="148" stroke="#64748b" stroke-width="2.4" />
+            <circle cx="478" cy="148" r="3.5" fill="#64748b" />
+            <line x1="478" y1="148" x2="478" y2="281" stroke="#94a3b8" stroke-width="2" />
+            <line x1="478" y1="149" x2="500" y2="149" stroke="#94a3b8" stroke-width="2" marker-end="url(#chorusArrow)" />
+            <line x1="478" y1="215" x2="500" y2="215" stroke="#94a3b8" stroke-width="2" marker-end="url(#chorusArrow)" />
+            <line x1="478" y1="281" x2="500" y2="281" stroke="#94a3b8" stroke-width="2" marker-end="url(#chorusArrow)" />
+          </g>
+
+          <g>
+            <rect x="70" y="338" width="640" height="60" rx="14" fill="#f8fafc" stroke="#cbd5e1" />
+            <text x="390" y="362" text-anchor="middle" class="label small" font-weight="700">After pretraining, use the shared latent scene feature Z</text>
+            <rect x="122" y="376" width="104" height="20" rx="10" fill="#e0f2fe" />
+            <text x="174" y="390" text-anchor="middle" class="muted tiny">semantics</text>
+            <rect x="250" y="376" width="104" height="20" rx="10" fill="#e0f2fe" />
+            <text x="302" y="390" text-anchor="middle" class="muted tiny">instances</text>
+            <rect x="378" y="376" width="104" height="20" rx="10" fill="#e0f2fe" />
+            <text x="430" y="390" text-anchor="middle" class="muted tiny">point clouds</text>
+            <rect x="506" y="376" width="104" height="20" rx="10" fill="#e0f2fe" />
+            <text x="558" y="390" text-anchor="middle" class="muted tiny">3D VQA</text>
+          </g>
+        </svg>
+        <div class="diagram-caption">The important separation is conceptual: teacher heads absorb teacher-specific feature geometry, while the shared encoder learns the reusable per-Gaussian scene representation.</div>
+      </div>
+
+      <h3>Render-and-Distill Adaptation</h3>
+      <p>
+        The main pretraining pipeline uses offline lifted pseudo-labels. For new domains, Chorus introduces a cheaper adaptation loop. It renders RGB views from the 3DGS, runs the 2D teachers online, renders the encoder's predicted feature maps using Gaussian compositing, and matches the rendered predicted features to teacher features in image space.
+      </p>
+
+      <p>
+        The predicted feature map for teacher \(t\) is
+      </p>
+
+      <p>
+        \[
+          \hat{F}^{(t)}_{p,\mathbf{u}}
+          =
+          \sum_{i\in\mathcal{S}_{p,\mathbf{u}}}
+          w_i(p,\mathbf{u})\hat{f}^{(t)}_i.
+        \]
+      </p>
+
+      <p>
+        The image-space adaptation loss applies the same feature matching over valid pixels:
+      </p>
+
+      <p>
+        \[
+          \mathcal{L}_{\mathrm{img}}^{(t)}
+          =
+          \frac{1}{|\Omega|}
+          \sum_{(p,\mathbf{u})\in\Omega}
+          \ell_{\mathrm{match}}
+          \left(
+          \hat{F}^{(t)}_{p,\mathbf{u}},
+          \widetilde{F}^{(t)}_{p,\mathbf{u}}
+          \right).
+        \]
+      </p>
+
+      <p>
+        This is a useful engineering contribution because it avoids precomputing and storing all 3D teacher labels for a new dataset. On InteriorGS, the paper reports 1080 GB of storage for the uplifting route versus 8 GB for rendering-based adaptation, with less than 0.1 seconds per view of rasterization overhead during training.
+      </p>
+
+      <h2>Training and Data</h2>
+
+      <p>
+        The pretraining backbone adapts the five-stage transformer encoder from Sonata and uses a 512-dimensional bottleneck feature. The standard Chorus model consumes all 3DGS parameters: center, color, opacity, quaternion, and scale. A point-cloud variant uses only Gaussian centers, colors, and estimated normals, leaving the teacher targets and losses otherwise unchanged.
+      </p>
+
+      <p>
+        The pretraining scenes come from SceneSplat-7K, with newly processed pseudo-labels for SigLIP2, DINOv3, and PE-Spatial. For DINOv3 and PE-Spatial, the paper reports 1024-dimensional per-Gaussian pseudo-labels. SigLIP2 provides 1152-dimensional features. The authors also reprocess the Matterport3D subset because the original region-level 3DGS quality had limited multi-view coverage.
+      </p>
+
+      <p>
+        InteriorGS is used as a new 3DGS-native benchmark rather than as pretraining data. The paper maps its original 755 fine-grained labels into 72 classes, assigns semantic and instance labels to Gaussians with a connected-components heuristic inside bounding boxes, removes outliers, and uses scenes 001-100 as test, 101-200 as validation, and 201-1000 as training for downstream experiments and adaptation.
+      </p>
+
+      <h2>Experiments</h2>
+
+      <h3>Zero-Shot 3D Semantic Segmentation</h3>
+      <p>
+        The central 3DGS-native result is zero-shot semantic segmentation. With joint training on ScanNet, ScanNet++, and Matterport3D, Chorus improves over SceneSplat on all four evaluation datasets in the selected table below. The largest practical gain is on InteriorGS, which is a new-data generalization test: f-mIoU moves from 10.0 to 15.7, and f-mAcc from 18.3 to 24.1.
+      </p>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Training source</th>
+              <th>ScanNet200 f-mIoU</th>
+              <th>ScanNet200 f-mAcc</th>
+              <th>MP3D f-mIoU</th>
+              <th>SN++ f-mIoU</th>
+              <th>InteriorGS f-mIoU</th>
+              <th>InteriorGS f-mAcc</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Mosaic3D</td>
+              <td>SN, SN++, MP3D, ARKitS, S3D</td>
+              <td>15.7</td>
+              <td>28.3</td>
+              <td>13.1</td>
+              <td>18.0</td>
+              <td>9.4</td>
+              <td>16.0</td>
+            </tr>
+            <tr>
+              <td>SceneSplat</td>
+              <td>SN, SN++, MP3D</td>
+              <td>22.5</td>
+              <td>41.7</td>
+              <td>14.0</td>
+              <td>28.6</td>
+              <td>10.0</td>
+              <td>18.3</td>
+            </tr>
+            <tr>
+              <td><strong>Chorus</strong></td>
+              <td>SN, SN++, MP3D</td>
+              <td><strong>24.6</strong></td>
+              <td><strong>47.7</strong></td>
+              <td><strong>18.7</strong></td>
+              <td><strong>29.6</strong></td>
+              <td><strong>15.7</strong></td>
+              <td><strong>24.1</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Selected rows from the paper's zero-shot semantic segmentation table. SN is ScanNet, SN++ is ScanNet++, MP3D is Matterport3D, ARKitS is ARKitScenes, and S3D is Structured3D.</p>
+
+      <figure class="paper-figure">
+        <img src="https://gaussianworld.github.io/Chorus/media/results/zero_shot_semseg_cropped_transparent.png" alt="Chorus zero-shot semantic segmentation results across multiple 3D benchmarks" loading="lazy" />
+        <figcaption>Zero-shot semantic segmentation summary from the project page. Figure credit: Li et al., Chorus project page.</figcaption>
+      </figure>
+
+      <h3>Open-Vocabulary Instance Segmentation</h3>
+      <p>
+        Instance segmentation is a more demanding test because semantic alignment alone is not enough. The model needs grouping and object boundaries. Chorus uses the same Mask3D proposals as the 3D-only baselines and improves over Mosaic3D on mAP25 and mAP50. The tail-class gain is especially notable: 13.0 mAP on tail classes versus 5.4 for Mosaic3D, while head-class mAP is lower than Mosaic3D.
+      </p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Inputs</th>
+              <th>Proposal network</th>
+              <th>mAP25</th>
+              <th>mAP50</th>
+              <th>mAP head</th>
+              <th>mAP tail</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Mosaic3D</td>
+              <td>3D</td>
+              <td>Mask3D</td>
+              <td>17.8</td>
+              <td>16.0</td>
+              <td><strong>21.8</strong></td>
+              <td>5.4</td>
+            </tr>
+            <tr>
+              <td><strong>Chorus</strong></td>
+              <td>3D</td>
+              <td>Mask3D</td>
+              <td><strong>19.6</strong></td>
+              <td><strong>18.0</strong></td>
+              <td>18.5</td>
+              <td><strong>13.0</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Selected rows from the ScanNet200 open-vocabulary 3D instance segmentation table. Methods using 3D+2D inputs are excluded here to focus on the feed-forward 3D comparison.</p>
+
+      <h3>Point-Cloud Transfer</h3>
+      <p>
+        One of the more surprising results is that the point-cloud variant of Chorus transfers well even though the supervision was built from 3DGS scenes. It uses centers, colors, and estimated normals, and it is compared against Sonata and other point-cloud pretraining methods. The paper argues that 3DGS pretraining acts partly like a strong augmentation source, while multi-teacher supervision supplies semantically useful scaling signals.
+      </p>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Setting</th>
+              <th>ScanNet200 mIoU</th>
+              <th>ScanNet++ mIoU</th>
+              <th>Matterport3D mIoU</th>
+              <th>InteriorGS mIoU</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sonata</td>
+              <td>linear probe</td>
+              <td>28.8</td>
+              <td>40.7</td>
+              <td>18.5</td>
+              <td>24.3</td>
+            </tr>
+            <tr>
+              <td><strong>Chorus</strong></td>
+              <td><strong>linear probe</strong></td>
+              <td><strong>36.0</strong></td>
+              <td><strong>48.8</strong></td>
+              <td><strong>20.0</strong></td>
+              <td><strong>27.0</strong></td>
+            </tr>
+            <tr>
+              <td>Sonata</td>
+              <td>full finetune</td>
+              <td>34.4</td>
+              <td>49.9</td>
+              <td>21.3</td>
+              <td>30.7</td>
+            </tr>
+            <tr>
+              <td><strong>Chorus</strong></td>
+              <td><strong>full finetune</strong></td>
+              <td><strong>40.9</strong></td>
+              <td><strong>52.9</strong></td>
+              <td><strong>23.6</strong></td>
+              <td><strong>31.8</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Selected mIoU values from the paper's semantic segmentation probing and finetuning experiments. InteriorGS uses the 3DGS-input model; the other listed datasets use the point-cloud variant.</p>
+
+      <figure class="paper-figure">
+        <img src="https://gaussianworld.github.io/Chorus/media/results/pointcloud_segmentation_summary_transparent.png" alt="Chorus point-cloud segmentation summary across linear probing, decoder probing, and finetuning" loading="lazy" />
+        <figcaption>The point-cloud variant keeps the same multi-teacher training logic but changes the input channels to centers, colors, and estimated normals. Figure credit: Li et al., Chorus project page.</figcaption>
+      </figure>
+
+      <div class="image-row">
+        <figure class="paper-figure">
+          <img src="https://gaussianworld.github.io/Chorus/media/results/sonata_umap_transparent.png" alt="UMAP visualization of Sonata point-cloud features" loading="lazy" />
+          <figcaption>Sonata point-cloud feature UMAP. Figure credit: Li et al., Chorus project page.</figcaption>
+        </figure>
+        <figure class="paper-figure">
+          <img src="https://gaussianworld.github.io/Chorus/media/results/chorus_umap_transparent.png" alt="UMAP visualization of Chorus point-cloud features" loading="lazy" />
+          <figcaption>Chorus point-cloud feature UMAP, with more compact class clusters in the paper's analysis. Figure credit: Li et al., Chorus project page.</figcaption>
+        </figure>
+      </div>
+
+      <h3>Render-and-Distill Adaptation</h3>
+      <p>
+        The adaptation result is less glamorous than the main leaderboard numbers, but it is practically important. Instead of building massive per-Gaussian pseudo-label stores for every new domain, the model can render views and distill online. On InteriorGS, 100 additional scenes give a reported +2.7 mIoU gain under linear probing over the standard pretrained model.
+      </p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Supervision method</th>
+              <th>Preprocess</th>
+              <th>Uplift</th>
+              <th>Storage</th>
+              <th>Training overhead</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Precomputed uplifting</td>
+              <td>3.4 h</td>
+              <td>2.8 h</td>
+              <td>1080 GB</td>
+              <td>-</td>
+            </tr>
+            <tr>
+              <td><strong>Rendering adaptation</strong></td>
+              <td><strong>0.2 h</strong></td>
+              <td><strong>0 h</strong></td>
+              <td><strong>8 GB</strong></td>
+              <td>Rasterization &lt; 0.1 s/view</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Resource comparison reported for InteriorGS with 800 scenes.</p>
+
+      <figure class="paper-figure">
+        <img src="https://gaussianworld.github.io/Chorus/media/results/scaling_trend_transparent.png" alt="Chorus scaling trend and rendering-based adaptation curve" loading="lazy" />
+        <figcaption>Scaling and adaptation summary. The paper reports faster scaling than Sonata-style self-supervision and an adaptation gain on InteriorGS. Figure credit: Li et al., Chorus project page.</figcaption>
+      </figure>
+
+      <h3>3D Question Answering</h3>
+      <p>
+        Chorus is also plugged into GaussianVLM by replacing the SceneSplat 3D backbone and feeding only the final Chorus encoder stage. The result is not a complete new VQA architecture, but the controlled backbone swap is still informative: ScanQA exact match improves from 14.4 to 14.8, ROUGE from 34.8 to 37.4, and Nr3D ROUGE from 19.2 to 28.8, while ScanQA METEOR drops slightly from 22.9 to 22.5.
+      </p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>ScanQA EM1</th>
+              <th>ScanQA M</th>
+              <th>ScanQA R</th>
+              <th>Nr3D Sim</th>
+              <th>Nr3D M</th>
+              <th>Nr3D R</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>GaussianVLM with SceneSplat</td>
+              <td>14.4</td>
+              <td><strong>22.9</strong></td>
+              <td>34.8</td>
+              <td>48.2</td>
+              <td>20.8</td>
+              <td>19.2</td>
+            </tr>
+            <tr>
+              <td><strong>GaussianVLM with Chorus</strong></td>
+              <td><strong>14.8</strong></td>
+              <td>22.5</td>
+              <td><strong>37.4</strong></td>
+              <td><strong>50.6</strong></td>
+              <td><strong>22.5</strong></td>
+              <td><strong>28.8</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="paper-figure">
+        <img src="https://gaussianworld.github.io/Chorus/media/results/scene_qa_summary_cropped_transparent.png" alt="Chorus scene question answering result summary" loading="lazy" />
+        <figcaption>Chorus as the 3D encoder in a GaussianVLM-style scene QA pipeline. Figure credit: Li et al., Chorus project page.</figcaption>
+      </figure>
+
+      <h2>Ablations</h2>
+
+      <p>
+        The teacher ablation is one of the most important pieces of evidence because it tests the paper's central design claim. On ScanNet++ pretraining, adding DINO to language supervision improves foreground mIoU on the validation split from 27.1 to 29.4, and adding PE-Spatial nudges it to 29.6. On InteriorGS, the same sequence improves f-mIoU from 8.0 to 9.3 to 11.4. The gain is not enormous in every column, but the direction supports the complementarity argument.
+      </p>
+
+      <figure class="paper-figure">
+        <img src="https://gaussianworld.github.io/Chorus/media/results/teacher_ablation_table_transparent.png" alt="Chorus teacher ablation table" loading="lazy" />
+        <figcaption>Teacher ablation from the project page. Language, DINO, and PE-Spatial provide complementary signals, especially under new-data generalization to InteriorGS. Figure credit: Li et al., Chorus project page.</figcaption>
+      </figure>
+
+      <p>
+        The design-choice ablation also matters. SmoothL1, 3DGS-aware augmentations, staged PE-Spatial introduction, and instance-level contrastive learning each contribute incremental gains. This is a good sign: the final result is not just one giant teacher model doing all the work. There are representation and optimization choices that measurably affect the learned 3D encoder.
+      </p>
+
+      <h2>Strengths</h2>
+
+      <div class="two-col">
+        <div class="mini-card">
+          <h3>Representation-first framing</h3>
+          <p>The paper treats 3DGS as a native modality for pretraining, not just a target for rendered image features.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Clean teacher separation</h3>
+          <p>Shared backbone plus per-teacher projectors is a pragmatic way to avoid forcing incompatible teacher spaces together.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Broad evaluation</h3>
+          <p>The paper tests open-vocabulary semantics, instances, probing, low-data finetuning, point clouds, and VQA rather than a single metric.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Adaptation story</h3>
+          <p>Render-and-distill adaptation is directly tied to 3DGS renderability and reduces the cost of moving to a new domain.</p>
+        </div>
+      </div>
+
+      <h2>Limitations</h2>
+
+      <p>
+        The first limitation is cost hidden outside the final encoder. Chorus reduces downstream inference to a feed-forward 3D model, but pretraining still depends on running large 2D teachers and lifting their features. The conclusion explicitly notes the offline cost of precomputing teacher pseudo-labels as a remaining limitation.
+      </p>
+
+      <p>
+        The second limitation is teacher bias. Chorus inherits the strengths and blind spots of SigLIP2, DINOv3, and PE-Spatial. If the 2D teachers fail on transparent objects, unusual room layouts, reflective materials, or long-tail categories, the 3D encoder can only partially correct that through geometry and multi-view aggregation.
+      </p>
+
+      <p>
+        The third limitation is modality dependence. The point-cloud transfer result is impressive, but the core method is still built around 3DGS scenes and their rendering weights. For raw point clouds without a 3DGS source or without reliable color/normal estimates, the direct route is less clear.
+      </p>
+
+      <p>
+        Finally, the VQA experiment is best read as a backbone-swap study rather than proof of a new reasoning system. Chorus improves several metrics, especially Nr3D ROUGE, but the full reasoning stack still depends on GaussianVLM, OPT-1.3B, LoRA finetuning, and the task-specific sparsifier.
+      </p>
+
+      <h2>Research Insight</h2>
+
+      <div class="callout research">
+        <p><strong>Research insight:</strong> renderability is a representation-learning interface. 3DGS does not merely store scene appearance; it provides differentiable, visibility-aware routes for moving supervision between 2D foundation models and 3D primitives.</p>
+      </div>
+
+      <p>
+        The main design principle is worth generalizing: use the geometric representation to define how supervision flows, then use a neural encoder to amortize that supervision across scenes. Chorus lifts teacher features into 3D once, trains a feed-forward encoder, and later avoids re-running expensive 2D teachers at inference.
+      </p>
+
+      <p>
+        The paper also highlights a useful compromise in multi-modal distillation. Instead of learning one universal feature vector that must simultaneously be a language embedding, a DINO embedding, and an object-aware embedding, Chorus learns a shared latent representation that can be projected into each teacher's space. That is a more realistic hypothesis about representation convergence: the common factors can be shared, while teacher-specific coordinate systems remain separate.
+      </p>
+
+      <p>
+        For 3D foundation models, this suggests that the next useful scaling unit may not be a larger point-cloud dataset alone. It may be a large collection of renderable 3D scenes where 2D supervision can be queried, projected, standardized, and distilled. 3DGS is attractive here because it gives geometry, appearance, fast rendering, and per-primitive structure in one package.
+      </p>
+
+      <h2>Practical Perspective</h2>
+
+      <p>
+        For a research engineer, Chorus is most useful as a recipe for building reusable 3D scene features. If you already have optimized 3DGS scenes, the method gives a concrete path: collect teacher feature maps, lift them to Gaussians, train a sparse or point-style transformer encoder, and keep teacher-specific heads during pretraining.
+      </p>
+
+      <p>
+        For embodied AI and XR systems, the practical value is amortization. A deployed system cannot afford to run several 2D foundation models from many views every time it needs semantic features. A feed-forward 3DGS encoder that has already absorbed those teacher signals is much more compatible with interactive scene understanding.
+      </p>
+
+      <p>
+        The runtime is not free. The reported model has 131.3M parameters and takes 0.70 seconds per InteriorGS scene on average, compared with 0.65 seconds for SceneSplat and 0.49 seconds for Sonata in the paper's runtime table. Still, for scene-level processing over nearly one million Gaussians per scene, that is a practical regime.
+      </p>
+
+      <h2>Future Directions</h2>
+
+      <ul>
+        <li><strong>Unified 3DGS and point-cloud encoder:</strong> the authors explicitly mention this as a promising next step. The current point-cloud result suggests shared supervision can transfer, but the architectures are still separated by input modality.</li>
+        <li><strong>Online or cached teacher distillation:</strong> reduce the offline pseudo-labeling cost without losing the stability of uplifted supervision.</li>
+        <li><strong>More teacher diversity:</strong> test depth, normal, affordance, correspondence, and temporal teachers, while preserving the projector separation that prevents objective conflict.</li>
+        <li><strong>Dynamic scenes:</strong> extend the scene encoder to time-varying Gaussian splats, where instance identity and feature consistency across time become central.</li>
+        <li><strong>Robustness benchmarks:</strong> evaluate under noisy captures, non-MCMC optimized splats, sparse views, sensor artifacts, and outdoor scenes where 3DGS quality varies strongly.</li>
+        <li><strong>Better VLM integration:</strong> train language models that consume Chorus features more natively instead of only swapping the encoder inside an existing GaussianVLM pipeline.</li>
+      </ul>
+
+      <h2>Key Takeaways</h2>
+
+      <ul>
+        <li><strong>Chorus turns 3DGS into a pretraining modality.</strong> It learns per-Gaussian scene features directly from optimized splat parameters.</li>
+        <li><strong>The multi-teacher design is the main contribution.</strong> SigLIP2, DINOv3, and PE-Spatial supervise one shared encoder through separate projector heads.</li>
+        <li><strong>The evaluation is broad enough to be meaningful.</strong> The paper covers zero-shot semantics, instances, probing, low-data finetuning, point-cloud transfer, and VQA.</li>
+        <li><strong>Render-and-distill adaptation is a practical addition.</strong> It exploits 3DGS renderability to avoid large 3D pseudo-label stores for new domains.</li>
+        <li><strong>The main open problem is cost and generality.</strong> Precomputing teacher supervision remains expensive, and the method is still most natural when renderable 3DGS scenes are available.</li>
+      </ul>
+
+      <h2>Citation</h2>
+
+      <pre><code>@InProceedings{Li_2026_CVPR,
+    author    = {Li, Yue and Ma, Qi and Yang, Runyi and Ma, Mengjiao and Ren, Bin and Popovic, Nikola and Sebe, Nicu and Gevers, Theo and Van Gool, Luc and Paudel, Danda Pani and Oswald, Martin R.},
+    title     = {Chorus: Multi-Teacher Pretraining for Holistic 3D Gaussian Scene Encoding},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2026},
+    pages     = {21431-21442}
+}</code></pre>
+
+      <hr />
+      <p style="color: var(--muted, #6b7280); font-size: 0.92rem;">
+        Sources: Li et al., <em>Chorus: Multi-Teacher Pretraining for Holistic 3D Gaussian Scene Encoding</em>, CVPR 2026 Oral / arXiv:2512.17817; official Chorus project page and released GitHub repository linked above. Figures are loaded from the public project-page assets.
+      </p>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell">&copy; Seunghyeon Seo</div>
+    </footer>
+
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  </body>
+</html>
