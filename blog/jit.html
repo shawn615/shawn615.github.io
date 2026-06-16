@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Paper Review] JiT: Let Denoising Generative Models Denoise | Seunghyeon's Homepage</title>
+    <meta name="description" content="A technical review of Back to Basics: Let Denoising Generative Models Denoise, the JiT paper by Tianhong Li and Kaiming He. The post explains clean-data prediction, pixel-space diffusion, high-dimensional patch denoising, JiT architecture, ablations, scaling results, limitations, and research implications." />
+    <meta property="og:title" content="[Paper Review] JiT: Let Denoising Generative Models Denoise" />
+    <meta property="og:description" content="JiT revisits a basic question in diffusion modeling: should the network predict noise, velocity, or the clean data itself when the input is a high-dimensional image patch?" />
+    <meta property="og:type" content="article" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .blog-article {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        line-height: 1.8;
+        font-size: 1.05rem;
+      }
+      .blog-article h1 { font-size: 1.75rem; margin-bottom: 8px; line-height: 1.3; }
+      .blog-article .meta { color: var(--muted, #6b7280); margin-bottom: 36px; font-size: 0.95rem; }
+      .blog-article h2 { margin-top: 44px; margin-bottom: 14px; font-size: 1.3rem; border-bottom: 1px solid var(--border, #e5e7eb); padding-bottom: 6px; }
+      .blog-article h3 { margin-top: 28px; margin-bottom: 10px; font-size: 1.12rem; }
+      .blog-article p { margin-bottom: 16px; }
+      .blog-article img { max-width: 100%; border-radius: 6px; margin: 16px 0; }
+      .blog-article figure { margin: 24px 0; text-align: center; }
+      .blog-article figcaption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 8px; font-style: italic; }
+      .blog-article code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 0.9em; }
+      .blog-article p > code, .blog-article li > code { background: var(--bg-soft, #f3f4f6); padding: 2px 5px; border-radius: 3px; }
+      .blog-article pre { background: #0f172a; color: #e5e7eb; border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.88rem; line-height: 1.55; }
+      .blog-article blockquote { border-left: 3px solid var(--accent, #2563eb); padding: 12px 16px; color: var(--fg, #374151); background: var(--bg-soft, #f3f4f6); margin: 18px 0; border-radius: 0 6px 6px 0; }
+      .blog-article blockquote p { margin-bottom: 0; }
+      .blog-article ul, .blog-article ol { margin-bottom: 16px; padding-left: 24px; }
+      .blog-article li { margin-bottom: 6px; }
+      .blog-article a { color: var(--accent, #2563eb); }
+      .blog-article .back-link { display: inline-block; margin-bottom: 24px; font-size: 0.95rem; }
+      .blog-article .table-scroll { overflow-x: auto; margin: 22px 0 24px; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06); }
+      .blog-article table { width: 100%; border-collapse: collapse; margin: 0; font-size: 0.88rem; }
+      .blog-article .table-scroll table { min-width: 620px; }
+      .blog-article .table-scroll table.wide { min-width: 760px; }
+      .blog-article th, .blog-article td { border: 1px solid var(--border, #e5e7eb); padding: 8px 10px; text-align: center; vertical-align: top; font-variant-numeric: tabular-nums; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { border-left: 0; }
+      .blog-article .table-scroll th:last-child, .blog-article .table-scroll td:last-child { border-right: 0; }
+      .blog-article .table-scroll thead tr:first-child th { border-top: 0; }
+      .blog-article .table-scroll tbody tr:last-child td { border-bottom: 0; }
+      .blog-article th { background: var(--bg-soft, #f3f4f6); font-weight: 600; }
+      .blog-article td:first-child { text-align: left; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 var(--border, #e5e7eb); }
+      .blog-article .table-scroll th:first-child { z-index: 2; background: var(--bg-soft, #f3f4f6); }
+      .blog-article .table-scroll strong { color: #0f766e; }
+      .blog-article .table-note { color: var(--muted, #6b7280); font-size: 0.84rem; margin: -12px auto 18px; line-height: 1.5; text-align: center; font-style: italic; max-width: 650px; }
+      .blog-article .callout { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+      .blog-article .callout.warning { background: #fff7ed; border-color: #fed7aa; }
+      .blog-article .callout.research { background: #f0fdf4; border-color: #bbf7d0; }
+      .blog-article .callout p { margin-bottom: 0; }
+      .blog-article .paper-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 0.95rem; margin-bottom: 24px; }
+      .blog-article .paper-info dt { font-weight: 600; color: var(--muted, #6b7280); }
+      .blog-article .paper-info dd { margin: 0; }
+      .blog-article .diagram { margin: 30px 0; text-align: center; overflow-x: auto; border: 1px solid var(--border, #e5e7eb); border-radius: 14px; padding: 10px; background: #ffffff; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06); }
+      .blog-article .diagram svg { max-width: 100%; height: auto; }
+      .blog-article .diagram-caption { color: var(--muted, #6b7280); font-size: 0.9rem; margin: 10px auto 2px; font-style: italic; max-width: 660px; line-height: 1.55; }
+      .blog-article .paper-figure { margin: 30px auto; text-align: center; }
+      .blog-article .paper-figure img { display: block; max-width: 100%; height: auto; margin: 0 auto; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); background: #fff; }
+      .blog-article .paper-figure.figure-samples img { width: 100%; border: 0; border-radius: 10px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); }
+      .blog-article .paper-figure.figure-narrow img { max-width: 560px; }
+      .blog-article .paper-figure.figure-medium img { max-width: 700px; }
+      .blog-article .paper-figure figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 650px; margin-left: auto; margin-right: auto; }
+      .blog-article .image-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; align-items: start; margin: 24px 0; }
+      .blog-article .image-row figure { margin: 0; }
+      .blog-article .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+      .blog-article .stat-card { background: var(--bg-soft, #f3f4f6); border-radius: 10px; padding: 18px 14px; text-align: center; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .stat-card .stat-value { font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
+      .blog-article .stat-card .stat-label { font-size: 0.82rem; color: var(--muted, #6b7280); margin-top: 6px; }
+      .blog-article .two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 22px 0; }
+      .blog-article .mini-card { background: #ffffff; border: 1px solid var(--border, #e5e7eb); border-left: 4px solid var(--accent, #2563eb); border-radius: 8px; padding: 16px; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04); }
+      .blog-article .mini-card h3 { margin-top: 0; font-size: 1rem; }
+      .blog-article .mini-card p { margin-bottom: 0; }
+      .blog-article .eq-note { color: var(--muted, #6b7280); font-size: 0.92rem; margin-top: -8px; }
+      @media (max-width: 600px) {
+        .blog-article .stat-grid,
+        .blog-article .two-col,
+        .blog-article .image-row { grid-template-columns: 1fr; }
+        .blog-article .paper-info { grid-template-columns: 1fr; gap: 2px; }
+        .blog-article .paper-info dt { margin-top: 8px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="site-name" href="../index.html">Seunghyeon's Homepage</a>
+        <nav class="site-nav">
+          <a href="../index.html">Home</a>
+          <a href="../publications.html">Publications</a>
+          <a href="../experience.html">Experience</a>
+          <a href="../blog.html" class="active" aria-current="page">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="blog-article">
+      <a class="back-link" href="../blog.html">&larr; Back to Blog</a>
+
+      <h1>[Paper Review] JiT: Let Denoising Generative Models Denoise</h1>
+
+      <p class="meta">June 16, 2026 &middot; Paper Review</p>
+
+      <dl class="paper-info">
+        <dt>Paper</dt>
+        <dd>Back to Basics: Let Denoising Generative Models Denoise</dd>
+        <dt>Authors</dt>
+        <dd>Tianhong Li, Kaiming He</dd>
+        <dt>Venue</dt>
+        <dd>CVPR 2026</dd>
+        <dt>Links</dt>
+        <dd>
+          <a href="https://arxiv.org/abs/2511.13720" target="_blank" rel="noreferrer">arXiv</a> &middot;
+          <a href="https://github.com/LTH14/JiT" target="_blank" rel="noreferrer">Code</a>
+        </dd>
+      </dl>
+
+      <figure class="paper-figure figure-samples">
+        <img src="https://raw.githubusercontent.com/LTH14/JiT/main/demo/visual.jpg" alt="ImageNet samples generated by JiT" width="2560" height="3072" loading="eager" fetchpriority="high" decoding="async" />
+        <figcaption>ImageNet samples from the official JiT repository. This is the right opening visual because it immediately shows the claim being tested: a self-contained pixel-space Transformer can produce competitive ImageNet samples. Figure credit: Li and He, official JiT repository.</figcaption>
+      </figure>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value">x-pred</div>
+          <div class="stat-label">direct clean-data prediction is the central design choice</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">768</div>
+          <div class="stat-label">raw pixel dimensions per 16&times;16 RGB patch at 256 resolution</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">1.82</div>
+          <div class="stat-label">FID-50K reported by JiT-G/16 at ImageNet 256 after 600 epochs</div>
+        </div>
+      </div>
+
+      <h2>The Core Idea</h2>
+
+      <p>
+        This paper asks a deliberately basic question: in a denoising generative model, what should the neural network actually predict? The modern diffusion literature often predicts noise, score-like quantities, or velocity. Li and He argue that, in high-dimensional pixel space, this habit can be the wrong optimization problem. If natural images lie near a structured low-dimensional manifold, then the clean image is the object with learnable structure. The injected noise is deliberately unstructured. A finite-capacity network should spend its capacity projecting a noisy observation back toward data, not reconstructing the noise itself.
+      </p>
+
+      <p>
+        JiT, short for Just image Transformer, is the paper's test of that claim. It is intentionally plain: split an image into large raw RGB patches, feed those patches to a Transformer, and train the network to predict the clean patch directly. There is no VAE tokenizer, no pretrained visual encoder, no perceptual or adversarial objective, and no extra representation alignment. The surprising part is that this simple design becomes competitive on ImageNet 256 and 512 once the prediction target is changed from epsilon or velocity to clean data.
+      </p>
+
+      <div class="callout">
+        <p><strong>Core idea:</strong> diffusion parameterizations that are mathematically convertible are not necessarily equivalent optimization problems. In high-dimensional pixel patches, clean-data prediction gives the network a structured target, while epsilon- and velocity-prediction ask it to model quantities that live largely off the natural-image manifold.</p>
+      </div>
+
+      <p>
+        I read the paper as a useful correction to a field-wide reflex. A lot of recent image generation work uses stronger tokenizers, larger auxiliary teachers, or more elaborate losses. JiT shows that one bottleneck may be more elementary: the prediction target can make a simple pixel model look either viable or catastrophically underpowered.
+      </p>
+
+      <h2>Problem Setting</h2>
+
+      <p>
+        The setting is class-conditional image generation on ImageNet. The model operates in pixel space. An input image \(x\) is divided into non-overlapping \(p\times p\) RGB patches, and each patch is treated as a raw vector of dimension \(p^2C\). For ImageNet 256 with \(p=16\), this is a 768-dimensional token. For ImageNet 512 with \(p=32\), this becomes a 3072-dimensional token. The paper even studies 1024 resolution with \(p=64\), where a single patch is 12288-dimensional.
+      </p>
+
+      <p>
+        This is a hostile setup for pixel diffusion. Pixel space is high-dimensional, local correlations are strong, and the target distribution has complicated low-level texture statistics. Most high-performing modern systems avoid this by learning in a latent space. JiT instead keeps the raw pixel representation and asks whether the network can still denoise if the learning target is aligned with the structure of natural images.
+      </p>
+
+      <p>
+        The practical bottleneck is the long-standing gap between elegant diffusion theory and the engineering reality of finite networks. If \(x\), \(\epsilon\), and \(v\) can be transformed into each other analytically, it is tempting to treat the choice as a minor implementation detail. This paper argues that the transformation only proves equivalence under idealized conditions. In real training, the network output space matters.
+      </p>
+
+      <h2>Background</h2>
+
+      <h3>Flow and Diffusion Parameterizations</h3>
+      <p>
+        The paper uses a simple linear interpolation between data and Gaussian noise:
+      </p>
+
+      <p>
+        \[
+          z_t = t x + (1-t)\epsilon,\qquad t\in[0,1],
+        \]
+      </p>
+
+      <p>
+        where \(x\) is a clean image and \(\epsilon\sim\mathcal{N}(0,I)\) is random noise. The corresponding velocity is
+      </p>
+
+      <p>
+        \[
+          v = x - \epsilon.
+        \]
+      </p>
+
+      <p>
+        A flow model can be trained to predict a velocity field and sampled by solving the ordinary differential equation
+      </p>
+
+      <p>
+        \[
+          \frac{d z_t}{d t} = v_\theta(z_t,t).
+        \]
+      </p>
+
+      <p>
+        In principle, a network can output clean data \(x\), noise \(\epsilon\), or velocity \(v\), and the other quantities can be recovered from \(z_t\) and \(t\). The paper's point is that this algebraic convertibility does not settle the learning problem.
+      </p>
+
+      <h3>Pixel Space Versus Latent Space</h3>
+      <p>
+        Latent diffusion compresses images through a tokenizer or autoencoder before diffusion. This reduces dimensionality and often removes low-level redundancy, but the tokenizer becomes part of the system. It may require perceptual losses, adversarial training, pretrained encoders, or careful reconstruction tradeoffs. Pixel-space diffusion avoids that dependency, but must model the original high-dimensional signal directly.
+      </p>
+
+      <p>
+        JiT's large-patch choice makes the tension sharp. A 16&times;16 RGB patch has 768 raw dimensions, but the set of natural patches is not arbitrary in \(\mathbb{R}^{768}\). The clean patch should live near a structured manifold; the noise vector does not. This is the conceptual reason the authors expect clean-data prediction to be easier for a finite Transformer.
+      </p>
+
+      <h3>Why Epsilon Prediction Became Default</h3>
+      <p>
+        Epsilon prediction became popular partly because it is stable and convenient in denoising diffusion probabilistic models. Velocity prediction later became common in flow-matching and rectified-flow-style formulations. These choices work well in many latent-space systems. JiT does not claim that epsilon or velocity prediction is universally wrong. The claim is narrower and more interesting: once the output token is a high-dimensional raw pixel patch, the target distribution seen by the network changes the effective optimization problem dramatically.
+      </p>
+
+      <h2>Method</h2>
+
+      <figure class="paper-figure figure-medium">
+        <img src="https://arxiv.org/html/2511.13720v2/x1.png" alt="Manifold explanation comparing x-prediction, epsilon-prediction, and velocity-prediction" width="664" height="465" loading="lazy" decoding="async" />
+        <figcaption>The paper's conceptual explanation: clean natural data are assumed to lie near a low-dimensional manifold, while injected noise and velocity targets occupy a much less structured space. Figure credit: Li and He, arXiv HTML Figure 1.</figcaption>
+      </figure>
+
+      <h3>Prediction Space and Loss Space</h3>
+      <p>
+        JiT separates two concepts that are often conflated: what the network directly outputs, and where the loss is measured. Let the network directly predict clean data:
+      </p>
+
+      <p>
+        \[
+          x_\theta = \mathrm{net}_\theta(z_t,t).
+        \]
+      </p>
+
+      <p>
+        Given \(z_t = t x + (1-t)\epsilon\), the implied noise and velocity predictions are
+      </p>
+
+      <p>
+        \[
+          \epsilon_\theta =
+          \frac{z_t - t x_\theta}{1-t},
+          \qquad
+          v_\theta =
+          \frac{x_\theta - z_t}{1-t}.
+        \]
+      </p>
+
+      <p>
+        The final model uses clean-data prediction as the network output, while applying a velocity-space loss:
+      </p>
+
+      <p>
+        \[
+          \mathcal{L}
+          =
+          \mathbb{E}_{x,\epsilon,t}
+          \left[
+          \left\|
+          v_\theta(z_t,t) - v
+          \right\|_2^2
+          \right],
+          \qquad
+          v_\theta(z_t,t)=
+          \frac{\mathrm{net}_\theta(z_t,t)-z_t}{1-t}.
+        \]
+      </p>
+
+      <p class="eq-note">
+        The paper clips the denominator \(1-t\) in implementation to avoid numerical instability at very high noise-to-data interpolation times.
+      </p>
+
+      <p>
+        This design is subtle. The model does not discard velocity training. It changes the direct regression target to \(x\), then derives velocity for the loss and the sampler. In other words, JiT lets the network denoise in the intuitive sense: produce the clean image.
+      </p>
+
+      <div class="diagram">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 420" width="780" height="420" role="img" aria-label="JiT clean-data prediction pipeline">
+          <defs>
+            <marker id="jitArrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#64748b" />
+            </marker>
+            <style>
+              .label { font-family: IBM Plex Sans, sans-serif; fill: #0f172a; }
+              .muted { font-family: IBM Plex Sans, sans-serif; fill: #475569; }
+              .small { font-size: 12px; }
+              .tiny { font-size: 11px; }
+            </style>
+          </defs>
+
+          <rect x="1" y="1" width="778" height="418" rx="18" fill="#ffffff" stroke="#e5e7eb" />
+          <text x="390" y="34" text-anchor="middle" class="label" font-size="22" font-weight="700">JiT: Denoise First, Derive Velocity Later</text>
+          <text x="390" y="58" text-anchor="middle" class="muted small">Color encodes meaning: green is clean-data structure; amber is off-manifold noise or velocity.</text>
+
+          <g>
+            <rect x="38" y="102" width="142" height="96" rx="14" fill="#f8fafc" stroke="#cbd5e1" />
+            <text x="109" y="128" text-anchor="middle" class="label" font-size="15" font-weight="700">Noisy patch</text>
+            <text x="109" y="152" text-anchor="middle" class="muted tiny">z_t = t x + (1-t) eps</text>
+            <text x="109" y="174" text-anchor="middle" class="muted tiny">raw RGB vector</text>
+
+            <line x1="188" y1="150" x2="238" y2="150" stroke="#64748b" stroke-width="2.4" marker-end="url(#jitArrow)" />
+
+            <rect x="250" y="92" width="172" height="116" rx="14" fill="#eff6ff" stroke="#93c5fd" />
+            <text x="336" y="120" text-anchor="middle" class="label" font-size="15" font-weight="700">JiT Transformer</text>
+            <text x="336" y="145" text-anchor="middle" class="muted tiny">large raw patches</text>
+            <text x="336" y="164" text-anchor="middle" class="muted tiny">time and class conditioning</text>
+            <text x="336" y="187" text-anchor="middle" class="muted tiny">predicts clean pixels</text>
+
+            <line x1="432" y1="150" x2="482" y2="150" stroke="#64748b" stroke-width="2.4" marker-end="url(#jitArrow)" />
+
+            <rect x="494" y="102" width="156" height="96" rx="14" fill="#ecfdf5" stroke="#86efac" />
+            <text x="572" y="128" text-anchor="middle" class="label" font-size="15" font-weight="700">Clean prediction</text>
+            <text x="572" y="153" text-anchor="middle" class="muted tiny">x_theta</text>
+            <text x="572" y="175" text-anchor="middle" class="muted tiny">structured target</text>
+
+            <line x1="572" y1="208" x2="572" y2="248" stroke="#64748b" stroke-width="2.4" marker-end="url(#jitArrow)" />
+
+            <rect x="462" y="260" width="220" height="72" rx="14" fill="#f8fafc" stroke="#cbd5e1" />
+            <text x="572" y="286" text-anchor="middle" class="label" font-size="14" font-weight="700">Derived velocity for loss and ODE</text>
+            <text x="572" y="311" text-anchor="middle" class="muted tiny">v_theta = (x_theta - z_t) / (1-t)</text>
+
+            <rect x="70" y="258" width="236" height="76" rx="14" fill="#fffbeb" stroke="#fcd34d" />
+            <text x="188" y="284" text-anchor="middle" class="label" font-size="14" font-weight="700">What JiT avoids predicting directly</text>
+            <text x="188" y="309" text-anchor="middle" class="muted tiny">noise eps or velocity v</text>
+            <text x="188" y="326" text-anchor="middle" class="muted tiny">less structured high-dimensional targets</text>
+          </g>
+        </svg>
+        <div class="diagram-caption">JiT's key move is not changing the sampler alone. The network output is clean data, and velocity is computed afterward so the model can still use a velocity-style objective and ODE sampler.</div>
+      </div>
+
+      <h3>Architecture</h3>
+      <p>
+        The architecture is deliberately close to a Vision Transformer. The image is split into \(H/p \times W/p\) non-overlapping patches. Each patch is linearly embedded, positional information is added, and a stack of Transformer blocks processes the sequence. The output head maps each token back to a raw \(p^2C\)-dimensional patch.
+      </p>
+
+      <figure class="paper-figure figure-narrow">
+        <img src="https://arxiv.org/html/2511.13720v2/x2.png" alt="JiT architecture diagram from the paper" width="498" height="613" loading="lazy" decoding="async" />
+        <figcaption>JiT architecture from the paper. The model is a plain image-patch Transformer with direct clean-patch prediction. Figure credit: Li and He, arXiv HTML Figure 3.</figcaption>
+      </figure>
+
+      <p>
+        The authors then add modern Transformer components, but not a separate image representation system: SwiGLU, RMSNorm, RoPE, qk-normalization, adaLN-Zero conditioning, and in-context class tokens. The model families follow standard scale names: JiT-B, JiT-L, JiT-H, and JiT-G. In the appendix, the depths and hidden sizes are 12/768, 24/1024, 32/1280, and 40/1664 respectively.
+      </p>
+
+      <h3>Bottleneck Patch Embedding</h3>
+      <p>
+        One small but interesting architectural choice is the bottleneck patch embedding. Instead of immediately mapping a 768-dimensional raw patch to the model hidden dimension, JiT can first project through a smaller bottleneck dimension and then expand. This is an inductive bias: the model is nudged to represent the patch through a lower-dimensional structured coordinate system before entering the Transformer.
+      </p>
+
+      <figure class="paper-figure figure-medium">
+        <img src="https://arxiv.org/html/2511.13720v2/x3.png" alt="Bottleneck linear embedding ablation from the JiT paper" width="746" height="376" loading="lazy" decoding="async" />
+        <figcaption>Bottleneck patch embedding ablation. Even very small bottlenecks do not collapse the model, which supports the paper's low-dimensional manifold interpretation. Figure credit: Li and He, arXiv HTML Figure 4.</figcaption>
+      </figure>
+
+      <h3>Training and Sampling</h3>
+      <p>
+        The training time \(t\) is sampled by drawing a logit-normal variable, with the default setting \(\mu=-0.8\) and \(\sigma=0.8\) for ImageNet 256. For higher resolutions, the paper scales the initial noise level while keeping the sequence length fixed by increasing patch size. Sampling uses a deterministic ODE solver; the appendix reports 50-step Heun sampling and classifier-free guidance with an interval.
+      </p>
+
+      <pre><code># Simplified explanatory pseudocode, following the paper's code snippet.
+t = sample_time()
+eps = randn_like(x)
+z = t * x + (1 - t) * eps
+
+v_target = (x - z) / (1 - t)
+x_pred = net(z, t, class_label)
+v_pred = (x_pred - z) / (1 - t)
+
+loss = mean_squared_error(v_pred, v_target)</code></pre>
+
+      <p>
+        This snippet captures the entire methodological stance. The network output is \(x_\theta\), but the training objective compares velocities. The denoising target and the loss weighting are not the same design axis.
+      </p>
+
+      <h2>Experiments</h2>
+
+      <h3>The 3-by-3 Ablation</h3>
+      <p>
+        The most important experiment is not the final leaderboard table. It is the 3-by-3 ablation over loss space and prediction space. On ImageNet 256 with JiT-B/16, x-prediction works across all three losses, while epsilon- and velocity-prediction fail badly in the high-dimensional patch setting.
+      </p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Loss space</th>
+              <th>x-prediction</th>
+              <th>epsilon-prediction</th>
+              <th>v-prediction</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>x-loss</td>
+              <td>10.14</td>
+              <td>379.21</td>
+              <td>107.55</td>
+            </tr>
+            <tr>
+              <td>epsilon-loss</td>
+              <td>10.45</td>
+              <td>394.58</td>
+              <td>126.88</td>
+            </tr>
+            <tr>
+              <td>v-loss</td>
+              <td><strong>8.62</strong></td>
+              <td>372.38</td>
+              <td>96.53</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">FID-50K on ImageNet 256 with JiT-B/16 after 200 epochs and classifier-free guidance. Lower is better. Values are from the paper's Table 2.</p>
+
+      <p>
+        This table is unusually diagnostic. If the result were just a matter of loss weighting, then changing the loss space would rescue epsilon- or velocity-prediction. It does not. The paper also reports that on much smaller 64-resolution patches, the gap is far smaller. That supports the interpretation that prediction target becomes critical as patch dimensionality increases.
+      </p>
+
+      <figure class="paper-figure figure-medium">
+        <img src="https://arxiv.org/html/2511.13720v2/x5.png" alt="Training curves and denoised image comparisons between x-prediction and v-prediction" width="664" height="327" loading="lazy" decoding="async" />
+        <figcaption>Training diagnostics from the paper: x-prediction and v-prediction can have very different behavior even when formulations appear mathematically related. Figure credit: Li and He, arXiv HTML Figure 7.</figcaption>
+      </figure>
+
+      <h3>Noise-Time Shift Is Not Enough</h3>
+      <p>
+        The authors also test whether changing the time sampling distribution can rescue epsilon- or velocity-prediction. It helps a little, but not enough. With \(\mu\) ranging from 0.0 to -1.2 in the logit-normal sampler, x-prediction stays around single-digit FID in the reported 200-epoch setting, while epsilon-prediction remains above 350 FID and velocity-prediction remains around 100 FID. The failure is therefore not just caused by sampling too many hard noise levels.
+      </p>
+
+      <h3>Scaling to Higher Resolution</h3>
+      <p>
+        JiT scales resolution by increasing patch size so that the token count remains 16&times;16. This keeps Transformer sequence length roughly fixed, while the input and output projection layers absorb the higher-dimensional patches.
+      </p>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Resolution</th>
+              <th>Model</th>
+              <th>Sequence length</th>
+              <th>Patch dimension</th>
+              <th>Hidden dim</th>
+              <th>Params</th>
+              <th>GFLOPs</th>
+              <th>FID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>256</td>
+              <td>JiT-B/16</td>
+              <td>256</td>
+              <td>768</td>
+              <td>768</td>
+              <td>131M</td>
+              <td>25</td>
+              <td>4.37</td>
+            </tr>
+            <tr>
+              <td>512</td>
+              <td>JiT-B/32</td>
+              <td>256</td>
+              <td>3072</td>
+              <td>768</td>
+              <td>133M</td>
+              <td>26</td>
+              <td>4.64</td>
+            </tr>
+            <tr>
+              <td>1024</td>
+              <td>JiT-B/64</td>
+              <td>256</td>
+              <td>12288</td>
+              <td>768</td>
+              <td>141M</td>
+              <td>30</td>
+              <td>4.82</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Selected ImageNet resolution-scaling results from the paper. The main trick is holding token count fixed while increasing raw patch dimensionality.</p>
+
+      <p>
+        This scaling rule is elegant but also reveals the core bet. The Transformer attention cost stays controlled because the number of tokens does not grow with resolution. The price is that each token becomes a much larger raw vector. JiT works only if the model can denoise those large vectors by exploiting clean-data structure.
+      </p>
+
+      <h3>Model Scaling</h3>
+      <p>
+        After 600 epochs, the larger JiT models reach strong FID on both 256 and 512 resolution ImageNet. The following table uses the paper's reported FID-50K values.
+      </p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>ImageNet 256</th>
+              <th>ImageNet 512</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>JiT-B</td>
+              <td>3.66</td>
+              <td>4.02</td>
+            </tr>
+            <tr>
+              <td>JiT-L</td>
+              <td>2.36</td>
+              <td>2.53</td>
+            </tr>
+            <tr>
+              <td>JiT-H</td>
+              <td>1.86</td>
+              <td>1.94</td>
+            </tr>
+            <tr>
+              <td>JiT-G</td>
+              <td><strong>1.82</strong></td>
+              <td><strong>1.78</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">FID-50K after 600 epochs. Values are from the paper's scalability table.</p>
+
+      <p>
+        The trend is credible but not magical. JiT-G is a 2B-parameter model, and the paper notes signs of overfitting at the largest scale. Still, the result is important because it shows that a self-contained pixel-space diffusion Transformer can enter the performance range usually associated with more engineered latent pipelines.
+      </p>
+
+      <figure class="paper-figure figure-medium">
+        <img src="https://arxiv.org/html/2511.13720v2/x4.png" alt="Classifier-free guidance and CFG interval ablation for JiT-L on ImageNet 256" width="665" height="273" loading="lazy" decoding="async" />
+        <figcaption>Classifier-free guidance is treated as an evaluation-time detail rather than a new representation component. This appendix figure is a better fit here than the small GitHub summary image because it explains how the reported samples are guided. Figure credit: Li and He, arXiv HTML Figure 6.</figcaption>
+      </figure>
+
+      <h3>Comparison With Prior Work</h3>
+      <p>
+        JiT does not dominate every method numerically. The best latent-space systems in the paper's comparison table still report lower FID. The interesting comparison is the amount of machinery required. JiT avoids a tokenizer and external representation objectives, while remaining competitive with strong pixel-space methods.
+      </p>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Space</th>
+              <th>Extra representation machinery</th>
+              <th>Params</th>
+              <th>GFLOPs</th>
+              <th>FID 256</th>
+              <th>IS 256</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>DiT-XL/2</td>
+              <td>latent</td>
+              <td>SD-VAE, VGG</td>
+              <td>675M + 49M</td>
+              <td>119</td>
+              <td>2.27</td>
+              <td>278.2</td>
+            </tr>
+            <tr>
+              <td>RAE DiT-DH-XL/2</td>
+              <td>latent</td>
+              <td>RAE, VGG, DINOv2</td>
+              <td>839M + 415M</td>
+              <td>146</td>
+              <td>1.13</td>
+              <td>262.6</td>
+            </tr>
+            <tr>
+              <td>SiD2 UViT/1</td>
+              <td>pixel</td>
+              <td>not a tokenizer-based latent method</td>
+              <td>2B</td>
+              <td>653</td>
+              <td>1.38</td>
+              <td>not reported</td>
+            </tr>
+            <tr>
+              <td>PixelFlow XL/4</td>
+              <td>pixel</td>
+              <td>pixel-space flow model</td>
+              <td>677M</td>
+              <td>2909</td>
+              <td>1.98</td>
+              <td>282.1</td>
+            </tr>
+            <tr>
+              <td>PixNerd XL/16</td>
+              <td>pixel</td>
+              <td>DINOv2</td>
+              <td>700M</td>
+              <td>134</td>
+              <td>2.15</td>
+              <td>297.0</td>
+            </tr>
+            <tr>
+              <td><strong>JiT-H/16</strong></td>
+              <td>pixel</td>
+              <td><strong>none</strong></td>
+              <td>953M</td>
+              <td>182</td>
+              <td>1.86</td>
+              <td>303.4</td>
+            </tr>
+            <tr>
+              <td><strong>JiT-G/16</strong></td>
+              <td>pixel</td>
+              <td><strong>none</strong></td>
+              <td>2B</td>
+              <td>383</td>
+              <td><strong>1.82</strong></td>
+              <td>292.6</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Selected rows from the paper's ImageNet 256 comparison. The table is not a complete leaderboard; it highlights the different representation assumptions behind the methods.</p>
+
+      <h2>Strengths</h2>
+
+      <div class="two-col">
+        <div class="mini-card">
+          <h3>Clear hypothesis</h3>
+          <p>The paper makes a falsifiable claim about prediction targets in high-dimensional pixel space and tests it directly.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Diagnostic ablations</h3>
+          <p>The 3-by-3 loss-versus-output table separates loss weighting from direct network prediction, which is exactly the right control.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Self-contained system</h3>
+          <p>JiT avoids a learned tokenizer, pretrained representation loss, adversarial objective, and perceptual auxiliary loss.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Simple resolution scaling</h3>
+          <p>Keeping the token count fixed while increasing patch size gives a clean way to test raw-pixel high-resolution generation.</p>
+        </div>
+      </div>
+
+      <h2>Limitations</h2>
+
+      <p>
+        The first limitation is compute. The method is architecturally simple, but not small. The strongest numbers use hundreds of epochs and very large models, up to JiT-G with roughly 2B parameters. The official repository also notes that its PyTorch scripts were tested on 8 H200 GPUs, while the original implementation used JAX and TPUs.
+      </p>
+
+      <p>
+        The second limitation is evaluation scope. The paper focuses on class-conditional ImageNet at 256 and 512 resolution, with an additional 1024 scaling study. That is a valuable controlled testbed, but it does not establish open-domain text-to-image generation, compositional prompting, editing, controllability, or long-tail semantic generalization.
+      </p>
+
+      <p>
+        Third, FID and IS cannot fully characterize a generator. JiT's claim is mainly about denoising target choice and pixel-space feasibility, so the metrics are appropriate for the paper's scope. But a production image model would need stronger perceptual, diversity, memorization, and prompt-following evaluations.
+      </p>
+
+      <p>
+        Finally, the manifold argument is compelling but still informal. Natural images are structured, but the right target may depend on architecture, data distribution, schedule, resolution, and conditioning. JiT gives strong evidence for large-patch pixel Transformers; it does not prove that x-prediction is always best.
+      </p>
+
+      <div class="callout warning">
+        <p><strong>Limitation:</strong> JiT should not be read as "tokenizers are unnecessary for all image generation." A better reading is that pixel-space diffusion has been handicapped by a poor target choice in some high-dimensional regimes.</p>
+      </div>
+
+      <h2>Research Insight</h2>
+
+      <div class="callout research">
+        <p><strong>Research insight:</strong> parameterization equivalence in the generative process is weaker than optimization equivalence in a finite neural network. The target distribution seen by the network is part of the inductive bias.</p>
+      </div>
+
+      <p>
+        The paper's broader message is that denoising should be treated as manifold projection, not merely as algebraic recovery of a hidden variable. If the corrupted input is a mixture of structured data and unstructured noise, then the clean component is the part with reusable regularities. Asking a network to emit noise can waste capacity on a target that has intentionally little structure.
+      </p>
+
+      <p>
+        This also connects to a recurring theme in representation learning: compression is not the only route to learnability. Latent diffusion makes generation easier by compressing the input through an external representation. JiT instead keeps the raw input but chooses an output target that emphasizes the low-dimensional structure within it. These are different ways of injecting inductive bias.
+      </p>
+
+      <p>
+        For scientific and graphics domains, this may matter. Many domains do not have a good pretrained tokenizer: medical volumes, simulation fields, material parameter maps, multi-spectral sensors, or raw 3D attributes. A method that can learn directly in the native data domain, provided the denoising target is chosen carefully, is an attractive research direction.
+      </p>
+
+      <h2>Practical Perspective</h2>
+
+      <p>
+        For research engineers implementing a similar system, the most actionable lesson is to decouple direct output parameterization from the loss space. If a high-dimensional raw signal has strong structure, try predicting the clean signal directly and deriving the velocity or score afterward. JiT's ablation suggests that simply reweighting an epsilon or velocity loss may not fix the optimization problem.
+      </p>
+
+      <p>
+        The second practical lesson is to keep the baseline simple before adding external teachers. JiT gets much of its value from a clean experimental design: pixel patches, a Transformer, x-prediction, v-loss, logit-normal time sampling, denominator clipping, bottleneck patch embedding, and standard classifier-free guidance. That makes failures easier to diagnose.
+      </p>
+
+      <p>
+        The third lesson is that patch dimensionality is not just an implementation detail. A 32&times;32 RGB patch at 512 resolution is a 3072-dimensional object. If the model is asked to predict unstructured noise in that space, it is solving a very different problem from predicting a clean natural patch.
+      </p>
+
+      <h2>Future Directions</h2>
+
+      <ul>
+        <li><strong>Text-conditioned JiT:</strong> test whether clean-data prediction remains decisive when the conditioning signal becomes language rather than ImageNet class labels.</li>
+        <li><strong>Non-image raw domains:</strong> apply the same output-parameterization analysis to video, volumetric medical data, material fields, multi-spectral imagery, and simulation states.</li>
+        <li><strong>Hybrid latent-pixel models:</strong> combine clean-data prediction with lightweight or invertible tokenizers to reduce compute without hiding too much structure behind a VAE.</li>
+        <li><strong>Sharper evaluation of overfitting:</strong> large ImageNet models need memorization and nearest-neighbor studies, especially when FID differences become small.</li>
+        <li><strong>Adaptive patching:</strong> fixed large patches are simple, but adaptive or multi-scale patch structures may preserve local detail while keeping sequence length manageable.</li>
+        <li><strong>Target selection theory:</strong> formalize when \(x\)-prediction, epsilon-prediction, or velocity-prediction is best under finite capacity, finite data, and realistic optimizer dynamics.</li>
+      </ul>
+
+      <h2>Key Takeaways</h2>
+
+      <ul>
+        <li><strong>JiT is a target-parameterization paper before it is an architecture paper.</strong> The architecture is intentionally plain so the prediction target can be tested cleanly.</li>
+        <li><strong>Clean-data prediction is the winning move in high-dimensional pixel patches.</strong> The paper's strongest ablation shows epsilon- and velocity-prediction failing catastrophically on ImageNet 256 with 768-dimensional patch tokens.</li>
+        <li><strong>The final objective still uses velocity loss.</strong> JiT predicts \(x_\theta\), derives \(v_\theta\), and trains in velocity space.</li>
+        <li><strong>Pixel-space diffusion is more viable than recent practice suggests.</strong> It may not beat every latent method, but it becomes surprisingly strong without tokenizers or auxiliary representation losses.</li>
+        <li><strong>The broader lesson is about finite networks.</strong> Algebraic equivalence does not guarantee equal trainability.</li>
+      </ul>
+
+      <h2>Citation</h2>
+
+      <pre><code>@article{li2025jit,
+  title={Back to Basics: Let Denoising Generative Models Denoise},
+  author={Li, Tianhong and He, Kaiming},
+  journal={arXiv preprint arXiv:2511.13720},
+  year={2025}
+}</code></pre>
+
+      <hr />
+      <p style="color: var(--muted, #6b7280); font-size: 0.92rem;">
+        Sources: Li and He, <em>Back to Basics: Let Denoising Generative Models Denoise</em>, arXiv:2511.13720 / CVPR 2026 Camera Ready; official JiT GitHub repository linked above. Figures are loaded from the public arXiv HTML page and the official repository.
+      </p>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell">&copy; Seunghyeon Seo</div>
+    </footer>
+
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  </body>
+</html>
