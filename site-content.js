@@ -524,6 +524,13 @@ window.siteContent = {
       'Mostly paper reviews, technical rabbit holes, implementation notes, and field reports from work that looked easier on the whiteboard. But not everything here will be about models, benchmarks, or GPUs. Some posts will be about everyday life, hobbies, and whatever else earns a spot between experiments.',
     posts: [
       {
+      title: "[Paper Review] Arbor: Explicit Geometric Conditioning for Controllable 3D Asset Generation",
+      date: "Jun. 26, 2026",
+      summary: "A technical review of Arbor, a routed adapter that lets artists guide text-conditioned 3D generation with hull, avoidance, and touch constraint meshes.",
+      url: "blog/arbor.html",
+      category: "Paper Review"
+      },
+      {
       title: "[Paper Review] Back to Basics: Let Denoising Generative Models Denoise",
       date: "Jun. 17, 2026",
       summary: "A technical review of JiT, a pixel-space diffusion Transformer that argues clean-data prediction is the right denoising target for high-dimensional image patches.",
