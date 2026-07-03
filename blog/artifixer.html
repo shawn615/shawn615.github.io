@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Paper Review] ArtiFixer: Enhancing and Extending 3D Reconstruction with Auto-Regressive Diffusion Models | Seunghyeon's Homepage</title>
+    <meta name="description" content="A technical review of ArtiFixer: Enhancing and Extending 3D Reconstruction with Auto-Regressive Diffusion Models. The post explains opacity mixing, conditional flow matching, autoregressive video distillation, 3D distillation, experiments, limitations, and research implications." />
+    <meta property="og:title" content="[Paper Review] ArtiFixer: Enhancing and Extending 3D Reconstruction with Auto-Regressive Diffusion Models" />
+    <meta property="og:description" content="ArtiFixer uses a generative video prior to repair sparse 3D reconstructions while preserving observed content through opacity-aware conditioning." />
+    <meta property="og:type" content="article" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .blog-article {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        line-height: 1.8;
+        font-size: 1.05rem;
+        overflow-wrap: anywhere;
+      }
+      .blog-article h1 { font-size: 1.75rem; margin-bottom: 8px; line-height: 1.3; }
+      .blog-article .meta { color: var(--muted, #6b7280); margin-bottom: 36px; font-size: 0.95rem; }
+      .blog-article h2 { margin-top: 44px; margin-bottom: 14px; font-size: 1.3rem; border-bottom: 1px solid var(--border, #e5e7eb); padding-bottom: 6px; }
+      .blog-article h3 { margin-top: 28px; margin-bottom: 10px; font-size: 1.12rem; }
+      .blog-article p { margin-bottom: 16px; }
+      .blog-article img { max-width: 100%; border-radius: 6px; margin: 16px 0; }
+      .blog-article figure { margin: 24px 0; text-align: center; }
+      .blog-article figcaption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 8px; font-style: italic; }
+      .blog-article code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 0.9em; }
+      .blog-article p > code, .blog-article li > code { background: var(--bg-soft, #f3f4f6); padding: 2px 5px; border-radius: 3px; }
+      .blog-article pre { background: #0f172a; color: #e5e7eb; border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.88rem; line-height: 1.55; }
+      .blog-article blockquote { border-left: 3px solid var(--accent, #2563eb); padding: 12px 16px; color: var(--fg, #374151); background: var(--bg-soft, #f3f4f6); margin: 18px 0; border-radius: 0 6px 6px 0; }
+      .blog-article blockquote p { margin-bottom: 0; }
+      .blog-article ul, .blog-article ol { margin-bottom: 16px; padding-left: 24px; }
+      .blog-article li { margin-bottom: 6px; }
+      .blog-article a { color: var(--accent, #2563eb); }
+      .blog-article .back-link { display: inline-block; margin-bottom: 24px; font-size: 0.95rem; }
+      .blog-article .table-scroll { overflow-x: auto; margin: 22px 0 24px; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06); }
+      .blog-article table { width: 100%; border-collapse: collapse; margin: 0; font-size: 0.88rem; }
+      .blog-article .table-scroll table { min-width: 620px; }
+      .blog-article .table-scroll table.wide { min-width: 820px; }
+      .blog-article .table-scroll table.extra-wide { min-width: 960px; }
+      .blog-article th, .blog-article td { border: 1px solid var(--border, #e5e7eb); padding: 8px 10px; text-align: center; vertical-align: top; font-variant-numeric: tabular-nums; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { border-left: 0; }
+      .blog-article .table-scroll th:last-child, .blog-article .table-scroll td:last-child { border-right: 0; }
+      .blog-article .table-scroll thead tr:first-child th { border-top: 0; }
+      .blog-article .table-scroll tbody tr:last-child td { border-bottom: 0; }
+      .blog-article th { background: var(--bg-soft, #f3f4f6); font-weight: 600; }
+      .blog-article td:first-child { text-align: left; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 var(--border, #e5e7eb); }
+      .blog-article .table-scroll th:first-child { z-index: 2; background: var(--bg-soft, #f3f4f6); }
+      .blog-article .table-scroll strong { color: #0f766e; }
+      .blog-article .table-note { color: var(--muted, #6b7280); font-size: 0.84rem; margin: -12px auto 18px; line-height: 1.5; text-align: center; font-style: italic; max-width: 650px; }
+      .blog-article .callout { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+      .blog-article .callout.warning { background: #fff7ed; border-color: #fed7aa; }
+      .blog-article .callout.research { background: #f0fdf4; border-color: #bbf7d0; }
+      .blog-article .callout p { margin-bottom: 0; }
+      .blog-article .paper-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 0.95rem; margin-bottom: 24px; }
+      .blog-article .paper-info dt { font-weight: 600; color: var(--muted, #6b7280); }
+      .blog-article .paper-info dd { margin: 0; }
+      .blog-article .diagram { margin: 30px 0; text-align: center; overflow-x: auto; border: 1px solid var(--border, #e5e7eb); border-radius: 14px; padding: 10px; background: #ffffff; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06); }
+      .blog-article .diagram svg { max-width: 100%; height: auto; }
+      .blog-article .diagram-caption { color: var(--muted, #6b7280); font-size: 0.9rem; margin: 10px auto 2px; font-style: italic; max-width: 660px; line-height: 1.55; }
+      .blog-article .paper-figure { margin: 30px auto; text-align: center; }
+      .blog-article .paper-figure img { display: block; max-width: 100%; height: auto; margin: 0 auto; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); background: #fff; }
+      .blog-article .paper-figure.figure-samples img { width: 100%; border: 0; border-radius: 10px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); }
+      .blog-article .paper-figure.figure-narrow img { max-width: 560px; }
+      .blog-article .paper-figure.figure-medium img { max-width: 700px; }
+      .blog-article .paper-figure.figure-wide { width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; transform: none; }
+      .blog-article .paper-figure.figure-wide img { width: 100%; max-width: 100%; object-fit: contain; }
+      .blog-article .paper-figure figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 650px; margin-left: auto; margin-right: auto; }
+      .blog-article .paper-figure.figure-wide figcaption { max-width: 780px; }
+      .blog-article .math-block { overflow-x: auto; overflow-y: hidden; margin: 18px 0; padding: 2px 0 6px; }
+      .blog-article .math-block mjx-container[display="true"] { margin: 0.4em 0 !important; min-width: max-content; }
+      .blog-article .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+      .blog-article .stat-card { background: var(--bg-soft, #f3f4f6); border-radius: 10px; padding: 18px 14px; text-align: center; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .stat-card .stat-value { font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
+      .blog-article .stat-card .stat-label { font-size: 0.82rem; color: var(--muted, #6b7280); margin-top: 6px; }
+      .blog-article .two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 22px 0; }
+      .blog-article .mini-card { background: #ffffff; border: 1px solid var(--border, #e5e7eb); border-left: 4px solid var(--accent, #2563eb); border-radius: 8px; padding: 16px; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04); }
+      .blog-article .mini-card h3 { margin-top: 0; font-size: 1rem; }
+      .blog-article .mini-card p { margin-bottom: 0; }
+      .blog-article .variant-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 22px 0; }
+      .blog-article .variant-card { border: 1px solid var(--border, #e5e7eb); border-radius: 10px; padding: 14px; background: #ffffff; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04); }
+      .blog-article .variant-card h3 { margin: 0 0 8px; font-size: 1rem; }
+      .blog-article .variant-card p { font-size: 0.93rem; line-height: 1.55; margin: 0; }
+      .blog-article .eq-note { color: var(--muted, #6b7280); font-size: 0.92rem; margin-top: -8px; }
+      @media (max-width: 600px) {
+        .blog-article .stat-grid,
+        .blog-article .two-col,
+        .blog-article .variant-grid { grid-template-columns: 1fr; }
+        .blog-article .paper-info { grid-template-columns: 1fr; gap: 2px; }
+        .blog-article .paper-info dt { margin-top: 8px; }
+        .blog-article .math-block { font-size: 0.92rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="site-name" href="../index.html">Seunghyeon's Homepage</a>
+        <nav class="site-nav">
+          <a href="../index.html">Home</a>
+          <a href="../publications.html">Publications</a>
+          <a href="../experience.html">Experience</a>
+          <a href="../blog.html" class="active" aria-current="page">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="blog-article">
+      <a class="back-link" href="../blog.html">&larr; Back to Blog</a>
+
+      <h1>[Paper Review] ArtiFixer: Enhancing and Extending 3D Reconstruction with Auto-Regressive Diffusion Models</h1>
+
+      <p class="meta">July 3, 2026 &middot; Paper Review</p>
+
+      <dl class="paper-info">
+        <dt>Paper</dt>
+        <dd>ArtiFixer: Enhancing and Extending 3D Reconstruction with Auto-Regressive Diffusion Models</dd>
+        <dt>Authors</dt>
+        <dd>Riccardo de Lutio, Tobias Fischer, Yen-Yu Chang, Yuxuan Zhang, Jay Zhangjie Wu, Xuanchi Ren, Tianchang Shen, Katarina Tothova, Zan Gojcic, Haithem Turki</dd>
+        <dt>Venue</dt>
+        <dd>SIGGRAPH 2026 / ACM TOG</dd>
+        <dt>Links</dt>
+        <dd>
+          <a href="https://arxiv.org/abs/2603.00492" target="_blank" rel="noreferrer">arXiv</a> &middot;
+          <a href="https://research.nvidia.com/labs/sil/projects/artifixer/" target="_blank" rel="noreferrer">Project page</a> &middot;
+          <a href="https://github.com/nv-tlabs/artifixer" target="_blank" rel="noreferrer">Code</a>
+        </dd>
+      </dl>
+
+      <figure class="paper-figure figure-samples">
+        <img src="https://arxiv.org/html/2603.00492v2/x1.png" alt="ArtiFixer teaser showing enhancement and extension of 3D reconstructions" width="793" height="233" loading="eager" fetchpriority="high" decoding="async" />
+        <figcaption>ArtiFixer repairs and extends sparse 3D reconstructions by generating novel-view trajectories that stay grounded in observed content. Figure credit: de Lutio et al., arXiv HTML Figure 1.</figcaption>
+      </figure>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value">1-3 dB</div>
+          <div class="stat-label">reported PSNR gain over prior state of the art on common benchmarks</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">8.36 FPS</div>
+          <div class="stat-label">14B ArtiFixer / ArtiFixer3D+ inference on a single GB300</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">15k</div>
+          <div class="stat-label">approximate H100 GPU-hours for the full 14B training pipeline</div>
+        </div>
+      </div>
+
+      <h2>The Core Idea</h2>
+
+      <p>
+        ArtiFixer addresses a very specific failure mode of modern 3D reconstruction: per-scene optimization can render beautiful views near the training cameras, but it has no principled way to hallucinate unseen content when the camera moves into under-observed regions. 3D Gaussian Splatting and related representations are excellent interpolators. They are much weaker extrapolators.
+      </p>
+
+      <p>
+        The paper's answer is not to replace reconstruction with video generation. It closes a loop between the two. A sparse 3D reconstruction produces degraded renderings, opacity maps, and camera-conditioned signals. A large video diffusion model repairs those renderings and fills missing regions. The generated views can then be used directly as a long novel-view video, or distilled back into the 3D representation so the scene itself becomes more complete.
+      </p>
+
+      <div class="callout">
+        <p><strong>Core idea:</strong> use reconstruction opacity as a continuous uncertainty map. Where the reconstruction is confident, start close to the degraded rendering; where it is empty or unreliable, inject Gaussian noise so the diffusion prior can synthesize plausible content.</p>
+      </div>
+
+      <p>
+        This is the part I find most interesting. Many generative reconstruction systems face a bad tradeoff: condition strongly on the corrupted rendering and collapse in empty regions, or sample from a strong video prior and drift away from the captured scene. ArtiFixer turns opacity into the mixing coefficient between these two regimes. That is a clean interface between geometry and generation.
+      </p>
+
+      <h2>Problem Setting</h2>
+
+      <p>
+        The input is an initial 3D reconstruction from sparse posed images. At a target camera trajectory, this reconstruction can render an RGB image and opacity map. In well-observed regions, the rendering is a useful condition. In missing regions, opacity is low and the RGB value may be black, noisy, or simply uninformative. ArtiFixer also receives camera ray maps, optional clean reference views, and an optional text prompt generated by a vision-language model.
+      </p>
+
+      <p>
+        The output can be used in two ways. First, ArtiFixer can directly generate a long sequence of cleaned novel views. Second, those generated views can serve as pseudo-supervision for another 3D reconstruction stage, producing ArtiFixer3D. A further post-processing pass with the generator gives ArtiFixer3D+.
+      </p>
+
+      <p>
+        The difficulty is that the problem is underdetermined exactly where the artifacts are worst. A black region in a sparse 3DGS rendering is not merely a noisy observation; it may encode no observation at all. A deterministic enhancer trained to map degraded renderings to clean images will often learn the wrong behavior there: empty input becomes empty or generic output. A video generator can imagine content, but without strong grounding it may change the scene, drift over time, or violate the intended camera path.
+      </p>
+
+      <p>
+        ArtiFixer tries to preserve three things simultaneously: fidelity to observed scene content, plausible generation in unobserved regions, and scalability to hundreds of frames. Most prior methods satisfy only two of these at a time.
+      </p>
+
+      <h2>Background</h2>
+
+      <h3>3DGS Is Good at Interpolation, Weak at Extrapolation</h3>
+      <p>
+        3D Gaussian Splatting represents a scene as anisotropic Gaussian primitives with learned position, covariance, opacity, and color parameters. Rendering composites projected Gaussians along each pixel ray:
+      </p>
+
+      <div class="math-block">
+        \[
+          \mathcal{C}(\mathbf{p}) =
+          \sum_i
+          \alpha_i \mathbf{c}_i
+          \prod_{k < i}(1-\alpha_k).
+        \]
+      </div>
+
+      <p>
+        This representation is efficient and high quality when the scene is sufficiently observed. But the optimization objective is photometric: it explains the training views. If an area is never seen, there is no data term forcing a plausible completion. The rendered opacity map is therefore not just a visibility signal; it is a useful estimate of how much the reconstruction knows.
+      </p>
+
+      <h3>Video Diffusion as a Scene Prior</h3>
+      <p>
+        A video diffusion model has a different failure profile. It has learned strong image and motion priors from large-scale data, so it can synthesize plausible content where the reconstruction has none. But it is not inherently a geometrically exact renderer. Camera control, long-horizon consistency, and source fidelity remain difficult. Bidirectional video models can generate coherent clips by seeing all frames jointly, but they are expensive and limited in clip length. Auto-regressive models scale better but risk accumulating error.
+      </p>
+
+      <p>
+        ArtiFixer combines these pieces: a bidirectional teacher for quality, a causal auto-regressive student for long sequences, and an explicit 3D reconstruction used both as condition and as an output target for distillation.
+      </p>
+
+      <h3>Flow Matching With a Nonstandard Source</h3>
+      <p>
+        The method uses conditional flow matching. In standard notation, one samples a source latent \(\mathbf{z}_0\), a target latent \(\mathbf{z}_1\), and a time \(t\), then trains a velocity field along the interpolant
+      </p>
+
+      <div class="math-block">
+        \[
+          \mathbf{z}_t = (1-t)\mathbf{z}_0 + t\mathbf{z}_1,
+          \qquad
+          \mathbf{v}_t = \mathbf{z}_1 - \mathbf{z}_0.
+        \]
+      </div>
+
+      <p>
+        The training loss is
+      </p>
+
+      <div class="math-block">
+        \[
+          \mathcal{L}_{\mathrm{cfm}} =
+          \mathbb{E}_{t,\mathbf{z}_0,\mathbf{z}_1}
+          \left[
+          \left\|
+          \mathbf{v}_{\theta}(\mathbf{z}_t,t,\mathrm{cond})
+          -
+          (\mathbf{z}_1-\mathbf{z}_0)
+          \right\|_2^2
+          \right].
+        \]
+      </div>
+
+      <p>
+        The useful observation is that \(\mathbf{z}_0\) does not have to be pure Gaussian noise. Conditional flow matching is valid for arbitrary paired source and target distributions. ArtiFixer exploits that freedom.
+      </p>
+
+      <h2>Method</h2>
+
+      <figure class="paper-figure figure-wide">
+        <img src="https://arxiv.org/html/2603.00492v2/x2.png" alt="ArtiFixer method overview with bidirectional teacher, causal student, and 3D distillation" width="793" height="338" loading="lazy" decoding="async" />
+        <figcaption>Method overview. Phase I trains a bidirectional flow-matching teacher with opacity-aware source latents. Phase II distills it into a causal auto-regressive generator, whose outputs can be rendered directly or distilled back into a 3D representation. Figure credit: de Lutio et al., arXiv HTML Figure 2.</figcaption>
+      </figure>
+
+      <h3>Phase I: Bidirectional Teacher</h3>
+
+      <p>
+        ArtiFixer starts from Wan 2.1 T2V-14B, a pretrained text-to-video model. The VAE and text encoder are frozen, while the remaining model components are finetuned. The degraded renderings from the initial 3D reconstruction are encoded by the frozen VAE and patchified with latent patch size \((t,h,w)=(1,2,2)\).
+      </p>
+
+      <p>
+        Two important conditioning signals bypass the VAE: the rendered opacity map \(\mathbf{O}\) and per-pixel Pl&uuml;cker ray maps \(\mathbf{R}\). The ray map gives camera control even where the RGB rendering is empty. Both signals are downscaled with PixelUnshuffle and injected into each transformer block through learned linear layers:
+      </p>
+
+      <div class="math-block">
+        \[
+          T_r := T_s + f_r(\mathrm{PixelUnshuffle}(\mathbf{R})),
+        \]
+      </div>
+
+      <div class="math-block">
+        \[
+          T_o := T_r + f_o(\mathrm{PixelUnshuffle}(\mathbf{O})).
+        \]
+      </div>
+
+      <p>
+        Here \(T_s\) is the token set after self-attention and layer normalization. Clean reference views are also encoded by the VAE and used as cross-attention memory. The paper applies relative camera conditioning via PRoPE in this cross-attention and zero-initializes key added projections, including \(f_r\), \(f_o\), and \(V_n\), to preserve compatibility with the pretrained model at the start of finetuning.
+      </p>
+
+      <h3>Opacity Mixing</h3>
+
+      <figure class="paper-figure figure-wide">
+        <img src="https://arxiv.org/html/2603.00492v2/x4.png" alt="Opacity mixing comparison between noise initialization, degraded rendering initialization, and ArtiFixer opacity mixing" width="793" height="267" loading="lazy" decoding="async" />
+        <figcaption>Opacity mixing. Starting from pure noise plus concatenated renderings can drift; starting directly from the degraded rendering can collapse in unseen regions. ArtiFixer mixes between the degraded latent and Gaussian noise using opacity. Figure credit: de Lutio et al., arXiv HTML Figure 4.</figcaption>
+      </figure>
+
+      <p>
+        Let \(\mathbf{z}_{\mathrm{deg}}\) be the VAE-encoded degraded rendering, \(\mathbf{O}_z\) the downscaled opacity map, and \(\epsilon\sim\mathcal{N}(\mathbf{0},\mathbf{I})\). ArtiFixer defines the source latent as
+      </p>
+
+      <div class="math-block">
+        \[
+          \mathbf{z}_0
+          :=
+          \mathbf{O}_z \mathbf{z}_{\mathrm{deg}}
+          +
+          (1-\mathbf{O}_z)\epsilon.
+        \]
+      </div>
+
+      <p>
+        In high-opacity regions, \(\mathbf{z}_0\) stays close to the reconstruction. In low-opacity regions, it behaves like a normal diffusion source. This is a continuous version of inpainting logic: known regions should be preserved, unknown regions should remain generative.
+      </p>
+
+      <p>
+        The paper emphasizes that no per-pixel or per-region timestep is required. Opacity changes the source sample \(\mathbf{z}_0\), and the standard global flow time \(t\) still defines the interpolant. This is an elegant way to make reconstruction confidence part of the generative process without inventing a new sampler.
+      </p>
+
+      <pre><code># Simplified explanatory pseudocode for opacity-mixed flow training.
+eps = randn_like(z_deg)
+z0 = O_z * z_deg + (1 - O_z) * eps
+z1 = z_clean
+
+t = uniform(0, 1)
+z_t = (1 - t) * z0 + t * z1
+v_target = z1 - z0
+
+v_pred = model(z_t, t, opacity=O, rays=R, refs=reference_views, prompt=prompt)
+loss = mean_squared_error(v_pred, v_target)</code></pre>
+
+      <h3>Data Curation</h3>
+
+      <p>
+        The training pairs come from DL3DV-10K. The authors deliberately construct sparse reconstructions with large unobserved regions. They split camera poses into two far-apart groups, sample 2 to 12 cameras by farthest-point logic within each group, and reconstruct scenes from those sparse views. This produces degraded renderings paired with ground-truth target views.
+      </p>
+
+      <p>
+        The training batches use \(N=81\) frames, optional text prompts dropped with 10% probability, and a variable number of reference views from 0 to 12. The method also randomly zeros the last \(K \leq N\) input frames while keeping ray maps, forcing the model to learn generation from camera, prompt, and reference context when RGB and opacity are missing.
+      </p>
+
+      <h3>Phase II: Causal Auto-Regressive Distillation</h3>
+
+      <p>
+        The bidirectional model is high quality but not ideal for long, scalable trajectories. ArtiFixer therefore initializes a causal model from the bidirectional teacher, applies a block-causal mask, perturbs frames with different noise levels following the Diffusion Forcing idea, and trains auto-regressive rollouts with KV caching.
+      </p>
+
+      <p>
+        The authors then use Distribution Matching Distillation in a Self-Forcing-style training scheme to convert the model into a few-step generator. The main experiments use four denoising steps, though the appendix reports that fewer steps can often work outside fully novel regions.
+      </p>
+
+      <div class="variant-grid">
+        <div class="variant-card">
+          <h3>ArtiFixer</h3>
+          <p>Directly uses the auto-regressive generator to render novel views. It is generally sharp, but the output remains a video stream rather than a native 3D representation.</p>
+        </div>
+        <div class="variant-card">
+          <h3>ArtiFixer3D</h3>
+          <p>Distills generated views back into a 3D representation. This improves source consistency and multi-view stability, with some loss of sharpness.</p>
+        </div>
+        <div class="variant-card">
+          <h3>ArtiFixer3D+</h3>
+          <p>Applies the generator again as post-processing on top of ArtiFixer3D. It aims to recover sharpness while preserving the improved 3D consistency.</p>
+        </div>
+      </div>
+
+      <figure class="paper-figure figure-wide">
+        <img src="https://arxiv.org/html/2603.00492v2/x5.png" alt="ArtiFixer variants comparing direct generation, 3D distillation, and post-processed 3D distillation" width="996" height="639" loading="lazy" decoding="async" />
+        <figcaption>ArtiFixer variants. Direct generation is sharp, 3D distillation improves consistency, and the 3D+ variant restores sharpness with a second generative pass. Figure credit: de Lutio et al., arXiv HTML Figure 5.</figcaption>
+      </figure>
+
+      <h3>3D Distillation</h3>
+
+      <p>
+        Prior methods often alternate between generating a limited set of views and optimizing a 3D representation, repeating the process to maintain consistency. ArtiFixer avoids that progressive loop. Because the causal model can generate long trajectories in one pass, the system can generate many pseudo-views first and then apply standard 3D reconstruction. This is the practical payoff of the auto-regressive student: it is not only faster per frame, but also changes the workflow from iterative repair to batch pseudo-supervision.
+      </p>
+
+      <h2>Experiments</h2>
+
+      <h3>Implementation and Evaluation Protocols</h3>
+
+      <p>
+        The main model is large. The paper trains on 128 H100 GPUs with batch size 1 per GPU, finetunes the bidirectional model for 15,000 iterations, initializes the causal model for 5,000 iterations, then trains auto-regressive rollout and DMD for 2,000 iterations. The reported full cost is approximately 15k H100 GPU-hours. Ablations use a shorter 64-GPU schedule of about 4k GPU-hours.
+      </p>
+
+      <p>
+        Initial reconstructions are produced with 3DGUT using MCMC densification. The evaluation spans Nerfbusters, DL3DV, and Mip-NeRF 360, with metrics including PSNR, SSIM, LPIPS, and FID. The paper also reports multi-view consistency with MEt3R in the appendix.
+      </p>
+
+      <h3>Artifact Removal on Nerfbusters and DL3DV</h3>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Nerfbusters PSNR</th>
+              <th>Nerfbusters SSIM</th>
+              <th>Nerfbusters LPIPS</th>
+              <th>Nerfbusters FID</th>
+              <th>DL3DV PSNR</th>
+              <th>DL3DV SSIM</th>
+              <th>DL3DV LPIPS</th>
+              <th>DL3DV FID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>3DGS</td>
+              <td>17.66</td>
+              <td>0.678</td>
+              <td>0.327</td>
+              <td>113.84</td>
+              <td>17.18</td>
+              <td>0.588</td>
+              <td>0.384</td>
+              <td>107.23</td>
+            </tr>
+            <tr>
+              <td>Difix3D+ (3DGS)</td>
+              <td>18.51</td>
+              <td>0.686</td>
+              <td>0.264</td>
+              <td>41.77</td>
+              <td>17.99</td>
+              <td>0.602</td>
+              <td>0.293</td>
+              <td>40.86</td>
+            </tr>
+            <tr>
+              <td>ArtiFixer</td>
+              <td>19.83</td>
+              <td>0.701</td>
+              <td><strong>0.254</strong></td>
+              <td><strong>37.78</strong></td>
+              <td>19.73</td>
+              <td>0.672</td>
+              <td><strong>0.231</strong></td>
+              <td><strong>20.85</strong></td>
+            </tr>
+            <tr>
+              <td>ArtiFixer3D</td>
+              <td><strong>20.24</strong></td>
+              <td><strong>0.729</strong></td>
+              <td>0.267</td>
+              <td>39.67</td>
+              <td><strong>20.14</strong></td>
+              <td><strong>0.705</strong></td>
+              <td>0.256</td>
+              <td>24.27</td>
+            </tr>
+            <tr>
+              <td>ArtiFixer3D+</td>
+              <td>20.12</td>
+              <td>0.713</td>
+              <td>0.264</td>
+              <td>41.17</td>
+              <td>20.06</td>
+              <td>0.686</td>
+              <td>0.242</td>
+              <td>22.61</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Selected rows from the paper's Table 1. PSNR and SSIM are higher-is-better; LPIPS and FID are lower-is-better.</p>
+
+      <p>
+        The pattern is consistent with the variant design. ArtiFixer tends to win perceptual sharpness metrics, while ArtiFixer3D often wins PSNR and SSIM because explicit 3D distillation improves consistency with source imagery. ArtiFixer3D+ is a compromise: it keeps much of the 3D consistency and recovers some visual crispness.
+      </p>
+
+      <h3>Sparse View Reconstruction on Mip-NeRF 360</h3>
+
+      <figure class="paper-figure figure-wide">
+        <img src="https://arxiv.org/html/2603.00492v2/x9.png" alt="Mip-NeRF 360 qualitative sparse-view reconstruction comparison" width="635" height="436" loading="lazy" decoding="async" />
+        <figcaption>Mip-NeRF 360 3-view qualitative results. The important failure case is not ordinary blur; it is the ability to recover plausible structure when the sparse reconstruction gives the wrong content. Figure credit: de Lutio et al., arXiv HTML Figure 9.</figcaption>
+      </figure>
+
+      <div class="table-scroll">
+        <table class="extra-wide">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>PSNR 3-view</th>
+              <th>PSNR 6-view</th>
+              <th>PSNR 9-view</th>
+              <th>SSIM 3-view</th>
+              <th>SSIM 6-view</th>
+              <th>SSIM 9-view</th>
+              <th>LPIPS 3-view</th>
+              <th>LPIPS 6-view</th>
+              <th>LPIPS 9-view</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>GenFusion</td>
+              <td>15.29</td>
+              <td>17.16</td>
+              <td>18.36</td>
+              <td>0.369</td>
+              <td>0.447</td>
+              <td>0.496</td>
+              <td>0.585</td>
+              <td>0.500</td>
+              <td>0.465</td>
+            </tr>
+            <tr>
+              <td>GSFixer</td>
+              <td>15.61</td>
+              <td>17.27</td>
+              <td>18.63</td>
+              <td>0.370</td>
+              <td>0.426</td>
+              <td>0.481</td>
+              <td>0.559</td>
+              <td>0.478</td>
+              <td>0.420</td>
+            </tr>
+            <tr>
+              <td>CAT3D</td>
+              <td>16.62</td>
+              <td>17.72</td>
+              <td>18.67</td>
+              <td>0.377</td>
+              <td>0.425</td>
+              <td>0.460</td>
+              <td>0.515</td>
+              <td>0.482</td>
+              <td>0.460</td>
+            </tr>
+            <tr>
+              <td>ArtiFixer</td>
+              <td>17.06</td>
+              <td>18.64</td>
+              <td>19.96</td>
+              <td>0.420</td>
+              <td>0.476</td>
+              <td>0.518</td>
+              <td><strong>0.437</strong></td>
+              <td>0.390</td>
+              <td>0.353</td>
+            </tr>
+            <tr>
+              <td>ArtiFixer3D</td>
+              <td>17.29</td>
+              <td><strong>18.95</strong></td>
+              <td><strong>20.24</strong></td>
+              <td><strong>0.451</strong></td>
+              <td><strong>0.526</strong></td>
+              <td><strong>0.598</strong></td>
+              <td>0.440</td>
+              <td><strong>0.382</strong></td>
+              <td><strong>0.327</strong></td>
+            </tr>
+            <tr>
+              <td>ArtiFixer3D+</td>
+              <td><strong>17.51</strong></td>
+              <td><strong>18.95</strong></td>
+              <td>20.16</td>
+              <td>0.444</td>
+              <td>0.498</td>
+              <td>0.537</td>
+              <td>0.441</td>
+              <td>0.396</td>
+              <td>0.359</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Selected rows from the paper's Table 2. LPIPS is lower-is-better; all other displayed metrics are higher-is-better.</p>
+
+      <p>
+        The Mip-NeRF 360 result is the most direct evidence that the method is not merely an image enhancer. The 3-view split is where free navigation exposes missing geometry. ArtiFixer3D+ leads the 3-view PSNR column, while ArtiFixer3D dominates consistency-oriented metrics in denser splits.
+      </p>
+
+      <h3>Novel Content Generation on DL3DV</h3>
+
+      <figure class="paper-figure figure-wide">
+        <img src="https://arxiv.org/html/2603.00492v2/x8.png" alt="DL3DV qualitative results comparing ArtiFixer3D+ with 3DGUT, GenFusion, Gen3C, Difix3D+, and Fixer" width="793" height="864" loading="lazy" decoding="async" />
+        <figcaption>DL3DV results under a protocol that creates large unobserved regions. This is the figure that best shows the method's intended use case: plausible completion without abandoning source fidelity. Figure credit: de Lutio et al., arXiv HTML Figure 8.</figcaption>
+      </figure>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>PSNR</th>
+              <th>SSIM</th>
+              <th>LPIPS</th>
+              <th>FID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>3DGUT</td>
+              <td>16.12</td>
+              <td>0.537</td>
+              <td>0.445</td>
+              <td>92.94</td>
+            </tr>
+            <tr>
+              <td>Difix3D+ (3DGS)</td>
+              <td>16.34</td>
+              <td>0.564</td>
+              <td>0.382</td>
+              <td>21.77</td>
+            </tr>
+            <tr>
+              <td>Gen3C</td>
+              <td>15.50</td>
+              <td>0.491</td>
+              <td>0.476</td>
+              <td>68.36</td>
+            </tr>
+            <tr>
+              <td>GenFusion</td>
+              <td>17.03</td>
+              <td>0.624</td>
+              <td>0.392</td>
+              <td>132.91</td>
+            </tr>
+            <tr>
+              <td>ArtiFixer</td>
+              <td>19.75</td>
+              <td>0.643</td>
+              <td><strong>0.303</strong></td>
+              <td><strong>12.22</strong></td>
+            </tr>
+            <tr>
+              <td>ArtiFixer3D</td>
+              <td>19.92</td>
+              <td><strong>0.673</strong></td>
+              <td>0.306</td>
+              <td>16.28</td>
+            </tr>
+            <tr>
+              <td>ArtiFixer3D+</td>
+              <td><strong>20.15</strong></td>
+              <td>0.662</td>
+              <td>0.307</td>
+              <td>13.91</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Selected rows from the paper's Table 3. The paper reports that ArtiFixer variants outperform the next-best method by almost 3 dB PSNR.</p>
+
+      <p>
+        This benchmark is closest to the paper's thesis. The input reconstruction contains large holes, so deterministic render-to-clean methods have little to work with. ArtiFixer wins because low-opacity regions are not treated as observed black pixels. They are handed back to the generative prior.
+      </p>
+
+      <h3>Diagnostics and Speed</h3>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Direct input</th>
+              <th>Opacity mixing</th>
+              <th>Diffusion Forcing</th>
+              <th>PSNR</th>
+              <th>SSIM</th>
+              <th>LPIPS</th>
+              <th>FID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Channel concatenation</td>
+              <td>No</td>
+              <td>No</td>
+              <td>Yes</td>
+              <td>14.52</td>
+              <td>0.391</td>
+              <td>0.490</td>
+              <td>87.551</td>
+            </tr>
+            <tr>
+              <td>w/o opacity mixing</td>
+              <td>Yes</td>
+              <td>No</td>
+              <td>Yes</td>
+              <td>17.34</td>
+              <td>0.440</td>
+              <td>0.429</td>
+              <td>87.058</td>
+            </tr>
+            <tr>
+              <td>w/o initialization</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>No</td>
+              <td>17.58</td>
+              <td>0.450</td>
+              <td>0.416</td>
+              <td>74.924</td>
+            </tr>
+            <tr>
+              <td>Full method</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td>Yes</td>
+              <td><strong>17.99</strong></td>
+              <td><strong>0.461</strong></td>
+              <td><strong>0.408</strong></td>
+              <td><strong>69.43</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Diagnostics from the paper's Table 4, evaluated on Mip-NeRF 360. The interpretation is direct: opacity mixing is not a minor detail.</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>FPS</th>
+              <th>What it measures</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Wan 2.1 T2V-14B</td>
+              <td>0.12</td>
+              <td>Bidirectional backbone generation speed.</td>
+            </tr>
+            <tr>
+              <td>Wan 2.1 T2V-1.3B</td>
+              <td>0.49</td>
+              <td>Smaller bidirectional backbone generation speed.</td>
+            </tr>
+            <tr>
+              <td>ArtiFixer / ArtiFixer3D+ (14B)</td>
+              <td>8.36</td>
+              <td>Causal distilled 14B generator.</td>
+            </tr>
+            <tr>
+              <td>ArtiFixer / ArtiFixer3D+ (1.3B)</td>
+              <td>34.38</td>
+              <td>Causal distilled 1.3B generator.</td>
+            </tr>
+            <tr>
+              <td>ArtiFixer3D</td>
+              <td><strong>268</strong></td>
+              <td>Direct rendering from the improved 3DGUT representation.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Inference speed from the paper's Table 5, measured on a single GB300 GPU.</p>
+
+      <p>
+        The timing table should be read carefully. ArtiFixer is fast relative to a bidirectional video model, not relative to direct 3D rendering. ArtiFixer3D is fast because, after distillation, it is again an explicit 3D representation. That is precisely why the loop matters: generation repairs the scene, then reconstruction recovers renderer-like efficiency.
+      </p>
+
+      <h2>Strengths</h2>
+
+      <div class="two-col">
+        <div class="mini-card">
+          <h3>Opacity is used correctly</h3>
+          <p>The method treats opacity as reconstruction confidence rather than as a passive rendering byproduct. This gives a principled bridge between observed content and generative completion.</p>
+        </div>
+        <div class="mini-card">
+          <h3>The loop is closed</h3>
+          <p>The reconstruction conditions the generator, and generated views can improve the reconstruction. That is stronger than using 3D only as a fixed video condition.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Scales beyond short clips</h3>
+          <p>The causal distilled model addresses the bottleneck of bidirectional video models: limited clip length and expensive iterative view generation.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Evaluation targets the real failure</h3>
+          <p>The paper tests sparse captures, large unobserved regions, perceptual quality, source consistency, speed, and multi-view consistency rather than only near-training-view interpolation.</p>
+        </div>
+      </div>
+
+      <p>
+        These cards intentionally use the same visual treatment. Unlike opacity maps, which have a physical meaning, the strength categories do not encode separate visual classes that need different colors.
+      </p>
+
+      <h2>Limitations</h2>
+
+      <div class="callout warning">
+        <p><strong>Main limitation:</strong> ArtiFixer is a powerful system, but it is not a lightweight 3DGS plug-in. The main 14B pipeline costs about 15k H100 GPU-hours to train.</p>
+      </div>
+
+      <p>
+        The compute cost is the first limitation. The paper does report a 1.3B variant and a truncated training schedule that recovers near-full quality at lower cost, but the flagship model is still an industrial-scale system. For most labs, reproducing the main model from scratch is unrealistic.
+      </p>
+
+      <p>
+        The second limitation is latency and resolution. ArtiFixer and ArtiFixer3D+ are limited to 720p by the video backbone, while ArtiFixer3D can render at the native resolution of the underlying 3D representation. Decoding in temporal chunks also introduces latency that may matter for embodied AI or interactive simulation loops.
+      </p>
+
+      <p>
+        The third limitation is generative uncertainty. The model can inpaint plausible content, but plausibility is not the same as truth. In unobserved regions, the generated completion may be visually consistent and still physically or semantically wrong. Image metrics cannot fully settle that issue, especially for geometry that is never observed by real cameras.
+      </p>
+
+      <p>
+        Finally, as with other video diffusion models, the paper reports possible blur in fine details and text, as well as subtle color shifts when the rendering condition is absent or highly degraded. These are not surprising artifacts, but they matter in applications where a generated scene must preserve identity, signage, instrumentation, or safety-critical details.
+      </p>
+
+      <h2>Research Insight</h2>
+
+      <div class="callout research">
+        <p><strong>Research insight:</strong> the most reusable idea is not "use a bigger video model." It is using reconstruction confidence to choose the source distribution for a generative flow.</p>
+      </div>
+
+      <p>
+        ArtiFixer suggests a clean principle for combining reconstruction and generation: let the 3D representation decide where the model should be conservative and where it should be imaginative. This is better than globally choosing between deterministic enhancement and free generation. Real scenes contain both regimes at once.
+      </p>
+
+      <p>
+        The second lesson is that long-horizon generation becomes easier when the conditioning signal is physically grounded. Many auto-regressive video models struggle because each generated frame becomes the only basis for the next. Here, the model can keep returning to the reconstruction, reference views, opacity, and camera rays. Even when the reconstruction is imperfect, it provides a stabilizing coordinate system.
+      </p>
+
+      <p>
+        The third lesson is workflow-level. The method is not just a network that produces better frames. It changes the reconstruction loop: generate a large consistent set of pseudo-views first, then optimize a 3D representation once. That is a significant systems idea for generative reconstruction.
+      </p>
+
+      <h2>Practical Perspective</h2>
+
+      <p>
+        For research engineers, the implementation burden is high. You need accurate camera poses, an initial 3DGUT-style reconstruction, opacity rendering, ray-map construction, VAE/video-model integration, reference-view conditioning, auto-regressive caching, and 3D distillation. The method is modular, but it is not small.
+      </p>
+
+      <p>
+        For graphics and simulation pipelines, the promise is clear. Sparse captures are common, and free navigation quickly exposes missing regions. ArtiFixer is useful when a viewer or agent will move beyond the captured cameras but still needs a plausible, scene-grounded environment. The ArtiFixer3D variant is particularly relevant when downstream systems need renderer-like speed rather than a diffusion model in the loop.
+      </p>
+
+      <p>
+        I would be cautious about using this kind of system as a measurement tool. It is excellent at plausible completion. It is not a substitute for capturing the missing geometry. For asset creation, simulation background completion, and immersive visualization, that may be acceptable. For mapping, inspection, or robotics safety, the generated regions should be tracked as synthetic hypotheses.
+      </p>
+
+      <h2>Future Directions</h2>
+
+      <ul>
+        <li><strong>Uncertainty-aware outputs:</strong> mark which parts of the final 3D scene are observed, inferred from nearby evidence, or primarily generated by the prior.</li>
+        <li><strong>Geometry-aware losses:</strong> add explicit geometric consistency checks beyond image-space PSNR, SSIM, LPIPS, FID, and generated-view consistency.</li>
+        <li><strong>Faster students:</strong> reduce denoising steps and model size further while retaining the opacity-mixing behavior that makes the method work.</li>
+        <li><strong>Higher-resolution generation:</strong> close the 720p backbone limit without losing temporal coherence or source fidelity.</li>
+        <li><strong>Interactive update loops:</strong> support incremental scene capture where new real observations replace generated hypotheses over time.</li>
+        <li><strong>Physical and semantic constraints:</strong> condition completion on estimated support, object permanence, floor/wall layout, dynamic obstacles, or task-specific affordances.</li>
+        <li><strong>Standardized sparse-reconstruction benchmarks:</strong> separate interpolation, extrapolation, scene fidelity, and hallucination risk more explicitly.</li>
+      </ul>
+
+      <h2>Key Takeaways</h2>
+
+      <ul>
+        <li><strong>ArtiFixer is a reconstruction-generation loop.</strong> The 3D scene conditions the video model, and generated views can improve the 3D scene.</li>
+        <li><strong>Opacity mixing is the central technical move.</strong> It keeps known regions close to the degraded rendering and gives unknown regions back to the generative prior.</li>
+        <li><strong>Causal distillation is what makes the system scalable.</strong> The bidirectional teacher provides quality; the auto-regressive student provides long trajectories.</li>
+        <li><strong>ArtiFixer3D is the practical deployment path.</strong> Once pseudo-views are distilled into a 3D representation, rendering speed returns to the explicit representation regime.</li>
+        <li><strong>The method is expensive and generative.</strong> It improves sparse reconstructions, but unobserved content remains inferred rather than measured.</li>
+      </ul>
+
+      <h2>Citation</h2>
+
+      <pre><code>@inproceedings{delutio2026artifixer,
+  title={ArtiFixer: Enhancing and Extending 3D Reconstruction with Auto-Regressive Diffusion Models},
+  author={de Lutio, Riccardo and Fischer, Tobias and Chang, Yen-Yu and Zhang, Yuxuan and
+          Wu, Jay Zhangjie and Ren, Xuanchi and Shen, Tianchang and Tothova, Katarina and
+          Gojcic, Zan and Turki, Haithem},
+  booktitle={SIGGRAPH},
+  year={2026}
+}</code></pre>
+
+      <hr />
+      <p style="color: var(--muted, #6b7280); font-size: 0.92rem;">
+        Sources: de Lutio et al., <em>ArtiFixer: Enhancing and Extending 3D Reconstruction with Auto-Regressive Diffusion Models</em>, arXiv:2603.00492v2; official ArtiFixer project page; official GitHub and Hugging Face pages linked above. Figures are loaded directly from the public arXiv HTML page.
+      </p>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell">&copy; Seunghyeon Seo</div>
+    </footer>
+
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['\\(', '\\)']],
+          displayMath: [['\\[', '\\]']],
+          processEscapes: true,
+          packages: {'[+]': ['ams']}
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  </body>
+</html>
