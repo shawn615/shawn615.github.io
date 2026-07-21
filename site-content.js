@@ -524,6 +524,13 @@ window.siteContent = {
       'Mostly paper reviews, technical rabbit holes, implementation notes, and field reports from work that looked easier on the whiteboard. But not everything here will be about models, benchmarks, or GPUs. Some posts will be about everyday life, hobbies, and whatever else earns a spot between experiments.',
     posts: [
       {
+      title: "[Paper Review] MeshFlow: Efficient Artistic Mesh Generation via MeshVAE and Flow-based Diffusion Transformer",
+      date: "Jul. 21, 2026",
+      summary: "A technical review of MeshFlow, a CVPR 2026 Highlight that replaces autoregressive face-token decoding with a continuous MeshVAE and parallel rectified-flow generation.",
+      url: "blog/meshflow.html",
+      category: "Paper Review"
+      },
+      {
       title: "[Paper Review] ArtiFixer: Enhancing and Extending 3D Reconstruction with Auto-Regressive Diffusion Models",
       date: "Jul. 3, 2026",
       summary: "A technical review of ArtiFixer, a system that uses opacity-aware video diffusion and causal distillation to repair sparse 3D reconstructions and generate long novel-view trajectories.",
