@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>[Paper Review] MeshFlow: Efficient Artistic Mesh Generation via MeshVAE and Flow-based Diffusion Transformer | Seunghyeon's Homepage</title>
+    <meta name="description" content="A technical review of MeshFlow, covering its continuous vertex-edge representation, MeshVAE, TokenMerge and TokenSplit architecture, contrastive topology loss, rectified-flow DiT, experiments, limitations, and research implications." />
+    <meta property="og:title" content="[Paper Review] MeshFlow: Efficient Artistic Mesh Generation via MeshVAE and Flow-based Diffusion Transformer" />
+    <meta property="og:description" content="MeshFlow generates explicit artist-like meshes in parallel by compressing continuous geometry and discrete connectivity into a compact MeshVAE latent space." />
+    <meta property="og:type" content="article" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .blog-article {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 40px 20px 60px;
+        line-height: 1.8;
+        font-size: 1.05rem;
+        overflow-wrap: anywhere;
+      }
+      .blog-article h1 { font-size: 1.75rem; margin-bottom: 8px; line-height: 1.3; }
+      .blog-article .meta { color: var(--muted, #6b7280); margin-bottom: 36px; font-size: 0.95rem; }
+      .blog-article h2 { margin-top: 44px; margin-bottom: 14px; font-size: 1.3rem; border-bottom: 1px solid var(--border, #e5e7eb); padding-bottom: 6px; }
+      .blog-article h3 { margin-top: 28px; margin-bottom: 10px; font-size: 1.12rem; }
+      .blog-article p { margin-bottom: 16px; }
+      .blog-article img { max-width: 100%; border-radius: 6px; margin: 16px 0; }
+      .blog-article figure { margin: 24px 0; text-align: center; }
+      .blog-article figcaption { color: var(--muted, #6b7280); font-size: 0.9rem; margin-top: 8px; font-style: italic; }
+      .blog-article code { font-family: 'IBM Plex Mono', 'Fira Code', monospace; font-size: 0.9em; }
+      .blog-article p > code, .blog-article li > code { background: var(--bg-soft, #f3f4f6); padding: 2px 5px; border-radius: 3px; }
+      .blog-article pre { background: #0f172a; color: #e5e7eb; border-radius: 10px; padding: 14px 16px; overflow-x: auto; font-size: 0.88rem; line-height: 1.55; }
+      .blog-article blockquote { border-left: 3px solid var(--accent, #2563eb); padding: 12px 16px; color: var(--fg, #374151); background: var(--bg-soft, #f3f4f6); margin: 18px 0; border-radius: 0 6px 6px 0; }
+      .blog-article blockquote p { margin-bottom: 0; }
+      .blog-article ul, .blog-article ol { margin-bottom: 16px; padding-left: 24px; }
+      .blog-article li { margin-bottom: 6px; }
+      .blog-article a { color: var(--accent, #2563eb); }
+      .blog-article .back-link { display: inline-block; margin-bottom: 24px; font-size: 0.95rem; }
+      .blog-article .table-scroll { overflow-x: auto; margin: 22px 0 24px; border: 1px solid var(--border, #e5e7eb); border-radius: 12px; box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06); }
+      .blog-article table { width: 100%; border-collapse: collapse; margin: 0; font-size: 0.88rem; }
+      .blog-article .table-scroll table { min-width: 620px; }
+      .blog-article .table-scroll table.wide { min-width: 820px; }
+      .blog-article th, .blog-article td { border: 1px solid var(--border, #e5e7eb); padding: 8px 10px; text-align: center; vertical-align: top; font-variant-numeric: tabular-nums; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { border-left: 0; }
+      .blog-article .table-scroll th:last-child, .blog-article .table-scroll td:last-child { border-right: 0; }
+      .blog-article .table-scroll thead tr:first-child th { border-top: 0; }
+      .blog-article .table-scroll tbody tr:last-child td { border-bottom: 0; }
+      .blog-article th { background: var(--bg-soft, #f3f4f6); font-weight: 600; }
+      .blog-article td:first-child { text-align: left; }
+      .blog-article .table-scroll th:first-child, .blog-article .table-scroll td:first-child { position: sticky; left: 0; z-index: 1; background: #fff; box-shadow: 1px 0 0 var(--border, #e5e7eb); }
+      .blog-article .table-scroll th:first-child { z-index: 2; background: var(--bg-soft, #f3f4f6); }
+      .blog-article .table-scroll strong { color: #0f766e; }
+      .blog-article .table-note { color: var(--muted, #6b7280); font-size: 0.84rem; margin: -12px auto 18px; line-height: 1.5; text-align: center; font-style: italic; max-width: 650px; }
+      .blog-article .callout { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px 20px; margin: 20px 0; }
+      .blog-article .callout.warning { background: #fff7ed; border-color: #fed7aa; }
+      .blog-article .callout.research { background: #f0fdf4; border-color: #bbf7d0; }
+      .blog-article .callout p { margin-bottom: 0; }
+      .blog-article .paper-info { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 0.95rem; margin-bottom: 24px; }
+      .blog-article .paper-info dt { font-weight: 600; color: var(--muted, #6b7280); }
+      .blog-article .paper-info dd { margin: 0; }
+      .blog-article .paper-figure { margin: 30px auto; text-align: center; }
+      .blog-article .paper-figure img { display: block; width: auto; max-width: 100%; height: auto; margin: 0 auto; border-radius: 8px; border: 1px solid var(--border, #e5e7eb); background: #fff; }
+      .blog-article .paper-figure.figure-samples img { width: 100%; border: 0; border-radius: 10px; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08); }
+      .blog-article .paper-figure.figure-medium img { max-width: 700px; }
+      .blog-article .paper-figure.figure-wide { width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; transform: none; }
+      .blog-article .paper-figure.figure-wide img { width: 100%; max-width: 100%; object-fit: contain; }
+      .blog-article .paper-figure figcaption { color: var(--muted, #6b7280); font-size: 0.88rem; margin-top: 10px; font-style: italic; max-width: 650px; margin-left: auto; margin-right: auto; }
+      .blog-article .paper-figure.figure-wide figcaption { max-width: 780px; }
+      .blog-article .math-block { overflow-x: auto; overflow-y: hidden; margin: 18px 0; padding: 2px 0 6px; }
+      .blog-article .math-block mjx-container[display="true"] { margin: 0.4em 0 !important; min-width: max-content; }
+      .blog-article .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 24px 0; }
+      .blog-article .stat-card { background: var(--bg-soft, #f3f4f6); border-radius: 10px; padding: 18px 14px; text-align: center; border: 1px solid var(--border, #e5e7eb); }
+      .blog-article .stat-card .stat-value { font-size: 1.35rem; font-weight: 700; line-height: 1.2; }
+      .blog-article .stat-card .stat-label { font-size: 0.82rem; color: var(--muted, #6b7280); margin-top: 6px; }
+      .blog-article .two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 22px 0; }
+      .blog-article .mini-card { background: #ffffff; border: 1px solid var(--border, #e5e7eb); border-left: 4px solid var(--accent, #2563eb); border-radius: 8px; padding: 16px; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04); }
+      .blog-article .mini-card h3 { margin-top: 0; font-size: 1rem; }
+      .blog-article .mini-card p { margin-bottom: 0; }
+      .blog-article .variant-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 22px 0; }
+      .blog-article .variant-card { border: 1px solid var(--border, #e5e7eb); border-radius: 10px; padding: 14px; background: #ffffff; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04); }
+      .blog-article .variant-card h3 { margin: 0 0 8px; font-size: 1rem; }
+      .blog-article .variant-card p { font-size: 0.93rem; line-height: 1.55; margin: 0; }
+      .blog-article .eq-note { color: var(--muted, #6b7280); font-size: 0.92rem; margin-top: -8px; }
+      @media (max-width: 600px) {
+        .blog-article .stat-grid,
+        .blog-article .two-col,
+        .blog-article .variant-grid { grid-template-columns: 1fr; }
+        .blog-article .paper-info { grid-template-columns: 1fr; gap: 2px; }
+        .blog-article .paper-info dt { margin-top: 8px; }
+        .blog-article .math-block { font-size: 0.92rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="site-shell topbar-inner">
+        <a class="site-name" href="../index.html">Seunghyeon's Homepage</a>
+        <nav class="site-nav">
+          <a href="../index.html">Home</a>
+          <a href="../publications.html">Publications</a>
+          <a href="../experience.html">Experience</a>
+          <a href="../blog.html" class="active" aria-current="page">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="blog-article">
+      <a class="back-link" href="../blog.html">&larr; Back to Blog</a>
+
+      <h1>[Paper Review] MeshFlow: Efficient Artistic Mesh Generation via MeshVAE and Flow-based Diffusion Transformer</h1>
+
+      <p class="meta">July 21, 2026 &middot; Paper Review</p>
+
+      <dl class="paper-info">
+        <dt>Paper</dt>
+        <dd>MeshFlow: Efficient Artistic Mesh Generation via MeshVAE and Flow-based Diffusion Transformer</dd>
+        <dt>Authors</dt>
+        <dd>Weiyu Li, Antoine Toisoul, Tom Monnier, Roman Shapovalov, Rakesh Ranjan, Ping Tan, Andrea Vedaldi</dd>
+        <dt>Venue</dt>
+        <dd>CVPR 2026 Highlight</dd>
+        <dt>Links</dt>
+        <dd>
+          <a href="https://arxiv.org/abs/2606.04621" target="_blank" rel="noreferrer">arXiv</a> &middot;
+          <a href="https://mesh-flow.github.io/" target="_blank" rel="noreferrer">Project page</a> &middot;
+          <a href="https://github.com/facebookresearch/meshflow" target="_blank" rel="noreferrer">Code</a>
+        </dd>
+      </dl>
+
+      <figure class="paper-figure figure-samples">
+        <img src="https://raw.githubusercontent.com/facebookresearch/meshflow/main/assets/teaser.png" alt="MeshFlow teaser showing point-cloud inputs and generated artist-like meshes" width="1200" height="509" loading="eager" fetchpriority="high" decoding="async" />
+        <figcaption>MeshFlow generates explicit triangular meshes from coarse shape guidance in about a second. The output is not an extracted dense surface: vertices and connectivity are generated as part of the model output. Figure credit: Li et al., official MeshFlow repository.</figcaption>
+      </figure>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-value">18&times;</div>
+          <div class="stat-label">single-object speedup over the fastest reported AR baseline</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">72&times;</div>
+          <div class="stat-label">fewer latent vectors than a naive face-coordinate tokenizer</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">~1.2 s</div>
+          <div class="stat-label">reported single-mesh inference time</div>
+        </div>
+      </div>
+
+      <h2>The Core Idea</h2>
+
+      <p>
+        MeshFlow argues that direct mesh generation does not have to be autoregressive. Existing mesh generators often serialize faces and quantized coordinates into a long token sequence, then predict one token at a time. That choice makes topology easy to express, but it also creates three structural problems: long sequential inference, premature termination, and coordinate quantization error.
+      </p>
+
+      <p>
+        The paper replaces that pipeline with a continuous one. A mesh is represented by per-vertex position, outward normal, and a learned edge embedding. Connectivity is recovered by comparing edge embeddings rather than emitting discrete face indices. MeshVAE compresses these continuous vertex tokens, and a rectified-flow Transformer generates all latent tokens in parallel before the decoder reconstructs vertices and topology.
+      </p>
+
+      <div class="callout">
+        <p><strong>Core idea:</strong> make topology differentiable before trying to make generation parallel. MeshFlow first converts discrete adjacency into continuous per-vertex embeddings, then applies the same latent denoising recipe that made parallel image generation practical.</p>
+      </div>
+
+      <p>
+        This is worth reading less as another DiT application and more as a representation paper. The flow model is effective because MeshVAE has already turned variable-size geometry and discrete connectivity into a compact continuous sequence. If that latent interface were weak, parallel denoising would only produce invalid edge soups faster.
+      </p>
+
+      <h2>Problem Setting</h2>
+
+      <p>
+        The target is an artist-like triangular mesh: relatively compact, explicitly connected, and useful for downstream editing and rendering. The released model takes a surface point cloud or mesh as coarse geometric guidance and can optionally use a reference image. It outputs explicit vertices, normals, and triangular faces rather than an implicit field that must be converted with Marching Cubes.
+      </p>
+
+      <p>
+        The central difficulty is the mixed nature of a mesh. Vertex coordinates and normals are continuous; the number of vertices is variable; adjacency and faces are discrete; and face orientation matters. A method must preserve sharp geometry and sparse topology without assuming the result is watertight or manifold.
+      </p>
+
+      <p>
+        Indirect 3D generators avoid this problem by generating an SDF, occupancy field, or radiance representation and extracting a mesh afterward. That is effective for shape, but the extracted topology is rarely what an artist would author. It can be excessively dense, smooth sharp edges, or produce an awkward triangulation. Autoregressive methods generate better-structured meshes directly, but their sequence length grows with mesh complexity.
+      </p>
+
+      <figure class="paper-figure figure-wide">
+        <img src="https://mesh-flow.github.io/assets/images/data_statistics.png" alt="MeshFlow data statistics comparing vertex and face counts and showing coordinate quantization errors" width="1400" height="569" loading="lazy" decoding="async" />
+        <figcaption>Why the representation matters. Artist-made meshes typically contain roughly two to three times more faces than vertices, while coarse coordinate quantization introduces geometry error and collapsed faces. Figure credit: Li et al., official project page.</figcaption>
+      </figure>
+
+      <h2>Background</h2>
+
+      <h3>Why Face-Token Autoregression Is Expensive</h3>
+
+      <p>
+        A naive triangular-face tokenizer repeats three coordinates for each of three face vertices, giving at least \(9n_f\) coordinate tokens for \(n_f\) faces. Better tokenizers exploit indexing and local structure, but generation is still sequential. Long sequences also create a mesh-specific failure mode: if the model emits an end token too early, the geometry is incomplete.
+      </p>
+
+      <p>
+        MeshFlow instead starts from vertices. If a mesh has \(n_v\) vertices, its basic representation has \(n_v\) continuous records, and MeshVAE compresses those further to roughly \(n_v/4\) latent tokens. The paper reports 72 times fewer vectors than a naive tokenizer and 16 times fewer than the most efficient compared tokenizer.
+      </p>
+
+      <h3>Continuous Connectivity</h3>
+
+      <p>
+        The key device comes from continuous edge representations. For each vertex \(i\), the model predicts an edge embedding \(\mathbf{h}_i\). The main paper writes the topology decoder as a threshold on pairwise embedding distance:
+      </p>
+
+      <div class="math-block">
+        \[
+          \mathcal{A}_{ij}
+          =
+          \mathbb{I}\!\left[d(\mathbf{h}_i,\mathbf{h}_j) \leq \tau\right].
+        \]
+      </div>
+
+      <p>
+        Here \(\mathcal{A}\) is the recovered adjacency matrix, \(d\) is the learned edge-embedding distance, and \(\tau\) is a threshold. A triangle is then recovered whenever three vertices form a three-edge loop. Predicted vertex normals determine the winding direction and therefore the inside/outside orientation of each face.
+      </p>
+
+      <div class="callout warning">
+        <p><strong>Threshold convention:</strong> the paper's early representation equation selects edges with \(d\leq\tau\), but its positive-pair loss favors values above \(\tau\). The official code also selects <code>sigmoid(dist - tau) &gt; 0.5</code>, where <code>dist</code> is a signed space-time score. This appears to be a notation mismatch; an implementation should follow the released score definition rather than combine the two inequalities literally.</p>
+      </div>
+
+      <div class="math-block">
+        \[
+          \mathcal{M} = (\mathbf{V},\mathbf{N},\mathbf{H}),
+        \]
+      </div>
+
+      <p>
+        where \(\mathbf{V}\) stores continuous positions, \(\mathbf{N}\) stores outward normals, and \(\mathbf{H}\) stores edge embeddings. This representation does not require the mesh to be watertight or manifold, which is useful for artistic assets that violate clean geometric assumptions.
+      </p>
+
+      <h3>Rectified Flow</h3>
+
+      <p>
+        Rectified flow learns a vector field between clean latent samples and Gaussian noise along a straight interpolation path. Unlike autoregressive decoding, the number of denoising steps is fixed independently of the output sequence length, and all mesh latent tokens are updated together at every step.
+      </p>
+
+      <h2>Method</h2>
+
+      <figure class="paper-figure figure-wide">
+        <img src="https://mesh-flow.github.io/assets/images/method_overview.png" alt="MeshFlow pipeline from continuous mesh representation through MeshVAE and rectified-flow DiT to decoded mesh" width="1400" height="502" loading="lazy" decoding="async" />
+        <figcaption>MeshFlow pipeline. MeshVAE learns a compact continuous code for positions, normals, and connectivity; a rectified-flow DiT generates the latent sequence in parallel; the decoder and mesh extractor recover explicit geometry. Figure credit: Li et al., official project page.</figcaption>
+      </figure>
+
+      <h3>MeshVAE Input and Output</h3>
+
+      <p>
+        The encoder receives vertices, normals, and discrete adjacency from a training mesh. Using adjacency in the encoder is not a differentiability problem because it is observed input. The decoder cannot simply emit adjacency, however, so it predicts continuous edge embeddings from which adjacency is reconstructed.
+      </p>
+
+      <p>
+        Meshes are padded to a fixed maximum vertex count, and the decoder predicts a validity mask in addition to positions, normals, and edge embeddings:
+      </p>
+
+      <div class="math-block">
+        \[
+          (\widehat{\mathbf{V}},\widehat{\mathbf{N}},
+          \widehat{\mathbf{H}},\widehat{\mathbf{m}})
+          = \mathcal{D}(\mathbf{z}).
+        \]
+      </div>
+
+      <p>
+        The mask handles variable vertex counts. The edge embedding handles connectivity. The normals serve two roles: they are geometric attributes and a compact cue for orienting recovered faces.
+      </p>
+
+      <h3>TokenMerge and TokenSplit</h3>
+
+      <figure class="paper-figure figure-wide">
+        <img src="https://mesh-flow.github.io/assets/images/detailed_vae.png" alt="Detailed MeshVAE architecture with TokenMerge, TokenSplit, self-attention, cross-attention, and decoded mesh attributes" width="1400" height="581" loading="lazy" decoding="async" />
+        <figcaption>Detailed MeshVAE architecture. TokenMerge initializes a compact latent sequence from grouped vertex features; cross-attention restores fine information. TokenSplit reverses the grouping before decoding positions, normals, edge embeddings, and masks. Figure credit: Li et al., official project page.</figcaption>
+      </figure>
+
+      <p>
+        Each input vertex is encoded with Fourier features of its position and normal plus neighboring-vertex information. TokenMerge groups these vertex tokens and applies an MLP, analogous to rearranging spatial channels in pixel shuffle. The merged tokens then cross-attend to the full input sequence, so compression does not discard access to fine geometry.
+      </p>
+
+      <div class="math-block">
+        \[
+          \mathbf{z}
+          =
+          \operatorname{SA}^{(L_e)}\!\left(
+          \operatorname{CA}(\mathbf{z}_{\mathrm{merged}},\mathbf{X})
+          \right).
+        \]
+      </div>
+
+      <p>
+        The decoder is symmetric. TokenSplit expands the latent sequence back toward the maximum vertex count, and cross-attention to the processed latent code produces the final per-vertex attributes. The ablation results show that this structured initialization is much easier to train than random Q-Former queries or farthest-point-sampled features.
+      </p>
+
+      <h3>MeshVAE Training Objective</h3>
+
+      <p>
+        The objective combines valid-vertex classification, coordinate reconstruction, normal reconstruction, adjacency contrast, and KL regularization:
+      </p>
+
+      <div class="math-block">
+        \[
+          \mathcal{L}_{\mathrm{VAE}}
+          =
+          \mathcal{L}_{\mathrm{mask}}
+          + \mathcal{L}_{\mathbf{v}}
+          + \mathcal{L}_{\mathbf{n}}
+          + \mathcal{L}_{\mathrm{adj}}
+          + \lambda_{\mathrm{kl}}\mathcal{L}_{\mathrm{kl}}.
+        \]
+      </div>
+
+      <p>
+        Binary cross-entropy supervises the mask, while MSE is applied to valid positions and normals. Connectivity uses a contrastive objective: connected vertices should fall on one side of the distance threshold and non-connected pairs on the other. Using \(\overline{E}\) for non-edges, the paper's loss is
+      </p>
+
+      <div class="math-block">
+        \[
+          \begin{aligned}
+          \mathcal{L}_{\mathrm{adj}}
+          &= \mathcal{L}_{\mathrm{pos}}
+          + \lambda_{\mathrm{neg}}R_{\mathrm{neg/pos}}
+          \mathcal{L}_{\mathrm{neg}}, \\
+          \mathcal{L}_{\mathrm{pos}}
+          &= -\frac{1}{|E|}\sum_{(i,j)\in E}
+          \log \sigma\!\left(d(\widehat{\mathbf{h}}_i,
+          \widehat{\mathbf{h}}_j)-\tau\right), \\
+          \mathcal{L}_{\mathrm{neg}}
+          &= -\frac{1}{|\overline{E}|}\sum_{(i,j)\in \overline{E}}
+          \log \sigma\!\left(\tau-d(\widehat{\mathbf{h}}_i,
+          \widehat{\mathbf{h}}_j)\right).
+          \end{aligned}
+        \]
+      </div>
+
+      <p class="eq-note">The non-edge notation is lightly adapted for readability. These signs reproduce the paper's loss and are consistent with the released code's greater-than score test, but not with the earlier \(d\leq\tau\) equation.</p>
+
+      <figure class="paper-figure figure-wide">
+        <img src="https://mesh-flow.github.io/assets/images/vae_comparisons.png" alt="MeshVAE reconstruction comparison against quantized mesh tokenizers" width="1314" height="658" loading="lazy" decoding="async" />
+        <figcaption>VAE comparison. MeshFlow preserves continuous geometry instead of snapping coordinates to a fixed vocabulary, which is especially visible around thin parts, sharp edges, and nearby vertices. Figure credit: Li et al., official project page.</figcaption>
+      </figure>
+
+      <h3>Face Recovery and Boundary Repair</h3>
+
+      <p>
+        At inference, the decoder mask selects valid vertices, pairwise edge-embedding scores recover adjacency, and three-edge cliques become triangular faces. Average predicted normals determine cyclic order. Because noisy diffusion predictions can leave short boundary loops, the paper describes detecting boundary \(k\)-gons and triangulating loops with \(k&lt;5\).
+      </p>
+
+      <p>
+        This post-processing is small but conceptually important. MeshFlow does not guarantee a valid mesh by construction. It predicts a continuous proxy for topology and repairs a narrow class of local failures afterward.
+      </p>
+
+      <h3>Parallel Rectified-Flow Generation</h3>
+
+      <p>
+        Let \(\mathbf{x}_0\) be a clean MeshVAE latent and \(\epsilon\) Gaussian noise. The paper uses the linear path
+      </p>
+
+      <div class="math-block">
+        \[
+          \mathbf{x}_t=(1-t)\mathbf{x}_0+t\epsilon.
+        \]
+      </div>
+
+      <p>
+        A DiT predicts the corresponding velocity. With voxelized point-cloud condition \(\mathbf{c}_{\mathrm{vox}}\) injected through 3D rotary position encoding, the conditional flow-matching objective is
+      </p>
+
+      <div class="math-block">
+        \[
+          \mathcal{L}_{\mathrm{CFM}}(\theta)
+          =
+          \mathbb{E}_{t,\mathbf{x}_0,\epsilon}
+          \left[
+          \left\|
+          \mathbf{v}_{\theta}\!\left(
+          \operatorname{RoPE3D}(\mathbf{x}_t,\mathbf{c}_{\mathrm{vox}}),t
+          \right)
+          -(\epsilon-\mathbf{x}_0)
+          \right\|_2^2
+          \right].
+        \]
+      </div>
+
+      <p>
+        The model also receives a target vertex-count signal through the time embedding. During the final training phase, logit-normal time sampling emphasizes difficult fine-detail regions; inference uses a timestep shift of 3.0. The released code defaults to 28 sampling steps.
+      </p>
+
+      <h3>How Shape Conditioning Enters the DiT</h3>
+
+      <figure class="paper-figure figure-wide">
+        <img src="https://mesh-flow.github.io/assets/images/different_shape_injection.png" alt="MeshFlow comparison of cross-attention and voxelized 3D RoPE shape-conditioning strategies" width="1400" height="588" loading="lazy" decoding="async" />
+        <figcaption>Two shape-conditioning routes. Cross-attention uses 2,048 encoded shape tokens; 3D RoPE converges faster but needs coarse voxelization to reduce the train-inference gap between mesh vertices and sampled point clouds. Figure credit: Li et al., official project page.</figcaption>
+      </figure>
+
+      <p>
+        The authors test two approaches. The first samples 32,768 points, encodes them into 2,048 Shape2VecSet-style tokens, and conditions the DiT by cross-attention. It is natural at inference but trains slowly. The second places 3D RoPE directly on vertex coordinates and converges faster, but training vertices and inference-time surface samples follow different distributions.
+      </p>
+
+      <p>
+        MeshFlow reduces that domain gap by voxelizing ground-truth vertices during training. A \(32^3\) grid is reported as the best practical balance: coarser spatial support preserves artist-like topology, while higher spatial detail improves shape fidelity.
+      </p>
+
+      <h2>Experiments</h2>
+
+      <h3>Training Data and Model Scale</h3>
+
+      <p>
+        The model is trained on an Objaverse-like proprietary collection of roughly 600k professional artist meshes. MeshVAE uses 8-layer Transformer encoder and decoder stacks, hidden width 1,024, and 233M parameters. The main paper describes the DiT as 18 blocks with width 1,024 and 427M parameters.
+      </p>
+
+      <div class="callout warning">
+        <p><strong>Reproducibility note:</strong> the supplied supplementary TeX describes a different DiT configuration: 16 blocks, width 1,536, and 895M parameters. The released model configuration is access-restricted, so this discrepancy could not be independently resolved from the public checkpoint bundle.</p>
+      </div>
+
+      <h3>MeshVAE Reconstruction</h3>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Type</th>
+              <th>CD (down)</th>
+              <th>Compression ratio (down)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>TreeMeshGPT</td>
+              <td>AR</td>
+              <td>1.63</td>
+              <td>0.22</td>
+            </tr>
+            <tr>
+              <td>EdgeRunner</td>
+              <td>ArAE</td>
+              <td><strong>1.21</strong></td>
+              <td>0.47</td>
+            </tr>
+            <tr>
+              <td>MeshVAE</td>
+              <td>Continuous VAE</td>
+              <td>1.29</td>
+              <td><strong>0.014</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Values from the paper's MeshVAE table. Chamfer distance is multiplied by 100. Lower is better.</p>
+
+      <p>
+        MeshVAE does not win the reconstruction-distance column outright: EdgeRunner is slightly lower at 1.21 versus 1.29. The important result is the joint point. MeshVAE retains similar geometric accuracy with a compression ratio of 0.014, roughly 16 times smaller than TreeMeshGPT's already compressed sequence and about 34 times smaller than EdgeRunner's representation.
+      </p>
+
+      <h3>Point-Cloud-Conditioned Generation on Toys4K</h3>
+
+      <p>
+        Evaluation follows FastMesh on Toys4K. None of the compared methods were trained on Toys4K, so the benchmark tests generalization. The paper samples 5,000 ground-truth points and reports Chamfer distance for average structural error, Hausdorff distance for worst local discrepancy, inference time, and generated vertex count.
+      </p>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>CD (down)</th>
+              <th>HD (down)</th>
+              <th>Batch-average time</th>
+              <th>Average vertices</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MeshAnything</td>
+              <td>12.02</td>
+              <td>26.87</td>
+              <td>26.06 s</td>
+              <td>218.6</td>
+            </tr>
+            <tr>
+              <td>MeshAnythingV2</td>
+              <td>10.23</td>
+              <td>24.98</td>
+              <td>31.94 s</td>
+              <td>533.3</td>
+            </tr>
+            <tr>
+              <td>TreeMeshGPT</td>
+              <td>5.46</td>
+              <td>13.96</td>
+              <td>27.32 s</td>
+              <td>706.3</td>
+            </tr>
+            <tr>
+              <td>BPT</td>
+              <td>5.71</td>
+              <td>12.02</td>
+              <td>49.23 s</td>
+              <td>525.5</td>
+            </tr>
+            <tr>
+              <td>FastMesh-V1K</td>
+              <td>4.09</td>
+              <td>10.32</td>
+              <td>3.41 s</td>
+              <td>467.2</td>
+            </tr>
+            <tr>
+              <td>FastMesh-V4K</td>
+              <td>4.05</td>
+              <td>10.22</td>
+              <td>6.60 s</td>
+              <td>1,040.6</td>
+            </tr>
+            <tr>
+              <td>MeshFlow</td>
+              <td><strong>2.33</strong></td>
+              <td><strong>4.23</strong></td>
+              <td><strong>1.06 + 0.47 s</strong></td>
+              <td>459.75</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Values from the paper's Toys4K table. CD and HD are multiplied by 100. MeshFlow time separates sampling and mesh extraction.</p>
+
+      <p>
+        The geometric errors are substantially lower, but the paper itself warns against over-reading them. MeshFlow directly predicts positions and normals, which favors point-distance metrics. CD and HD do not tell us whether the topology is pleasant to edit, whether normals flip, or whether small holes remain. The qualitative mesh structure is therefore part of the evidence, not just decoration.
+      </p>
+
+      <h3>Single-Object Runtime</h3>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Single-mesh inference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>BPT</td><td>~8 min</td></tr>
+            <tr><td>TreeMeshGPT</td><td>~4 min</td></tr>
+            <tr><td>DeepMesh</td><td>~50 min</td></tr>
+            <tr><td>FastMesh-V1K</td><td>~21 s</td></tr>
+            <tr><td>FastMesh-V4K</td><td>~50 s</td></tr>
+            <tr><td>MeshFlow</td><td><strong>~1.2 s</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Single-object timing from the supplementary table. The approximately 18x claim compares MeshFlow with the fastest reported AR entry, FastMesh-V1K.</p>
+
+      <p>
+        This table is more informative than the batch-average timing. Autoregressive implementations benefit from batched token decoding in the main protocol, while a single asset pays the full sequential cost. MeshFlow's runtime is largely fixed by the number of flow evaluations and parallel latent processing.
+      </p>
+
+      <h3>Ablations</h3>
+
+      <div class="table-scroll">
+        <table class="wide">
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Vertex dist. (down)</th>
+              <th>Normal dist. (down)</th>
+              <th>Edge F1 (up)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Q-Former queries</td><td>23.36</td><td>18.77</td><td>49.47</td></tr>
+            <tr><td>FPS queries</td><td>18.29</td><td>14.61</td><td>60.18</td></tr>
+            <tr><td>TokenMerge</td><td><strong>0.75</strong></td><td><strong>0.47</strong></td><td><strong>99.78</strong></td></tr>
+            <tr><td>4x downsampling</td><td>1.25</td><td>1.30</td><td>88.82</td></tr>
+            <tr><td>2x downsampling</td><td>0.97</td><td>1.11</td><td>92.65</td></tr>
+            <tr><td>2,048 vertices</td><td>0.82</td><td>0.73</td><td>99.84</td></tr>
+            <tr><td>4,096 vertices</td><td>0.75</td><td>0.47</td><td>99.78</td></tr>
+            <tr><td>8,192 vertices</td><td>0.94</td><td>0.49</td><td>99.71</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Ablation values are multiplied by 100, as reported in the paper. Rows test different design axes and should not be interpreted as one cumulative progression.</p>
+
+      <p>
+        TokenMerge is the decisive VAE design choice. Random learned queries and FPS do not merely reduce quality; they appear to make optimization fail. The vertex-count rows are also encouraging: edge F1 remains above 99.7 across 2K, 4K, and 8K vertex settings. Compression is the more visible tradeoff, with 4x downsampling reducing edge F1 to 88.82.
+      </p>
+
+      <h2>Strengths</h2>
+
+      <div class="two-col">
+        <div class="mini-card">
+          <h3>Representation-first design</h3>
+          <p>MeshFlow solves the discrete-topology problem before adding diffusion. Positions, normals, and connectivity share one continuous per-vertex interface.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Meaningful efficiency gain</h3>
+          <p>Parallel latent generation removes the long sequential dependency that dominates single-object AR inference, producing a large practical speedup.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Compact without quantization</h3>
+          <p>MeshVAE compresses far more aggressively than token-based encoders while avoiding coordinate bins that can collapse vertices and faces.</p>
+        </div>
+        <div class="mini-card">
+          <h3>Explicit downstream asset</h3>
+          <p>The output is a sparse editable mesh with vertices and faces, not an implicit surface that still needs topology extraction and cleanup.</p>
+        </div>
+      </div>
+
+      <h2>Limitations</h2>
+
+      <div class="callout warning">
+        <p><strong>Main limitation:</strong> MeshFlow generates only triangular, untextured meshes and still relies on heuristic repair when noisy edge predictions create small holes.</p>
+      </div>
+
+      <p>
+        The first limitation is topology coverage. Artists often prefer quad-dominant topology for subdivision, rigging, and deformation. MeshFlow recovers triangles from three-edge cliques, so supporting quads or mixed polygons would require a different face-recovery model rather than a small decoder change.
+      </p>
+
+      <p>
+        The second limitation is validity. The continuous edge representation makes topology learnable, but it does not guarantee a valid face complex. The method triangulates short boundary loops as post-processing, and the supplementary shows failure cases with holes caused by noisy positions and edge embeddings. Three-edge clique recovery can also be brittle when adjacency errors create or delete a single edge.
+      </p>
+
+      <p>
+        The third limitation is evaluation. CD and HD strongly reward geometric proximity but say little about face quality, flipped normals, non-manifold structure, holes, edge flow, or editability. The authors acknowledge this directly. A convincing artistic-mesh benchmark still needs topology-aware and workflow-aware evaluation.
+      </p>
+
+      <p>
+        The fourth limitation is reproducibility. Training uses approximately 600k proprietary professional assets, so dataset quality and filtering cannot be reproduced from public data. The architecture discrepancy between the main paper and supplementary also needs clarification. Finally, the released pipeline still expects coarse surface geometry; image conditioning is optional rather than a replacement for point-cloud guidance.
+      </p>
+
+      <p>
+        Texture generation is outside the scope. There is no UV layout, material assignment, or texture synthesis, so MeshFlow addresses geometry authoring rather than a complete production-ready asset pipeline.
+      </p>
+
+      <h2>Research Insight</h2>
+
+      <div class="callout research">
+        <p><strong>Research insight:</strong> parallel mesh generation becomes practical when topology is represented as a continuous relation among vertices, not when a diffusion model is applied directly to face indices.</p>
+      </div>
+
+      <p>
+        The deeper pattern is familiar from successful generative systems: spend representational effort to create a smooth latent space, then use a simple scalable generator. MeshFlow's strongest contribution is a latent interface in which geometry and topology can be denoised together. Rectified flow is then a natural consequence rather than the conceptual starting point.
+      </p>
+
+      <p>
+        The paper also exposes a useful division of labor. Normals are not only rendered attributes; they remove the need to predict a more complicated local edge-order representation. Edge embeddings handle adjacency, normals handle orientation, and the validity mask handles variable cardinality. Each continuous channel absorbs one discrete bookkeeping problem.
+      </p>
+
+      <p>
+        I would qualify the paper's linear-scaling language. MeshFlow removes \(O(N)\) sequential decoding steps, which is the main practical speed advantage. But a standard Transformer still performs self-attention over the latent sequence, so its per-layer compute is not literally linear in token count. The defensible claim is fixed-step parallel generation with much better wall-clock scaling than token-by-token AR decoding.
+      </p>
+
+      <h2>Practical Perspective</h2>
+
+      <p>
+        The released pipeline is useful for coarse-geometry-to-clean-mesh workflows. A surface point cloud establishes shape; an optional reference image supplies appearance-related semantic cues through DINOv3 features; the output can be exported as GLB. The repository exposes a target vertex-count control, although it should be understood as a coarse conditioning signal rather than exact polygon budgeting.
+      </p>
+
+      <p>
+        For a research implementation, the risky component is not the DiT loop. It is robustly preparing and decoding mesh structure: duplicate removal, degree filtering, padded vertex sampling, neighborhood features, threshold calibration, clique extraction, orientation, and boundary repair. Reproducing the claimed quality requires treating these geometry operations as part of the model, not as incidental utilities.
+      </p>
+
+      <p>
+        For games and VFX, MeshFlow is closer to a useful geometric draft than most implicit generators. It produces compact explicit topology quickly. It still needs retopology judgment, UVs, materials, and failure inspection before production use, especially for deformable characters or assets requiring quad flow.
+      </p>
+
+      <h2>Future Directions</h2>
+
+      <ul>
+        <li><strong>Quad and mixed-polygon generation:</strong> replace triangle-clique recovery with a representation that supports explicit polygon loops and artist-controlled edge flow.</li>
+        <li><strong>Validity by construction:</strong> incorporate differentiable constraints or structured decoding that prevents holes, duplicate faces, and non-manifold adjacency rather than repairing them afterward.</li>
+        <li><strong>Topology-aware metrics:</strong> evaluate manifoldness, boundary defects, valence distributions, normal orientation, editability, and deformation behavior alongside geometric distance.</li>
+        <li><strong>Public-data replication:</strong> measure how much performance comes from the representation versus the proprietary professional-asset distribution.</li>
+        <li><strong>Image-first generation:</strong> remove the requirement for coarse point-cloud guidance while preserving explicit artist-like topology.</li>
+        <li><strong>Joint UV and material generation:</strong> extend the latent representation to seams, UV charts, texture coordinates, and PBR attributes.</li>
+        <li><strong>Scalable attention:</strong> use sparse, local, or hierarchical attention so parallel generation remains efficient as vertex budgets move well beyond 8K.</li>
+      </ul>
+
+      <h2>Key Takeaways</h2>
+
+      <ul>
+        <li><strong>MeshFlow is primarily a representation contribution.</strong> Continuous edge embeddings make discrete topology compatible with VAE compression and flow generation.</li>
+        <li><strong>TokenMerge is essential.</strong> The ablation gap shows that structured latent initialization matters far more than simply reducing the token count.</li>
+        <li><strong>Parallel generation delivers a real speed advantage.</strong> The reported single-object runtime is about 1.2 seconds versus 21 seconds for the fastest AR baseline.</li>
+        <li><strong>Geometry metrics favor the method but remain incomplete.</strong> CD and HD do not evaluate the topology qualities implied by the term "artist-like."</li>
+        <li><strong>The output is useful but not complete.</strong> MeshFlow produces explicit triangular geometry; quads, guaranteed validity, UVs, and textures remain open problems.</li>
+      </ul>
+
+      <h2>Citation</h2>
+
+      <pre><code>@inproceedings{li2026meshflow,
+  title={MeshFlow: Efficient Artistic Mesh Generation via MeshVAE and Flow-based Diffusion Transformer},
+  author={Li, Weiyu and Toisoul, Antoine and Monnier, Tom and Shapovalov, Roman and
+          Ranjan, Rakesh and Tan, Ping and Vedaldi, Andrea},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  year={2026},
+  note={Highlight}
+}</code></pre>
+
+      <hr />
+      <p style="color: var(--muted, #6b7280); font-size: 0.92rem;">
+        Sources: Li et al., <em>MeshFlow: Efficient Artistic Mesh Generation via MeshVAE and Flow-based Diffusion Transformer</em>, CVPR 2026 Highlight / arXiv:2606.04621v2; official MeshFlow project page; official GitHub and Hugging Face pages linked above. Figures are loaded directly from the official project page and repository.
+      </p>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell">&copy; Seunghyeon Seo</div>
+    </footer>
+
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['\\(', '\\)']],
+          displayMath: [['\\[', '\\]']],
+          processEscapes: true,
+          packages: {'[+]': ['ams']}
+        }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+  </body>
+</html>
