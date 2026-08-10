@@ -28,6 +28,14 @@ window.siteContent = {
   },
   news: [
     {
+      label: 'Aug. 2026:',
+      segments: [
+        { text: 'One paper was accepted to ' },
+        { text: 'ECCV 2026 Workshop on Scalable 3D Scene Generation and Geometric Scene Understanding', url: 'https://s3dsgr.github.io/' },
+        { text: '.' }
+      ]
+    },
+    {
       label: 'May 2026:',
       segments: [
         { text: 'One paper was accepted to ' },
