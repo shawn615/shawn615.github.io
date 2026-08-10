@@ -120,6 +120,26 @@ window.siteContent = {
   ],
   publications: [
     {
+      id: 'roodi',
+      title: 'ROODI: Reconstructing Occluded Objects with Denoising Inpainters',
+      authors: [
+        { name: 'Yeonjin Chang', url: 'https://yeonjin-chang.github.io/' },
+        { name: 'Erqun Dong', url: 'https://scholar.google.co.kr/citations?hl=en&user=SzxgfTIAAAAJ' },
+        { name: 'Seunghyeon Seo', isMe: true },
+        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' },
+        { name: 'Kwang Moo Yi', url: 'https://www.cs.ubc.ca/~kmyi/' }
+      ],
+      venue: 'ECCV 2026 Workshop on Scalable 3D Scene Generation and Geometric Scene Understanding',
+      summary:
+        '3D object reconstruction under occlusion using Gaussian Splatting and diffusion-based inpainting for geometry completion in challenging real scenes.',
+      media: { type: 'video', src: 'images/roodi.mp4', alt: 'ROODI project preview' },
+      links: [
+        { label: 'Project Page', url: 'https://yeonjin-chang.github.io/ROODI/' },
+        { label: 'arXiv', url: 'https://arxiv.org/abs/2503.10256' }
+      ],
+      selected: false
+    },
+    {
       id: 'divcon',
       title: 'DivCon-NeRF: Diverse and Consistent Ray Augmentation for Few-Shot NeRF',
       authors: [
@@ -209,26 +229,6 @@ window.siteContent = {
       ],
       selected: true,
       contribution: 'Co-first author'
-    },
-    {
-      id: 'roodi',
-      title: 'ROODI: Reconstructing Occluded Objects with Denoising Inpainters',
-      authors: [
-        { name: 'Yeonjin Chang', url: 'https://yeonjin-chang.github.io/' },
-        { name: 'Erqun Dong', url: 'https://scholar.google.co.kr/citations?hl=en&user=SzxgfTIAAAAJ' },
-        { name: 'Seunghyeon Seo', isMe: true },
-        { name: 'Nojun Kwak', url: 'http://scholar.google.co.kr/citations?user=h_8-1M0AAAAJ&hl=en' },
-        { name: 'Kwang Moo Yi', url: 'https://www.cs.ubc.ca/~kmyi/' }
-      ],
-      venue: 'Under Review',
-      summary:
-        '3D object reconstruction under occlusion using Gaussian Splatting and diffusion-based inpainting for geometry completion in challenging real scenes.',
-      media: { type: 'video', src: 'images/roodi.mp4', alt: 'ROODI project preview' },
-      links: [
-        { label: 'Project Page', url: 'https://yeonjin-chang.github.io/ROODI/' },
-        { label: 'arXiv', url: 'https://arxiv.org/abs/2503.10256' }
-      ],
-      selected: false
     },
     {
       id: 'arc-nerf',
